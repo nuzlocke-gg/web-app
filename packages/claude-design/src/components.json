@@ -1,0 +1,236 @@
+[
+  {
+    "name": "Button",
+    "file": "button",
+    "group": "Actions",
+    "height": 140
+  },
+  {
+    "name": "ButtonGroup",
+    "file": "button-group",
+    "group": "Actions",
+    "height": 120
+  },
+  {
+    "name": "Toggle",
+    "file": "toggle",
+    "group": "Actions",
+    "height": 110
+  },
+  {
+    "name": "ToggleGroup",
+    "file": "toggle-group",
+    "group": "Actions",
+    "height": 170
+  },
+  {
+    "name": "Input",
+    "file": "input",
+    "group": "Forms",
+    "height": 160
+  },
+  {
+    "name": "InputGroup",
+    "file": "input-group",
+    "group": "Forms",
+    "height": 180
+  },
+  {
+    "name": "Textarea",
+    "file": "textarea",
+    "group": "Forms",
+    "height": 160
+  },
+  {
+    "name": "Label",
+    "file": "label",
+    "group": "Forms",
+    "height": 100
+  },
+  {
+    "name": "Field",
+    "file": "field",
+    "group": "Forms",
+    "height": 280
+  },
+  {
+    "name": "Checkbox",
+    "file": "checkbox",
+    "group": "Forms",
+    "height": 140
+  },
+  {
+    "name": "RadioGroup",
+    "file": "radio-group",
+    "group": "Forms",
+    "height": 150
+  },
+  {
+    "name": "Switch",
+    "file": "switch",
+    "group": "Forms",
+    "height": 120
+  },
+  {
+    "name": "Select",
+    "file": "select",
+    "group": "Forms",
+    "height": 320
+  },
+  {
+    "name": "Combobox",
+    "file": "combobox",
+    "group": "Forms",
+    "height": 340
+  },
+  {
+    "name": "Dialog",
+    "file": "dialog",
+    "group": "Overlays",
+    "height": 340
+  },
+  {
+    "name": "AlertDialog",
+    "file": "alert-dialog",
+    "group": "Overlays",
+    "height": 320
+  },
+  {
+    "name": "Sheet",
+    "file": "sheet",
+    "group": "Overlays",
+    "height": 360
+  },
+  {
+    "name": "Drawer",
+    "file": "drawer",
+    "group": "Overlays",
+    "height": 360
+  },
+  {
+    "name": "Popover",
+    "file": "popover",
+    "group": "Overlays",
+    "height": 260
+  },
+  {
+    "name": "Tooltip",
+    "file": "tooltip",
+    "group": "Overlays",
+    "height": 140
+  },
+  {
+    "name": "DropdownMenu",
+    "file": "dropdown-menu",
+    "group": "Overlays",
+    "height": 320
+  },
+  {
+    "name": "Command",
+    "file": "command",
+    "group": "Overlays",
+    "height": 360
+  },
+  {
+    "name": "Breadcrumb",
+    "file": "breadcrumb",
+    "group": "Navigation",
+    "height": 90
+  },
+  {
+    "name": "NavigationMenu",
+    "file": "navigation-menu",
+    "group": "Navigation",
+    "height": 300
+  },
+  {
+    "name": "Pagination",
+    "file": "pagination",
+    "group": "Navigation",
+    "height": 100
+  },
+  {
+    "name": "Tabs",
+    "file": "tabs",
+    "group": "Navigation",
+    "height": 220
+  },
+  {
+    "name": "Sidebar",
+    "file": "sidebar",
+    "group": "Navigation",
+    "height": 420
+  },
+  {
+    "name": "Alert",
+    "file": "alert",
+    "group": "Feedback",
+    "height": 270
+  },
+  {
+    "name": "Toast",
+    "file": "toast",
+    "group": "Feedback",
+    "height": 200
+  },
+  {
+    "name": "Progress",
+    "file": "progress",
+    "group": "Feedback",
+    "height": 120
+  },
+  {
+    "name": "Spinner",
+    "file": "spinner",
+    "group": "Feedback",
+    "height": 100
+  },
+  {
+    "name": "Skeleton",
+    "file": "skeleton",
+    "group": "Feedback",
+    "height": 140
+  },
+  {
+    "name": "Badge",
+    "file": "badge",
+    "group": "Data display",
+    "height": 100
+  },
+  {
+    "name": "Card",
+    "file": "card",
+    "group": "Data display",
+    "height": 300
+  },
+  {
+    "name": "Item",
+    "file": "item",
+    "group": "Data display",
+    "height": 220
+  },
+  {
+    "name": "Table",
+    "file": "table",
+    "group": "Data display",
+    "height": 280
+  },
+  {
+    "name": "Accordion",
+    "file": "accordion",
+    "group": "Data display",
+    "height": 250
+  },
+  {
+    "name": "Kbd",
+    "file": "kbd",
+    "group": "Data display",
+    "height": 90
+  },
+  {
+    "name": "Separator",
+    "file": "separator",
+    "group": "Data display",
+    "height": 120
+  }
+]

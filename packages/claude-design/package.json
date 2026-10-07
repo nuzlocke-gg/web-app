@@ -1,0 +1,31 @@
+{
+  "name": "@workspace/claude-design",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Builds the nuzlocke.gg design system for Claude Design from @workspace/ui.",
+  "scripts": {
+    "generate": "node scripts/build.mjs",
+    "generate:test": "node scripts/build.mjs --test",
+    "check": "node scripts/check.mjs",
+    "serve": "node scripts/serve.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@workspace/ui": "*"
+  },
+  "devDependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "@tailwindcss/postcss": "^4",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@workspace/typescript-config": "*",
+    "esbuild": "^0.28.2",
+    "postcss": "^8.5.28",
+    "postcss-selector-parser": "^7.1.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

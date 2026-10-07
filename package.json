@@ -7,7 +7,8 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "turbo format",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "claude-design": "npm run generate -w @workspace/claude-design"
   },
   "devDependencies": {
     "@workspace/eslint-config": "*",

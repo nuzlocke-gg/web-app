@@ -1,0 +1,56 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; background: var(--background); }
+  .cover { position: relative; width: 960px; height: 288px; overflow: hidden; background: var(--background); }
+  .art { position: absolute; left: 480px; top: 0; }
+  .primary { fill: var(--primary); }
+  .tint { fill: var(--chart-1); }
+  .ink { fill: var(--foreground); }
+  .mid { fill: var(--chart-2); }
+  .dot { fill: var(--chart-3); }
+  .r4xl { rx: var(--radius-4xl); ry: var(--radius-4xl); }
+  .pill { rx: 8px; ry: 8px; }
+  .text { position: absolute; left: 40px; bottom: 40px; max-width: 440px; }
+  .name { margin: 0; font-family: var(--font-heading); font-weight: 500; font-size: 64px; line-height: .95; letter-spacing: -0.02em; color: var(--foreground); }
+  .tag { margin: 8px 0 0; font-family: var(--font-sans); font-size: 14px; line-height: 20px; color: var(--muted-foreground); }
+</style>
+</head>
+<body>
+<div class="cover">
+  <!--
+    blocks: primary slab 160×290, chart-1 tint 330×128, foreground ink 128×96, chart-2 184×96; all radius-4xl
+    arrangement: one tall slab bleeding off the top, with a tint band and two satellites bleeding off the right
+    pattern: pills (soft, friendly, large radii) — the brand's controls are all pills at radius-3xl/4xl
+    scales: gaps spacing-4 (16px), margins spacing-6 (24px), pills 48×16 at spacing-2 (8px) gaps, rx radius-4xl and half-height
+  -->
+  <svg class="art" width="480" height="288" viewBox="0 0 480 288" aria-hidden="true">
+    <rect class="primary r4xl" x="0" y="-26" width="160" height="290"/>
+    <rect class="tint r4xl" x="176" y="24" width="330" height="128"/>
+    <rect class="ink r4xl" x="176" y="168" width="128" height="96"/>
+    <rect class="mid r4xl" x="320" y="168" width="184" height="96"/>
+    <g>
+      <rect class="dot pill" x="200" y="52" width="48" height="16"/>
+      <rect class="dot pill" x="256" y="52" width="48" height="16"/>
+      <rect class="dot pill" x="312" y="52" width="48" height="16"/>
+      <rect class="dot pill" x="368" y="52" width="48" height="16"/>
+      <rect class="dot pill" x="424" y="52" width="48" height="16"/>
+      <rect class="dot pill" x="228" y="76" width="48" height="16"/>
+      <rect class="dot pill" x="284" y="76" width="104" height="16"/>
+      <rect class="dot pill" x="396" y="76" width="48" height="16"/>
+      <rect class="dot pill" x="200" y="100" width="48" height="16"/>
+      <rect class="dot pill" x="256" y="100" width="48" height="16"/>
+      <rect class="dot pill" x="312" y="100" width="48" height="16"/>
+      <rect class="dot pill" x="368" y="100" width="104" height="16"/>
+    </g>
+  </svg>
+  <div class="text">
+    <h1 class="name">nuzlocke.gg</h1>
+    <p class="tag">One purple accent on quiet neutrals, soft pills, and Geist.</p>
+  </div>
+</div>
+</body>
+</html>
