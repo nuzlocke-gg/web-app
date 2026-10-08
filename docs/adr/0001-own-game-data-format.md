@@ -13,3 +13,4 @@ Mainline Games start from PokeAPI and ROM hacks from sources we supply, and no s
 - Corrections reach existing Runs. From the launch, a released identifier (Game, Map, Place, Species, Form) is permanent and never gets a different meaning; a change that breaks this makes a new Map. There are no edition numbers.
 - A second source costs one importer, not a redesign.
 - Importers are one-off generators whose output is committed apart from the hand-written files (2026-10-07). A build never calls a data source, and a re-import is reviewed as a diff; the compile merges, validates, and checks that released identifiers stay permanent.
+- The permanence check compares against a committed lock per Map that lists every released identifier, created at launch and kept complete by CI (2026-10-08, Linear "Game data format"). The compiled output is built, not committed.

@@ -93,7 +93,7 @@ A mark that hides a Run from the Run list of every player, in any state. It is n
 _Avoid_: Deleted, hidden, trashed, removed
 
 **Progress**:
-The Places of the Game where a Journey has an Encounter, over all the Places of the Game. Custom Places count on neither side. In a Soul Link a Place counts when any Journey has an Encounter there.
+The Places of the Game where a Journey has an Encounter, over all the Places of the Game. Custom Places and Event Places count on neither side. In a Soul Link a Place counts when any Journey has an Encounter there.
 _Avoid_: Completion, percent complete, explored
 
 ### Play
@@ -149,7 +149,7 @@ One playable version of a Pokémon title, such as Emerald, Black, or White. A RO
 _Avoid_: Version, title
 
 **Map**:
-The set of Places that Games released together share, such as the one map of Black and White. Each Game has some or all of its Map's Places; a Place that only one Game has is exclusive to that Game. A third version or a sequel has a Map of its own: Emerald does not share the Map of Ruby and Sapphire. A ROM hack has a Map of its own and does not join the Map of the Game that it changes.
+The set of Places that Games released together share, such as the one map of Black and White. Each Game has every Place of its Map. A spot that differs between the Games, such as Black City in Black and White Forest in White, is one Place with a name for each Game. A third version or a sequel has a Map of its own: Emerald does not share the Map of Ruby and Sapphire. A ROM hack has a Map of its own and does not join the Map of the Game that it changes.
 _Avoid_: Region (that word names Kanto, Hoenn, or Unova, and one of those can appear in several Maps)
 
 **Place**:
@@ -159,3 +159,7 @@ _Avoid_: Route, location, area (as domain terms; "location" is the UI word)
 **Custom Place**:
 A Place that belongs to one Run and not to a Map. It has a name only, and all Journeys of the Run share it.
 _Avoid_: Custom Encounter
+
+**Event Place**:
+A Place of a Map that a player can reach only with an item from a distribution event, such as Navel Rock. Event Places come last in the play order and do not count toward Progress.
+_Avoid_: Event location, bonus area
