@@ -1,5 +1,6 @@
 import {
   ID_PATTERN,
+  SPECIES_ID_PATTERN,
   type CompiledMap,
   type Correction,
   type EvolutionLineId,
@@ -92,8 +93,13 @@ function usedMethodIds(places: Place[]): Set<MethodId> {
   return used
 }
 
-function checkId(label: string, id: string, report: Report) {
-  if (!ID_PATTERN.test(id)) report(`${label} is not a readable id`)
+function checkId(
+  label: string,
+  id: string,
+  report: Report,
+  pattern = ID_PATTERN
+) {
+  if (!pattern.test(id)) report(`${label} is not a readable id`)
 }
 
 /** Checks that each id is readable and used once. `label` names an entry in a problem. */
@@ -140,6 +146,22 @@ function mergeSpecies(sources: MapSources, report: Report): MergedSpecies {
 
   for (const correction of sources.corrections) {
     applySpeciesCorrection(correction, { species, links, ownLine }, report)
+  }
+
+  // Generated links are filtered to the Species of the Map later; a link
+  // a person added must name Species that exist.
+  for (const correction of sources.corrections) {
+    if (correction.op !== "add-evolution-link") continue
+
+    const { from, to } = correction.evolutionLink
+
+    for (const id of [from, to]) {
+      if (!species.has(id)) {
+        report(
+          `Correction add-evolution-link ${from}>${to}: no Species "${id}"`
+        )
+      }
+    }
   }
 
   return { species, links: [...links.values()], ownLine }
@@ -275,9 +297,15 @@ function validateSpecies(
   >()
 
   for (const s of merged.values()) {
-    checkId(`Species id "${s.id}"`, s.id, report)
+    checkId(`Species id "${s.id}"`, s.id, report, SPECIES_ID_PATTERN)
 
     if (s.forms.length === 0) report(`Species "${s.id}" has no Form`)
+
+    if (s.forms.length === 1 && s.forms[0]!.id !== "base") {
+      report(
+        `Species "${s.id}" has one Form, so its Form id must be "base", not "${s.forms[0]!.id}"`
+      )
+    }
 
     checkUnique(s.forms, (id) => `Form id "${s.id}/${id}"`, report)
 
@@ -578,15 +606,18 @@ function resolveNames(
     }
   }
 
+  const nameIn = (game: GameId) =>
+    Object.hasOwn(name, game) ? name[game] : undefined
+
   for (const game of gameIds) {
-    if (!name[game]) {
+    if (!nameIn(game)) {
       report(
         `Place "${placeId}" has no name for ${game}. Every Place is in every Game of its Map.`
       )
     }
   }
 
-  return Object.fromEntries(gameIds.map((g) => [g, name[g] ?? ""]))
+  return Object.fromEntries(gameIds.map((g) => [g, nameIn(g) ?? ""]))
 }
 
 function addOneTimeRows(

@@ -35,6 +35,23 @@ describe("the release lock", () => {
     expect(released.forms).toContain("unown/b")
   })
 
+  it("locks a Species whose id is an Object property", async () => {
+    const map = await compiledAfter((s) => {
+      s.corrections.push({
+        op: "add-species",
+        species: {
+          id: "constructor",
+          name: "Constructor",
+          dex: 1002,
+          forms: [{ id: "base", name: "Constructor", types: ["steel"] }],
+        },
+      })
+    })
+
+    expect(Object.hasOwn(lockFor(map).species, "constructor")).toBe(true)
+    expect(lockFor(map).species["constructor"]).toBe(1002)
+  })
+
   it("keeps released ids that a later lock no longer sees", async () => {
     const map = await compiledAfter((s) => {
       s.map.places = s.map.places.filter((p) => p.id !== "hatch-town")
@@ -143,11 +160,19 @@ describe("the permanence check", () => {
 
   it("stops when a released Form no longer resolves", async () => {
     const map = await compiledAfter((s) => {
-      s.corrections = s.corrections.filter((c) => c.op !== "add-form")
+      const burmy = s.generatedSpecies[0]!.species.find(
+        (x) => x.id === "burmy"
+      )!
+      const wild = s.generatedWild[0]!.areas["cloak-cave-area"]!
+
+      burmy.forms = burmy.forms.filter((f) => f.id !== "trash")
+      wild["fixture-blue"] = wild["fixture-blue"]!.filter(
+        (r) => r.form !== "trash"
+      )
     })
 
     expect(check(map, false)).toEqual([
-      'Released Form "unown/b" no longer resolves',
+      'Released Form "burmy/trash" no longer resolves',
     ])
   })
 

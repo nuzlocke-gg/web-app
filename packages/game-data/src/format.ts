@@ -8,11 +8,11 @@
 // 1. Identifiers
 // ---------------------------------------------------------------------------
 
-/**
- * Lowercase ASCII words joined by "-" (`route-101`, `vulpix-alola`). A ROM
- * hack prefixes its own new Species with `<hack>:` (`unbound:foo`).
- */
-export const ID_PATTERN = /^([a-z0-9]+:)?[a-z0-9]+(-[a-z0-9]+)*$/
+/** Lowercase ASCII words joined by "-": `route-101`, `vulpix-alola`. */
+export const ID_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
+
+/** A Species id: a ROM hack prefixes its own new Species with `<hack>:` (`unbound:foo`). */
+export const SPECIES_ID_PATTERN = /^([a-z0-9]+:)?[a-z0-9]+(-[a-z0-9]+)*$/
 
 /** Unique in the project: `emerald`, `firered-leafgreen`. */
 export type MapId = string

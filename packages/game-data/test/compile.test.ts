@@ -26,6 +26,22 @@ describe("compile", () => {
     expect(await problemsAfter(() => {})).toEqual([])
   })
 
+  it("accepts a ROM hack prefix on a new Species", async () => {
+    const problems = await problemsAfter((s) => {
+      s.corrections.push({
+        op: "add-species",
+        species: {
+          id: "unbound:foo",
+          name: "Foo",
+          dex: 1001,
+          forms: [{ id: "base", name: "Foo", types: ["normal"] }],
+        },
+      })
+    })
+
+    expect(problems).toEqual([])
+  })
+
   it("collects every problem before it stops", async () => {
     const problems = await problemsAfter((s) => {
       place(s, "hatch-town").id = "route-1"
@@ -220,6 +236,41 @@ describe("validation names the bad entry", () => {
         burmy.forms.push({ ...burmy.forms[0]! })
       },
       'Form id "burmy/plant" is used twice',
+    ],
+    [
+      "an added evolution link to an unknown Species",
+      (s: MapSources) => {
+        s.corrections.push({
+          op: "add-evolution-link",
+          evolutionLink: { from: "eevee", to: "jolteonn" },
+        })
+      },
+      'Correction add-evolution-link eevee>jolteonn: no Species "jolteonn"',
+    ],
+    [
+      "a single Form that is not base",
+      (s: MapSources) => {
+        species(s, "pidgey").forms[0]!.id = "normal"
+      },
+      'Species "pidgey" has one Form, so its Form id must be "base", not "normal"',
+    ],
+    [
+      "a hack prefix on an id other than a Species id",
+      (s: MapSources) => {
+        place(s, "hatch-town").id = "hack:hatch-town"
+      },
+      'Place id "hack:hatch-town" is not a readable id',
+    ],
+    [
+      "a missing Place name for a Game whose id is an Object property",
+      (s: MapSources) => {
+        s.map.games.push({
+          id: "constructor",
+          name: "Constructor",
+          monogram: "C",
+        })
+      },
+      'Place "black-city" has no name for constructor',
     ],
     [
       "own-evolution-line on an unknown Species",

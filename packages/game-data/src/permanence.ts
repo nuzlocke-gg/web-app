@@ -14,7 +14,9 @@ const union = (locked: string[], current: string[]) => [
 export function lockFor(map: CompiledMap, previous?: ReleaseLock): ReleaseLock {
   const species: Record<string, number> = { ...previous?.species }
 
-  for (const s of map.species) species[s.id] ??= s.dex
+  for (const s of map.species) {
+    if (!Object.hasOwn(species, s.id)) species[s.id] = s.dex
+  }
 
   return {
     map: map.id,
