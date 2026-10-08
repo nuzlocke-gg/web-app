@@ -27,24 +27,44 @@ export type MapSummary = Pick<
 
 /** The Maps the reader can load: a small catalog and one loader per Map. */
 export interface MapRegistry {
+  /** Every Map the registry can load. */
   catalog: MapSummary[]
+  /** Loads one compiled Map, by Map id. */
   load: Record<MapId, () => Promise<CompiledMap>>
 }
 
-/** A loaded Map with lookup indexes. Every reader function takes it first. */
+/**
+ * A loaded Map with lookup indexes. Every reader function takes it first.
+ * It is shared by every caller: treat it, and everything a reader function
+ * returns from it, as read-only.
+ */
 export interface LoadedMap {
+  /** The compiled Map as the build wrote it. */
   data: CompiledMap
+  /** Games by id. */
   games: Map<GameId, Game>
+  /** Places by id. */
   places: Map<PlaceId, Place>
+  /** Species by id. */
   species: Map<SpeciesId, Species>
+  /** The method groups this Map uses, by id. */
   methods: Map<MethodId, Method>
 }
 
-/** The Maps of a registry. */
+/**
+ * The Maps of a registry.
+ *
+ * @example
+ * const map = await loadMap(run.mapId)
+ * const rows = map ? placesOf(map, journey.gameId) : []
+ */
 export interface Reader {
   /** Every Map, in release order. */
   listMaps(): MapSummary[]
-  /** One Map, loaded once and cached. An unknown Map gives `undefined`. */
+  /**
+   * One Map, loaded once and then cached. An unknown Map gives `undefined`.
+   * A failed load rejects and is not cached, so a later call tries again.
+   */
   loadMap(id: MapId): Promise<LoadedMap | undefined>
 }
 
@@ -99,6 +119,7 @@ export function getGame(map: LoadedMap, game: GameId): Game | undefined {
 export interface PlaceRow {
   id: PlaceId
   kind: PlaceKind
+  /** The name in the Game asked for. */
   name: string
 }
 
@@ -127,8 +148,11 @@ export function placeName(
 /** One method group of the record Drawer, with the origin it preselects. */
 export interface SuggestionGroup {
   method: MethodId
+  /** The group's label: "Rock Smash". */
   name: string
+  /** The origin the record Drawer preselects for an Encounter from this group. */
   origin: Origin
+  /** The Species and Forms, most common first. */
   entries: FormRef[]
 }
 

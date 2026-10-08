@@ -4,6 +4,7 @@ import { compileMap } from "../src/compile.ts"
 import type { CompiledMap, MapSources } from "../src/format.ts"
 import { readMapSources } from "../src/sources.ts"
 
+/** The fixture sources: `methods.yaml` and `maps/fixture`, `maps/fixture-later`. */
 export const fixtureSourcesDir = fileURLToPath(
   new URL("./fixtures/sources", import.meta.url)
 )

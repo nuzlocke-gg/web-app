@@ -54,13 +54,7 @@ export function compileMap(sources: MapSources): CompileResult {
 
   if (problems.length > 0) return { ok: false, problems }
 
-  const usedMethods = new Set(
-    places.flatMap((place) =>
-      Object.values(place.tables).flatMap((groups) =>
-        (groups ?? []).map((group) => group.method)
-      )
-    )
-  )
+  const usedMethods = usedMethodIds(places)
 
   return {
     ok: true,
@@ -84,6 +78,18 @@ export function compileMap(sources: MapSources): CompileResult {
         })),
     },
   }
+}
+
+function usedMethodIds(places: Place[]): Set<MethodId> {
+  const used = new Set<MethodId>()
+
+  for (const place of places) {
+    for (const groups of Object.values(place.tables)) {
+      for (const group of groups ?? []) used.add(group.method)
+    }
+  }
+
+  return used
 }
 
 function checkId(label: string, id: string, report: Report) {
@@ -173,13 +179,19 @@ function applySpeciesCorrection(
         report(
           `Correction add-form "${ref}": no Species "${correction.species}"`
         )
-      } else if (target.forms.some((f) => f.id === correction.form.id)) {
+
+        return
+      }
+
+      if (target.forms.some((f) => f.id === correction.form.id)) {
         report(
           `Correction add-form "${ref}": the import now has it. Remove the correction.`
         )
-      } else {
-        target.forms.push(structuredClone(correction.form))
+
+        return
       }
+
+      target.forms.push(structuredClone(correction.form))
 
       return
     }
@@ -193,13 +205,19 @@ function applySpeciesCorrection(
 
       if (!form) {
         report(`Correction set-types "${ref}": no Form "${ref}"`)
-      } else if (form.types.join("/") !== expected) {
+
+        return
+      }
+
+      if (form.types.join("/") !== expected) {
         report(
           `Correction set-types "${ref}" expects ${expected}, but the import now says ${form.types.join("/")}. Review it.`
         )
-      } else {
-        form.types = [...correction.types]
+
+        return
       }
+
+      form.types = [...correction.types]
 
       return
     }
@@ -372,38 +390,8 @@ function mergeWildAreas(sources: MapSources, report: Report): WildAreas {
     }
   }
 
-  for (const c of sources.corrections) {
-    if (c.op === "ignore-area") {
-      if (!rows.has(c.area)) {
-        report(
-          `Correction ignore-area "${c.area}": the import no longer has that area.`
-        )
-      }
-
-      ignored.add(c.area)
-    }
-
-    if (c.op === "remove-wild" || c.op === "add-wild") {
-      const label = `${c.area} ${c.game} ${rowKey(c.row)}`
-      const areaRows = rows.get(c.area) ?? new Map<GameId, WildRow[]>()
-      const gameRows = areaRows.get(c.game) ?? []
-      const index = gameRows.findIndex((r) => rowKey(r) === rowKey(c.row))
-
-      if (c.op === "remove-wild" && index < 0) {
-        report(
-          `Correction remove-wild ${label}: the import no longer has that row. Review it.`
-        )
-      } else if (c.op === "remove-wild") {
-        gameRows.splice(index, 1)
-      } else if (index >= 0) {
-        report(
-          `Correction add-wild ${label}: the import now has that row. Remove the correction.`
-        )
-      } else {
-        areaRows.set(c.game, [...gameRows, c.row])
-        rows.set(c.area, areaRows)
-      }
-    }
+  for (const correction of sources.corrections) {
+    applyWildCorrection(correction, { rows, ignored }, report)
   }
 
   const methods = new Map(sources.methods.map((m) => [m.id, m]))
@@ -423,6 +411,65 @@ function mergeWildAreas(sources: MapSources, report: Report): WildAreas {
   }
 
   return { rows, ignored }
+}
+
+function applyWildCorrection(
+  correction: Correction,
+  { rows, ignored }: WildAreas,
+  report: Report
+) {
+  switch (correction.op) {
+    case "ignore-area":
+      if (!rows.has(correction.area)) {
+        report(
+          `Correction ignore-area "${correction.area}": the import no longer has that area.`
+        )
+      }
+
+      ignored.add(correction.area)
+
+      return
+
+    case "remove-wild": {
+      const { area, game, row } = correction
+      const gameRows = rows.get(area)?.get(game) ?? []
+      const index = gameRows.findIndex((r) => rowKey(r) === rowKey(row))
+
+      if (index < 0) {
+        report(
+          `Correction remove-wild ${area} ${game} ${rowKey(row)}: the import no longer has that row. Review it.`
+        )
+
+        return
+      }
+
+      gameRows.splice(index, 1)
+
+      return
+    }
+
+    case "add-wild": {
+      const { area, game, row } = correction
+      const areaRows = rows.get(area) ?? new Map<GameId, WildRow[]>()
+      const gameRows = areaRows.get(game) ?? []
+
+      if (gameRows.some((r) => rowKey(r) === rowKey(row))) {
+        report(
+          `Correction add-wild ${area} ${game} ${rowKey(row)}: the import now has that row. Remove the correction.`
+        )
+
+        return
+      }
+
+      areaRows.set(game, [...gameRows, row])
+      rows.set(area, areaRows)
+
+      return
+    }
+
+    default:
+      return
+  }
 }
 
 // ---------------------------------------------------------------------------

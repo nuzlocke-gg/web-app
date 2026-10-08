@@ -28,6 +28,7 @@ export interface BuildOptions {
    * each Map in `maps` (which creates a lock at launch).
    */
   mode: "frozen" | "lock"
+  /** In `lock` mode, Maps to lock even though they have no lock yet. */
   maps?: MapId[]
 }
 
@@ -96,7 +97,10 @@ export async function buildMaps(options: BuildOptions): Promise<string[]> {
   await writeOutput(options.outDir, compiled)
 
   if (mode === "lock") {
-    await writeLocks(releasedDir, compiled, locks, options.maps ?? [])
+    await writeLocks(
+      releasedDir,
+      nextLocks(compiled, locks, options.maps ?? [])
+    )
   }
 
   return []
@@ -116,23 +120,23 @@ async function writeOutput(outDir: string, maps: CompiledMap[]) {
   await writeFile(join(outDir, "registry.ts"), registrySource(outDir, maps))
 }
 
-async function writeLocks(
-  releasedDir: string,
+/** The lock of each Map that has one, and of each named Map. */
+function nextLocks(
   maps: CompiledMap[],
-  locks: Map<MapId, ReleaseLock | undefined>,
+  previous: Map<MapId, ReleaseLock | undefined>,
   named: MapId[]
-) {
+): ReleaseLock[] {
+  return maps
+    .filter((map) => previous.get(map.id) || named.includes(map.id))
+    .map((map) => lockFor(map, previous.get(map.id)))
+}
+
+async function writeLocks(releasedDir: string, locks: ReleaseLock[]) {
   await mkdir(releasedDir, { recursive: true })
 
-  for (const map of maps) {
-    const previous = locks.get(map.id)
-
-    if (!previous && !named.includes(map.id)) continue
-
-    const lock = lockFor(map, previous)
-
+  for (const lock of locks) {
     await writeFile(
-      join(releasedDir, lockFileName(map.id)),
+      join(releasedDir, lockFileName(lock.map)),
       `${JSON.stringify(lock, null, 2)}\n`
     )
   }

@@ -74,6 +74,7 @@ export interface CompiledMap {
   name: string
   /** Groups the "Choose a map" Drawer: "Kanto". */
   region: string
+  /** The generation every Game of the Map belongs to. */
   generation: number
   /** Sorts Maps inside a region. */
   releaseOrder: number
