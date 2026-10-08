@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "lint": "eslint",
+    "lint": "eslint --max-warnings 0",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
   },
@@ -24,14 +24,14 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@turbo/gen": "^2.11.5",
-    "@types/node": "^20",
+    "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@workspace/eslint-config": "*",
     "@workspace/typescript-config": "*",
     "eslint": "^10",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^6.0.3"
   },
   "exports": {
     "./globals.css": "./src/styles/globals.css",
@@ -39,5 +39,8 @@
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
     "./hooks/*": "./src/hooks/*.ts"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,tsx,mts}": "eslint --fix --max-warnings 0"
   }
 }

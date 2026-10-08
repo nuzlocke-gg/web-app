@@ -16,6 +16,12 @@
     "typecheck": {
       "dependsOn": ["^typecheck"]
     },
+    "generate": {
+      "outputs": ["dist/**"]
+    },
+    "test": {
+      "dependsOn": ["generate"]
+    },
     "dev": {
       "cache": false,
       "persistent": true

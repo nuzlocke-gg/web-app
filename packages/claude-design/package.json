@@ -7,7 +7,7 @@
   "scripts": {
     "generate": "node scripts/build.mjs",
     "generate:test": "node scripts/build.mjs --test",
-    "check": "node scripts/check.mjs",
+    "test": "node scripts/check.mjs",
     "serve": "node scripts/serve.mjs",
     "typecheck": "tsc --noEmit"
   },
@@ -26,6 +26,6 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^6.0.3"
   }
 }

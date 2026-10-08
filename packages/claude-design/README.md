@@ -13,7 +13,7 @@ npm run generate -w @workspace/claude-design
 Writes `dist/project/` (the design system's files) and `dist/libraries.json`. Add `:test` (`generate:test`) to also write local test pages.
 
 ```bash
-npm run check -w @workspace/claude-design
+npm run test -w @workspace/claude-design
 ```
 
 Fails if a color in `globals.css` differs from `src/tokens.json`, a `packages/ui` component has no entry here, a preview throws when rendered, or the generated icons render differently from `@phosphor-icons/react` (after a build).
@@ -48,7 +48,7 @@ How the build adapts the components (none of this is needed in the app):
 
 1. Add or change it in `packages/ui` (for shadcn components: `npx shadcn add <name> -c apps/web`).
 2. Add an entry to `src/components.json` and a folder `src/components/<Name>/` with `preview.tsx`, `README.md` and `types.d.ts`. Copy an existing component's files as a start.
-3. Run `generate:test`, then `check` and `typecheck`, and look at the preview in `test/gallery.html` and `test/compare.html`.
+3. Run `generate:test`, then `test` and `typecheck`, and look at the preview in `test/gallery.html` and `test/compare.html`.
 4. Publish (below).
 
 ## Publishing

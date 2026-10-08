@@ -76,7 +76,7 @@ module.exports = { Fragment: F, createElement: (t, p, ...c) => ({ t: t === F ? "
     data[d] = regular.c.filter(Boolean).map(pack)
   }
 
-  // mirrors @phosphor-icons/react's IconBase so the markup is identical (checked by `npm run check`)
+  // mirrors @phosphor-icons/react's IconBase so the markup is identical (checked by `npm run test`)
   const runtime = `/* Phosphor Icons ${version} (MIT, phosphoricons.com), regular weight only. Generated for the nuzlocke.gg design system. */
 (function () {
   var R = window.React;

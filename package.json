@@ -8,19 +8,23 @@
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck",
-    "claude-design": "npm run generate -w @workspace/claude-design"
+    "claude-design": "npm run generate -w @workspace/claude-design",
+    "test": "turbo test",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@workspace/eslint-config": "*",
     "@workspace/typescript-config": "*",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "turbo": "^2.11.5",
-    "typescript": "^5"
+    "typescript": "^6.0.3"
   },
   "packageManager": "npm@11.12.1",
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=24"
   },
   "workspaces": [
     "apps/*",

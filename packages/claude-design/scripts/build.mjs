@@ -223,10 +223,6 @@ async function css(tokens) {
     .replace(/@source[^;]*;\n/g, "")
     // next/font sets --font-sans in the app; here it would point at itself
     .replace(/^\s*--font-sans: var\(--font-sans\);\n/m, "")
-    .replace(
-      /(--color-destructive: var\(--destructive\);)/,
-      "$1\n    --color-warning: var(--warning);"
-    )
   entry = entry.replace(
     /(@custom-variant[^;]*;)/,
     `$1\n@source "${UI}/**/*.{ts,tsx}";\n@source "${SRC}/components/**/*.tsx";\n@source inline("${SAFELIST}");`

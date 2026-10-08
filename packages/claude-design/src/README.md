@@ -111,5 +111,4 @@ The components also run as one browser script. Load these files in this order:
 - `components/lib/phosphor-regular.js` is generated from `@phosphor-icons/react` 2.1.10 as installed in the app: every icon, regular weight, checked to render the same markup as the package. It changes only when the app's Phosphor version changes; the build regenerates it.
 - This system is built from the repo by `packages/claude-design` (`npm run claude-design`). The wrapper support is generated there from the components' own CSS (every rule with `>`, `~`, `+` or a position pseudo-class), so new components get it too; the app's source does not need it.
 - The bundle makes the components work on React 18 by wrapping each one in `forwardRef`; the app itself uses React 19 and needs no wrapper.
-- Intentional addition: `warning` is not in `globals.css`. Add `--warning` to `:root` and `.dark`, and `--color-warning: var(--warning)` to `@theme inline`, to use it in the app.
 - The bundle and previews are built from `packages/ui` with React 19.2.8. Preview content is sample data; the Sidebar preview uses `collapsible="none"` because its other modes need the full window.
