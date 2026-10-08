@@ -1,0 +1,17 @@
+{
+  "map": "fixture-later",
+  "games": [
+    "fixture-x"
+  ],
+  "places": [
+    "starter"
+  ],
+  "species": {
+    "pikachu": 25,
+    "clefairy": 35
+  },
+  "forms": [
+    "pikachu/base",
+    "clefairy/base"
+  ]
+}

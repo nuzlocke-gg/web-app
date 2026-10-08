@@ -1,0 +1,77 @@
+{
+  "id": "fixture-later",
+  "name": "Fixture X",
+  "region": "Testland",
+  "generation": 6,
+  "releaseOrder": 2,
+  "games": [
+    {
+      "id": "fixture-x",
+      "name": "Fixture X",
+      "monogram": "X"
+    }
+  ],
+  "methods": [
+    {
+      "id": "gift",
+      "name": "Gift",
+      "origin": "gift"
+    }
+  ],
+  "places": [
+    {
+      "id": "starter",
+      "kind": "starter",
+      "names": {
+        "fixture-x": "Starter"
+      },
+      "tables": {
+        "fixture-x": [
+          {
+            "method": "gift",
+            "entries": [
+              {
+                "species": "clefairy",
+                "form": "base"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "species": [
+    {
+      "id": "pikachu",
+      "name": "Pikachu",
+      "dex": 25,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pikachu",
+          "types": [
+            "electric"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "pikachu"
+    },
+    {
+      "id": "clefairy",
+      "name": "Clefairy",
+      "dex": 35,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Clefairy",
+          "types": [
+            "fairy"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "clefairy"
+    }
+  ]
+}

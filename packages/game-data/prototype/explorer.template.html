@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · Game data format</title>
+<style>
+  :root { --fg:#1b1d22; --muted:#6a6f7a; --line:#e3e5ea; --bg:#fafafb; --card:#fff; --accent:#3b5bdb; --ok:#2b8a3e; --bad:#c92a2a; --warn:#e67700; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui, sans-serif; color:var(--fg); background:var(--bg); }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 22px; margin: 0 0 4px; } h2 { font-size: 16px; margin: 0 0 10px; } h3 { font-size: 14px; margin: 14px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .lead { color: var(--muted); margin: 0 0 20px; max-width: 75ch; }
+  .banner { background:#fff4e6; border:1px solid #ffd8a8; padding:8px 12px; border-radius:8px; margin-bottom:16px; font-size:13px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  button { font:inherit; border:1px solid var(--line); background:#fff; padding:6px 12px; border-radius:8px; cursor:pointer; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color:#fff; border-color: var(--accent); }
+  button.on { background:#edf2ff; border-color: var(--accent); }
+  button:disabled { opacity:.4; cursor: default; }
+  input { font:inherit; padding:6px 10px; border:1px solid var(--line); border-radius:8px; width:100%; }
+  ul.rows { list-style:none; margin:0; padding:0; }
+  ul.rows li { padding:6px 8px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:8px; cursor:pointer; }
+  ul.rows li.sel { background:#edf2ff; }
+  .tag { font-size:12px; padding:1px 6px; border-radius:6px; background:#f1f3f5; color:var(--muted); white-space:nowrap; }
+  .tag.event { background:#fff0f6; color:#a61e4d; } .tag.starter { background:#ebfbee; color:var(--ok); }
+  .ok { color: var(--ok); } .bad { color: var(--bad); }
+  .problems li { color: var(--bad); }
+  .tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .steps { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .changed { background:#fff9db; border-radius:4px; padding:0 3px; }
+  pre { background:#f8f9fa; border:1px solid var(--line); border-radius:8px; padding:10px; overflow:auto; max-height:360px; font-size:12px; }
+  dl { display:grid; grid-template-columns: max-content 1fr; gap:4px 12px; margin:0; } dt { color:var(--muted); }
+  .groups div { margin-bottom:8px; } .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <div class="banner">PROTOTYPE for Linear NUZ-44 “Game data format”. Throwaway: the logic is lifted into the real package; this page is not.</div>
+  <h1>Game data format explorer</h1>
+  <p class="lead">Question: does this one data shape and this small set of reader functions give every screen and Rule what it needs, and does the compile stop at the right moments (a stale hand correction, an unclaimed source area, a released id that would no longer resolve)? The data is a small fixture Map with two Games: Fixture Red and Fixture Blue.</p>
+
+  <section class="card" style="margin-bottom:16px">
+    <h2>Release state</h2>
+    <div id="status"></div>
+  </section>
+
+  <section class="card" style="margin-bottom:16px">
+    <h2>Guided walkthroughs: changes to the data</h2>
+    <div class="tabs" id="tabs"></div>
+    <div id="scenario"></div>
+  </section>
+
+  <div class="row">
+    <strong>Play as:</strong> <span id="games"></span>
+  </div>
+  <div class="grid">
+    <section class="card">
+      <h2>Encounters tab <span class="muted">placesOf</span></h2>
+      <ul class="rows" id="places"></ul>
+      <p class="muted" id="progress"></p>
+    </section>
+    <section class="card">
+      <h2>Record Drawer <span class="muted">suggestions</span></h2>
+      <div id="drawer" class="groups"></div>
+    </section>
+    <section class="card">
+      <h2>Species search <span class="muted">searchSpecies</span></h2>
+      <input id="q" placeholder="Search all species (name or dex number)">
+      <ul class="rows" id="results" style="max-height:260px; overflow:auto; margin-top:8px"></ul>
+    </section>
+    <section class="card">
+      <h2>Species details <span class="muted">getSpecies · nextInLine · evolutionLineOf · primaryType</span></h2>
+      <div id="species"></div>
+    </section>
+  </div>
+  <section class="card" style="margin-top:16px">
+    <h2>Compiled Map <span class="muted">dist/fixture.json</span></h2>
+    <pre id="json"></pre>
+  </section>
+</main>
+<script>
+/*__MODULE__*/
+
+// ---- Page shell (throwaway) -------------------------------------------------
+const clone = (x) => JSON.parse(JSON.stringify(x));
+const released = (() => { const r = compile(fixtureSources); return { map: r.map, lock: lockFor(r.map) }; })();
+const later = compile(laterSources).map;
+
+const S = {
+  sources: clone(fixtureSources), lock: clone(released.lock), launched: true,
+  game: "fixture-red", place: "route-2", species: "nincada", form: undefined, query: "",
+  last: "The released fixture Map.", scenario: 0, ci: null,
+};
+
+const SCENARIOS = [
+  { title: "Fix a Place name", text: "A typo fix: \"Hatch Town\" becomes \"Hatchling Town\". Names are corrections, so this reaches existing Runs and the release check passes.",
+    change: (s) => { s.map.places.find((p) => p.id === "hatch-town").name = "Hatchling Town"; } },
+  { title: "Add a Place", text: "A new Place, \"Route 3\", is added. The compile passes. The CI check (frozen) fails until the lock is updated and committed, so a new id cannot ship without becoming permanent on purpose.",
+    change: (s) => { s.map.places.splice(3, 0, { id: "route-3", name: "Route 3" }); }, lockStep: true },
+  { title: "Remove a released Place", text: "Someone deletes \"Hatch Town\". Runs that recorded it would show \"Unknown location\", so the release check stops.",
+    change: (s) => { s.map.places = s.map.places.filter((p) => p.id !== "hatch-town"); } },
+  { title: "Rename a Species id", text: "The id rattata-alola is renamed to alolan-rattata in every file. Everything compiles, but the released id no longer resolves, so the release check stops.",
+    change: (s) => { const t = JSON.stringify(s).replaceAll("\"rattata-alola\"", "\"alolan-rattata\""); Object.assign(s, JSON.parse(t)); } },
+  { title: "Re-import: the source fixed a row", text: "A new PokeAPI pin drops the wrong Electrode row in Cloak Cave. The hand correction that removed it now expects a row that is gone, so the compile stops and names it.",
+    change: (s) => { for (const g of ["fixture-red", "fixture-blue"]) { const a = s.generatedWild[0].areas["cloak-cave-area"]; a[g] = a[g].filter((r) => r.species !== "electrode"); } } },
+  { title: "Re-import: the source fixed Arceus", text: "The new source types the Flame Plate Form Fire. The hand correction expects Normal, so the compile stops for a review instead of applying a stale fix.",
+    change: (s) => { s.generatedSpecies.species.find((x) => x.id === "arceus").forms[1].types = ["fire"]; } },
+  { title: "Re-import: a new source area", text: "The new source has an area that no Place claims. The compile stops: claim it in map.yaml or ignore it in corrections.yaml.",
+    change: (s) => { s.generatedWild[0].areas["route-1-hidden-area"] = { "fixture-red": [{ method: "walk", species: "pidgey", form: "base" }] }; } },
+  { title: "Importer writes a one-time row", text: "An importer emits a Static Snorlax. One-time rows are hand-written only, so the compile stops.",
+    change: (s) => { s.generatedWild[0].areas["route-1-area"]["fixture-red"].push({ method: "static", species: "snorlax", form: "base" }); } },
+];
+
+function result() { return compile(S.sources); }
+
+function render() {
+  const r = result();
+  const perm = r.ok && S.launched ? checkPermanence(r.map, S.lock, false) : [];
+  const st = document.getElementById("status");
+  st.innerHTML = `
+    <dl>
+      <dt>Last change</dt><dd class="changed">${S.last}</dd>
+      <dt>Launch</dt><dd>${S.launched ? `Launched: the lock holds ${S.lock.places.length} Places, ${Object.keys(S.lock.species).length} Species, ${S.lock.forms.length} Forms.` : "Before launch: no lock, ids change freely."}
+        <button id="launch">${S.launched ? "Go back to before launch" : "Launch (create the lock)"}</button></dd>
+      <dt>Compile</dt><dd>${r.ok ? '<span class="ok">✔ merged and valid</span>' : '<span class="bad">✘ stopped</span><ul class="problems">' + r.problems.map((p) => `<li>${p}</li>`).join("") + "</ul>"}</dd>
+      <dt>Permanence</dt><dd>${!S.launched ? '<span class="muted">not checked before launch</span>' : !r.ok ? '<span class="muted">needs a compile</span>' : perm.length ? '<ul class="problems">' + perm.map((p) => `<li>${p}</li>`).join("") + "</ul>" : '<span class="ok">✔ every released id resolves with its meaning</span>'}</dd>
+      <dt>CI (frozen)</dt><dd>${S.ci ?? '<span class="muted">not run</span>'}</dd>
+    </dl>`;
+  document.getElementById("launch").onclick = () => { S.launched = !S.launched; S.lock = S.launched ? lockFor(r.ok ? r.map : released.map) : null; S.last = S.launched ? "Launched: the lock was created from the current compile." : "Back before launch."; S.ci = null; render(); };
+
+  // Tabs.
+  document.getElementById("tabs").innerHTML = SCENARIOS.map((s, i) => `<button class="${i === S.scenario ? "on" : ""}" data-i="${i}">${s.title}</button>`).join("");
+  document.querySelectorAll("#tabs button").forEach((b) => (b.onclick = () => { S.scenario = +b.dataset.i; render(); }));
+  const sc = SCENARIOS[S.scenario];
+  document.getElementById("scenario").innerHTML = `<p>${sc.text}</p><div class="steps">
+    <button id="s0">1 · Reset to the released Map</button>
+    <button id="s1" class="primary">2 · Make the change</button>
+    <button id="s2">3 · Run CI (compile + frozen check)</button>
+    ${sc.lockStep ? '<button id="s3">4 · Update and commit the lock</button><button id="s4">5 · Run CI again</button>' : ""}</div>`;
+  document.getElementById("s0").onclick = () => { S.sources = clone(fixtureSources); S.lock = clone(released.lock); S.launched = true; S.ci = null; S.last = "Reset to the released fixture Map."; render(); };
+  document.getElementById("s1").onclick = () => { sc.change(S.sources); S.ci = null; S.last = sc.title; render(); };
+  const runCi = () => { const c = result(); const p = c.ok ? checkPermanence(c.map, S.lock, true) : c.problems; S.ci = p.length ? '<span class="bad">✘ fails</span><ul class="problems">' + p.map((x) => `<li>${x}</li>`).join("") + "</ul>" : '<span class="ok">✔ passes: ready to release</span>'; S.last = "CI ran."; render(); };
+  document.getElementById("s2").onclick = runCi;
+  if (sc.lockStep) {
+    document.getElementById("s3").onclick = () => { const c = result(); if (c.ok) { S.lock = lockFor(c.map, S.lock); S.last = "The lock gained the new ids. They are permanent from this release."; S.ci = null; } render(); };
+    document.getElementById("s4").onclick = runCi;
+  }
+
+  if (!r.ok) { ["places", "drawer", "results", "species", "json", "progress"].forEach((id) => (document.getElementById(id).innerHTML = '<span class="muted">The compile stopped; the app keeps the last release.</span>')); renderGames(); return; }
+  const m = index(r.map);
+  const lm = index(later);
+  renderGames(m);
+  const gm = S.game === "fixture-x" ? lm : m;
+
+  // Encounters tab.
+  const rows = placesOf(gm, S.game);
+  if (!rows.some((p) => p.id === S.place)) S.place = rows[0]?.id;
+  document.getElementById("places").innerHTML = rows.map((p) => `<li class="${p.id === S.place ? "sel" : ""}" data-id="${p.id}"><span>${p.name}</span><span>${p.kind !== "standard" ? `<span class="tag ${p.kind}">${p.kind === "event" ? "Event" : "Starter"}</span>` : ""} <span class="tag">${p.id}</span></span></li>`).join("");
+  document.querySelectorAll("#places li").forEach((li) => (li.onclick = () => { S.place = li.dataset.id; render(); }));
+    document.getElementById("progress").innerHTML = `Progress denominator (progressTotal): ${progressTotal(gm)}, the same for every Game and a Soul Link. Event Places are left out.`;
+
+  // Drawer.
+  const sg = suggestions(gm, S.place, S.game);
+  const name = (ref) => { const s = getSpecies(gm, ref.species); const f = getForm(gm, ref.species, ref.form); return s ? (s.forms.length > 1 ? `${s.name} (${f?.name ?? "unknown form"})` : s.name) : `Unknown species (${ref.species})`; };
+  document.getElementById("drawer").innerHTML = `<p class="muted">${placeName(gm, S.place, S.game) ?? "Unknown location"} in ${getGame(gm, S.game)?.name}</p>` +
+    (sg.length ? sg.map((g) => `<div><strong>${g.name}</strong> <span class="tag">origin ${g.origin}</span><br>${g.entries.map((e) => `<button data-s="${e.species}" data-f="${e.form}">${name(e)}</button>`).join(" ")}</div>`).join("") : '<p class="muted">No suggestions here. Search all species.</p>');
+  document.querySelectorAll("#drawer button").forEach((b) => (b.onclick = () => { S.species = b.dataset.s; S.form = b.dataset.f; render(); }));
+
+  // Search.
+  const q = document.getElementById("q");
+  if (q.value !== S.query) q.value = S.query;
+  q.oninput = () => { S.query = q.value; render(); q.focus(); };
+  document.getElementById("results").innerHTML = searchSpecies(gm, S.query).map((s) => `<li data-s="${s.id}" class="${s.id === S.species ? "sel" : ""}"><span>#${s.dex} ${s.name}</span><span class="tag">${s.id}</span></li>`).join("");
+  document.querySelectorAll("#results li").forEach((li) => (li.onclick = () => { S.species = li.dataset.s; S.form = undefined; render(); }));
+
+  // Species details.
+  const sp = getSpecies(gm, S.species);
+  if (!sp) document.getElementById("species").innerHTML = '<span class="muted">Unknown species</span>';
+  else {
+    const form = getForm(gm, sp.id, S.form) ?? sp.forms[0];
+    const line = gm.data.species.filter((x) => x.evolutionLine === sp.evolutionLine);
+    const next = nextInLine(gm, sp.id, form.id);
+    document.getElementById("species").innerHTML = `<dl>
+      <dt>Species</dt><dd>${sp.name} <span class="tag">${sp.id}</span> · National Dex ${dexNumber(gm, sp.id)}</dd>
+      <dt>Form control</dt><dd>${hasFormChoice(gm, sp.id) ? sp.forms.map((f) => `<button class="${f.id === form.id ? "on" : ""}" data-f="${f.id}">${f.name}</button>`).join(" ") : '<span class="muted">hidden (one Form)</span>'}</dd>
+      <dt>Types</dt><dd>${formTypes(gm, sp.id, form.id).join(" / ")} · primary <strong>${primaryType(gm, sp.id, form.id)}</strong></dd>
+      <dt>Evolution Line</dt><dd><span class="tag">${evolutionLineOf(gm, sp.id)}</span> ${line.map((x) => x.name).join(", ")}</dd>
+      <dt>Next in its line</dt><dd>${next.length ? next.map((n) => `<button data-s="${n.species}" data-f="${n.form}">${name(n)}</button>`).join(" ") : '<span class="muted">does not evolve</span>'}</dd>
+    </dl>`;
+    document.querySelectorAll("#species button").forEach((b) => (b.onclick = () => { if (b.dataset.s) S.species = b.dataset.s; S.form = b.dataset.f; render(); }));
+  }
+  document.getElementById("json").textContent = JSON.stringify(gm.data, null, 2);
+}
+
+function renderGames(m) {
+  const all = [...(m ? m.data.games : []), ...later.games];
+  document.getElementById("games").innerHTML = all.map((g) => `<button class="${g.id === S.game ? "on" : ""}" data-g="${g.id}">${g.name}</button>`).join(" ") + ' <span class="muted">(Fixture X is a second Map where Clefairy is Fairy)</span>';
+  document.querySelectorAll("#games button").forEach((b) => (b.onclick = () => { S.game = b.dataset.g; S.place = undefined; render(); }));
+}
+render();
+</script>
+</body>
+</html>

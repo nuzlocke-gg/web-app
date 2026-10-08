@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · Game data format</title>
+<style>
+  :root { --fg:#1b1d22; --muted:#6a6f7a; --line:#e3e5ea; --bg:#fafafb; --card:#fff; --accent:#3b5bdb; --ok:#2b8a3e; --bad:#c92a2a; --warn:#e67700; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui, sans-serif; color:var(--fg); background:var(--bg); }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 22px; margin: 0 0 4px; } h2 { font-size: 16px; margin: 0 0 10px; } h3 { font-size: 14px; margin: 14px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .lead { color: var(--muted); margin: 0 0 20px; max-width: 75ch; }
+  .banner { background:#fff4e6; border:1px solid #ffd8a8; padding:8px 12px; border-radius:8px; margin-bottom:16px; font-size:13px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  button { font:inherit; border:1px solid var(--line); background:#fff; padding:6px 12px; border-radius:8px; cursor:pointer; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color:#fff; border-color: var(--accent); }
+  button.on { background:#edf2ff; border-color: var(--accent); }
+  button:disabled { opacity:.4; cursor: default; }
+  input { font:inherit; padding:6px 10px; border:1px solid var(--line); border-radius:8px; width:100%; }
+  ul.rows { list-style:none; margin:0; padding:0; }
+  ul.rows li { padding:6px 8px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:8px; cursor:pointer; }
+  ul.rows li.sel { background:#edf2ff; }
+  .tag { font-size:12px; padding:1px 6px; border-radius:6px; background:#f1f3f5; color:var(--muted); white-space:nowrap; }
+  .tag.event { background:#fff0f6; color:#a61e4d; } .tag.starter { background:#ebfbee; color:var(--ok); }
+  .ok { color: var(--ok); } .bad { color: var(--bad); }
+  .problems li { color: var(--bad); }
+  .tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .steps { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .changed { background:#fff9db; border-radius:4px; padding:0 3px; }
+  pre { background:#f8f9fa; border:1px solid var(--line); border-radius:8px; padding:10px; overflow:auto; max-height:360px; font-size:12px; }
+  dl { display:grid; grid-template-columns: max-content 1fr; gap:4px 12px; margin:0; } dt { color:var(--muted); }
+  .groups div { margin-bottom:8px; } .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <div class="banner">PROTOTYPE for Linear NUZ-44 “Game data format”. Throwaway: the logic is lifted into the real package; this page is not.</div>
+  <h1>Game data format explorer</h1>
+  <p class="lead">Question: does this one data shape and this small set of reader functions give every screen and Rule what it needs, and does the compile stop at the right moments (a stale hand correction, an unclaimed source area, a released id that would no longer resolve)? The data is a small fixture Map with two Games: Fixture Red and Fixture Blue.</p>
+
+  <section class="card" style="margin-bottom:16px">
+    <h2>Release state</h2>
+    <div id="status"></div>
+  </section>
+
+  <section class="card" style="margin-bottom:16px">
+    <h2>Guided walkthroughs: changes to the data</h2>
+    <div class="tabs" id="tabs"></div>
+    <div id="scenario"></div>
+  </section>
+
+  <div class="row">
+    <strong>Play as:</strong> <span id="games"></span>
+  </div>
+  <div class="grid">
+    <section class="card">
+      <h2>Encounters tab <span class="muted">placesOf</span></h2>
+      <ul class="rows" id="places"></ul>
+      <p class="muted" id="progress"></p>
+    </section>
+    <section class="card">
+      <h2>Record Drawer <span class="muted">suggestions</span></h2>
+      <div id="drawer" class="groups"></div>
+    </section>
+    <section class="card">
+      <h2>Species search <span class="muted">searchSpecies</span></h2>
+      <input id="q" placeholder="Search all species (name or dex number)">
+      <ul class="rows" id="results" style="max-height:260px; overflow:auto; margin-top:8px"></ul>
+    </section>
+    <section class="card">
+      <h2>Species details <span class="muted">getSpecies · nextInLine · evolutionLineOf · primaryType</span></h2>
+      <div id="species"></div>
+    </section>
+  </div>
+  <section class="card" style="margin-top:16px">
+    <h2>Compiled Map <span class="muted">dist/fixture.json</span></h2>
+    <pre id="json"></pre>
+  </section>
+</main>
+<script>
+// PROTOTYPE (NUZ-44 "Game data format"). Throwaway.
+// Pure logic: compile (merge + validate), the permanence check, and the reader.
+// No DOM, no file system. The explorer page and the CLI call into it.
+
+             
+                                                                         
+                                                                                           
+                                                                      
+                                   
+                     
+
+const ID_PATTERN = /^([a-z0-9]+:)?[a-z0-9]+(-[a-z0-9]+)*$/;
+const TYPE_ORDER = [
+  "normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison",
+  "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark",
+  "steel", "fairy",
+];
+
+// ===========================================================================
+// Compile
+// ===========================================================================
+
+                             
+                      
+               
+                                 
+                                     
+                        
+                            
+ 
+
+                           
+                                  
+                                      
+
+const rowKey = (r         ) => `${r.method}:${r.species}/${r.form}`;
+const linkKey = (l               ) => `${l.from}>${l.to}`;
+
+function compile(src            )                {
+  const problems           = [];
+  const stop = (m        ) => problems.push(m);
+  const methodById = new Map(src.methods.map((m) => [m.id, m]));
+  const gameIds = new Set(src.map.games.map((g) => g.id));
+
+  // --- identifiers -------------------------------------------------------
+  const checkId = (kind        , id        ) => {
+    if (!ID_PATTERN.test(id)) stop(`${kind} id "${id}" is not a readable id`);
+  };
+  checkId("Map", src.map.id);
+  src.map.games.forEach((g) => checkId("Game", g.id));
+  src.map.places.forEach((p) => checkId("Place", p.id));
+
+  // --- Species: generated, then corrections --------------------------------
+  const species = new Map                                                         ();
+  for (const s of src.generatedSpecies.species) {
+    species.set(s.id, { ...s, forms: s.forms.map((f) => ({ ...f, types: [...f.types]                  })) });
+  }
+  const links = new Map                       (src.generatedSpecies.evolutionLinks.map((l) => [linkKey(l), l]));
+  const ownLine = new Set           ();
+
+  for (const c of src.corrections) {
+    switch (c.op) {
+      case "add-species":
+        if (species.has(c.species.id)) stop(`Correction add-species "${c.species.id}": the import now has it. Remove the correction.`);
+        else species.set(c.species.id, c.species);
+        break;
+      case "add-form": {
+        const s = species.get(c.species);
+        if (!s) stop(`Correction add-form: no Species "${c.species}"`);
+        else if (s.forms.some((f) => f.id === c.form.id)) stop(`Correction add-form "${c.species}/${c.form.id}": the import now has it.`);
+        else s.forms.push(c.form);
+        break;
+      }
+      case "set-types": {
+        const f = species.get(c.species)?.forms.find((x) => x.id === c.form);
+        if (!f) stop(`Correction set-types: no Form "${c.species}/${c.form}"`);
+        else if (f.types.join("/") !== c.expect.join("/"))
+          stop(`Correction set-types "${c.species}/${c.form}" expects ${c.expect.join("/")} but the import now says ${f.types.join("/")}. Review it.`);
+        else f.types = c.types                 ;
+        break;
+      }
+      case "add-evolution-link":
+        if (links.has(linkKey(c.evolutionLink))) stop(`Correction add-evolution-link ${linkKey(c.evolutionLink)}: the import now has it.`);
+        else links.set(linkKey(c.evolutionLink), c.evolutionLink);
+        break;
+      case "remove-evolution-link":
+        if (!links.delete(linkKey(c.evolutionLink))) stop(`Correction remove-evolution-link ${linkKey(c.evolutionLink)}: the import no longer has it.`);
+        break;
+      case "own-evolution-line":
+        ownLine.add(c.species);
+        break;
+    }
+  }
+  for (const s of species.values()) {
+    checkId("Species", s.id);
+    if (s.forms.length === 0) stop(`Species "${s.id}" has no Form`);
+    for (const f of s.forms) {
+      checkId("Form", f.id);
+      if (f.types.length < 1 || f.types.length > 2) stop(`Form "${s.id}/${f.id}" needs one or two types`);
+      for (const t of f.types) if (!TYPE_ORDER.includes(t)) stop(`Form "${s.id}/${f.id}" has unknown type "${t}"`);
+    }
+  }
+  // Filter links to the Species of this Map.
+  const mapLinks = [...links.values()].filter((l) => species.has(l.from) && species.has(l.to));
+
+  // Evolution Lines: walk the links both ways; an own-line Species is cut out.
+  const parent = new Map                      ();
+  const find = (x           )            => {
+    while (parent.get(x) !== x) x = parent.get(x) ;
+    return x;
+  };
+  for (const id of species.keys()) parent.set(id, id);
+  for (const l of mapLinks) {
+    if (ownLine.has(l.from) || ownLine.has(l.to)) continue;
+    parent.set(find(l.from), find(l.to));
+  }
+  const lineMembers = new Map                        ();
+  for (const id of species.keys()) {
+    const root = find(id);
+    lineMembers.set(root, [...(lineMembers.get(root) ?? []), id]);
+  }
+  const lineOfSpecies = new Map                            ();
+  for (const members of lineMembers.values()) {
+    // The line id is the earliest Species in the chain: the member that no
+    // link of the line evolves into (Pichu, not Pikachu). With two such
+    // members, the lowest dex number, then the id.
+    const joined = mapLinks.filter((l) => !ownLine.has(l.from) && !ownLine.has(l.to));
+    const roots = members.filter((id) => !joined.some((l) => l.to === id));
+    const first = [...(roots.length ? roots : members)].sort((a, b) => species.get(a) .dex - species.get(b) .dex || a.localeCompare(b))[0] ;
+    for (const m of members) lineOfSpecies.set(m, first);
+  }
+
+  const hasForm = (r         ) => species.get(r.species)?.forms.some((f) => f.id === r.form) ?? false;
+
+  // --- Wild rows: generated areas, then corrections -----------------------
+  const areas = new Map                                ();
+  for (const gw of src.generatedWild) {
+    for (const [area, byGame] of Object.entries(gw.areas)) {
+      if (areas.has(area)) stop(`Area "${area}" comes from two importers`);
+      const m = new Map                   ();
+      for (const [g, rows] of Object.entries(byGame)) m.set(g, [...(rows ?? [])]);
+      areas.set(area, m);
+    }
+  }
+  const ignored = new Set        ();
+  for (const c of src.corrections) {
+    if (c.op === "ignore-area") {
+      if (!areas.has(c.area)) stop(`Correction ignore-area "${c.area}": the import no longer has that area.`);
+      ignored.add(c.area);
+    }
+    if (c.op === "remove-wild" || c.op === "add-wild") {
+      const rows = areas.get(c.area)?.get(c.game);
+      const i = rows?.findIndex((r) => rowKey(r) === rowKey(c.row)) ?? -1;
+      if (c.op === "remove-wild") {
+        if (i < 0) stop(`Correction remove-wild ${c.area} ${c.game} ${rowKey(c.row)}: the import no longer has that row. Review it.`);
+        else rows .splice(i, 1);
+      } else {
+        if (i >= 0) stop(`Correction add-wild ${c.area} ${c.game} ${rowKey(c.row)}: the import now has that row. Remove the correction.`);
+        else {
+          if (!areas.has(c.area)) areas.set(c.area, new Map());
+          const m = areas.get(c.area) ;
+          m.set(c.game, [...(m.get(c.game) ?? []), c.row]);
+        }
+      }
+    }
+  }
+
+  // --- Places --------------------------------------------------------------
+  const claimed = new Map                 ();
+  const placeIds = new Set         ();
+  const places          = [];
+  for (const hp of src.map.places) {
+    if (placeIds.has(hp.id)) stop(`Place id "${hp.id}" is used twice`);
+    placeIds.add(hp.id);
+    const kind            = hp.kind ?? "standard";
+    const names                         =
+      typeof hp.name === "string" ? Object.fromEntries([...gameIds].map((g) => [g, hp.name          ])) : { ...hp.name };
+    for (const g of Object.keys(names)) if (!gameIds.has(g)) stop(`Place "${hp.id}" names unknown Game "${g}"`);
+    for (const g of gameIds) if (!names[g]) stop(`Place "${hp.id}" has no name for ${g}. Every Place is in every Game of its Map.`);
+    const rowsByGame = new Map                                             ();
+    for (const a of hp.areas ?? []) {
+      if (claimed.has(a)) stop(`Area "${a}" is claimed by "${claimed.get(a)}" and "${hp.id}"`);
+      claimed.set(a, hp.id);
+      const byGame = areas.get(a);
+      if (!byGame) { stop(`Place "${hp.id}" claims area "${a}", which the import does not have`); continue; }
+      for (const [g, rows] of byGame) {
+        if (!names[g]) { if (rows.length) stop(`Area "${a}" has rows for ${g}, but Place "${hp.id}" is not in ${g}`); continue; }
+        rowsByGame.set(g, [...(rowsByGame.get(g) ?? []), ...rows]);
+      }
+    }
+    places.push({ id: hp.id, kind, names, tables: {}, ...{ _rows: rowsByGame } }                                        );
+  }
+  for (const a of areas.keys()) if (!claimed.has(a) && !ignored.has(a)) stop(`Area "${a}" from the import belongs to no Place. Claim it or ignore it.`);
+
+  // Generated rows may use only repeatable methods.
+  for (const [a, byGame] of areas) for (const rows of byGame.values()) for (const r of rows) {
+    const m = methodById.get(r.method);
+    if (!m) stop(`Area "${a}" uses unknown method "${r.method}"`);
+    else if (m.oneTime) stop(`Area "${a}" has a ${m.name} row (${r.species}). One-time rows are hand-written only.`);
+  }
+
+  // One-time rows.
+  const placeById = new Map(places.map((p) => [p.id, p                                                                       ]));
+  for (const o of src.oneTime) {
+    const p = placeById.get(o.place);
+    const m = methodById.get(o.method);
+    if (!p) { stop(`One-time row ${o.species} names unknown Place "${o.place}"`); continue; }
+    if (!m) { stop(`One-time row ${o.species} uses unknown method "${o.method}"`); continue; }
+    if (!m.oneTime) stop(`One-time row ${o.species} at "${o.place}" uses ${m.name}, which is not a one-time method`);
+    for (const g of o.games) {
+      if (!p.names[g]) { stop(`One-time row ${o.species} at "${o.place}": the Place is not in ${g}`); continue; }
+      p._rows.set(g, [...(p._rows.get(g) ?? []), { method: o.method, species: o.species, form: o.form }]);
+    }
+  }
+
+  // Build groups in method order; check references.
+  const usedMethods = new Set        ();
+  for (const p of placeById.values()) {
+    for (const [g, rows] of p._rows) {
+      const groups          = [];
+      for (const m of src.methods) {
+        const seen = new Set        ();
+        const entries            = [];
+        for (const r of rows) {
+          if (r.method !== m.id) continue;
+          if (!hasForm(r)) stop(`Place "${p.id}" (${g}) names unknown Species or Form "${r.species}/${r.form}"`);
+          const k = `${r.species}/${r.form}`;
+          if (seen.has(k)) continue;
+          seen.add(k);
+          entries.push({ species: r.species, form: r.form });
+        }
+        if (entries.length) { groups.push({ method: m.id, entries }); usedMethods.add(m.id); }
+      }
+      p.tables[g] = groups;
+    }
+    delete (p                     )._rows;
+  }
+
+  // Play order shape.
+  const starters = places.filter((p) => p.kind === "starter");
+  if (starters.length !== 1) stop(`The Map needs exactly one Starter Place; it has ${starters.length}`);
+  else if (places[0] !== starters[0]) stop(`The Starter Place must be first in the play order`);
+  const firstEvent = places.findIndex((p) => p.kind === "event");
+  if (firstEvent >= 0 && places.slice(firstEvent).some((p) => p.kind !== "event"))
+    stop(`Event Places must be last in the play order`);
+
+  if (problems.length) return { ok: false, problems };
+
+  const compiled              = {
+    id: src.map.id,
+    name: src.map.name,
+    region: src.map.region,
+    generation: src.map.generation,
+    releaseOrder: src.map.releaseOrder,
+    games: src.map.games,
+    methods: src.methods.filter((m) => usedMethods.has(m.id)).map(({ id, name, origin }) => ({ id, name, origin })),
+    places,
+    species: [...species.values()]
+      .sort((a, b) => a.dex - b.dex || a.id.localeCompare(b.id))
+      .map((s) => ({
+        ...s,
+        evolvesTo: mapLinks.filter((l) => l.from === s.id).map((l) => l.to),
+        evolutionLine: lineOfSpecies.get(s.id) ,
+      })),
+  };
+  return { ok: true, map: compiled };
+}
+
+// ===========================================================================
+// Permanence check
+// ===========================================================================
+
+function lockFor(map             , previous              )              {
+  const union = (a           = [], b          ) => [...new Set([...a, ...b])];
+  return {
+    map: map.id,
+    games: union(previous?.games, map.games.map((g) => g.id)),
+    places: union(previous?.places, map.places.map((p) => p.id)),
+    species: { ...previous?.species, ...Object.fromEntries(map.species.map((s) => [s.id, previous?.species[s.id] ?? s.dex])) },
+    forms: union(previous?.forms, map.species.flatMap((s) => s.forms.map((f) => `${s.id}/${f.id}`))),
+  };
+}
+
+/** Problems that stop a release. `frozen` is CI: the lock must already be complete. */
+function checkPermanence(map             , lock                         , frozen         )           {
+  if (!lock) return []; // before launch: identifiers change freely
+  const problems           = [];
+  const games = new Set(map.games.map((g) => g.id));
+  const places = new Set(map.places.map((p) => p.id));
+  const species = new Map(map.species.map((s) => [s.id, s]));
+  const forms = new Set(map.species.flatMap((s) => s.forms.map((f) => `${s.id}/${f.id}`)));
+  for (const g of lock.games) if (!games.has(g)) problems.push(`Released Game "${g}" no longer resolves in this Map`);
+  for (const p of lock.places) if (!places.has(p)) problems.push(`Released Place "${p}" no longer resolves. Runs that recorded it would show "Unknown location".`);
+  for (const [id, dex] of Object.entries(lock.species)) {
+    const s = species.get(id);
+    if (!s) problems.push(`Released Species "${id}" no longer resolves`);
+    else if (s.dex !== dex) problems.push(`Released Species "${id}" changed meaning: dex ${dex} is now ${s.dex}`);
+  }
+  for (const f of lock.forms) if (!forms.has(f)) problems.push(`Released Form "${f}" no longer resolves`);
+  if (frozen) {
+    const next = lockFor(map, lock);
+    const added =
+      next.games.length - lock.games.length + next.places.length - lock.places.length +
+      Object.keys(next.species).length - Object.keys(lock.species).length + next.forms.length - lock.forms.length;
+    if (added > 0) problems.push(`The lock is out of date: ${added} new id(s). Run the compile without --frozen and commit the lock.`);
+  }
+  return problems;
+}
+
+// ===========================================================================
+// Reader
+// ===========================================================================
+
+/** The loaded Map with lookup indexes. Every reader function takes it first. */
+                            
+                    
+                           
+                              
+                                   
+                               
+ 
+
+                             
+                                                                                                   
+ 
+
+function index(data             )            {
+  return {
+    data,
+    games: new Map(data.games.map((g) => [g.id, g])),
+    places: new Map(data.places.map((p) => [p.id, p])),
+    species: new Map(data.species.map((s) => [s.id, s])),
+    methods: new Map(data.methods.map((m) => [m.id, m])),
+  };
+}
+
+/**
+ * The real package: a generated table of `() => import("../dist/<map>.json")`
+ * plus a small static catalog. Here: an in-memory registry.
+ */
+function createReader(compiled               ) {
+  const byId = new Map(compiled.map((m) => [m.id, m]));
+  const cache = new Map                                       ();
+  return {
+    /** New run "Choose a map" Drawer: grouped by region, release order. Sync, small. */
+    listMaps()               {
+      return compiled
+        .map(({ id, name, region, generation, releaseOrder, games }) => ({ id, name, region, generation, releaseOrder, games }))
+        .sort((a, b) => a.releaseOrder - b.releaseOrder);
+    },
+    /** Every Run screen. Unknown Map: undefined (the screen says "Unknown game"). */
+    loadMap(id       )                                 {
+      if (!cache.has(id)) cache.set(id, Promise.resolve(byId.has(id) ? index(byId.get(id) ) : undefined));
+      return cache.get(id) ;
+    },
+  };
+}
+
+/** Run list row, Journey chips: the Game's name and monogram. */
+const getGame = (m           , game        )                   => m.games.get(game);
+
+                                                                        
+
+/** Encounters tab: the Places of one Game in play order, Starter first, Event Places last. */
+function placesOf(m           , game        )             {
+  return m.data.places.filter((p) => p.names[game]).map((p) => ({ id: p.id, kind: p.kind, name: p.names[game]  }));
+}
+
+/** Rows, headers, History, Warning text: the name in this Game. Unknown Place or Game: undefined. */
+const placeName = (m           , place         , game        )                     =>
+  m.places.get(place)?.names[game];
+
+                                                                                                     
+
+/** Record Drawer step 1 (the groups) and step 2 (the default origin). Empty when none. */
+function suggestions(m           , place         , game        )                    {
+  const groups = m.places.get(place)?.tables[game] ?? [];
+  return groups.map((g) => {
+    const method = m.methods.get(g.method) ;
+    return { method: method.id, name: method.name, origin: method.origin, entries: g.entries };
+  });
+}
+
+/** Rows, chips, sprites. Unknown: undefined, never a stand-in. */
+const getSpecies = (m           , s           )                      => m.species.get(s);
+const getForm = (m           , s           , f        )                   =>
+  m.species.get(s)?.forms.find((x) => x.id === f);
+/** The Form control shows only when this is true. */
+const hasFormChoice = (m           , s           )          => (m.species.get(s)?.forms.length ?? 0) > 1;
+
+const fold = (x        ) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/**
+ * Record Drawer search ("Search all 386 species"), Evolve "Other species",
+ * Correct encounter. Ignores case, accents, and punctuation ("mr mime",
+ * "farfetchd", "flabebe"). Digits match the dex number. Prefix matches
+ * first, then dex order.
+ */
+function searchSpecies(m           , query        )            {
+  const q = fold(query);
+  if (!q) return m.data.species;
+  if (/^\d+$/.test(q)) return m.data.species.filter((s) => String(s.dex).startsWith(q.replace(/^0+/, "") || "0"));
+  const hits = m.data.species.filter((s) => fold(s.name).includes(q));
+  return [...hits.filter((s) => fold(s.name).startsWith(q)), ...hits.filter((s) => !fold(s.name).startsWith(q))];
+}
+
+/**
+ * Evolve "Next in its line". Empty: the screen says the Species does not
+ * evolve. The target Form: the same Form id when the target has it, else
+ * its first Form (Burmy sandy -> Wormadam sandy).
+ */
+function nextInLine(m           , s           , f         )            {
+  return (m.species.get(s)?.evolvesTo ?? []).flatMap((to) => {
+    const t = m.species.get(to);
+    if (!t) return [];
+    return [{ species: to, form: t.forms.find((x) => x.id === f)?.id ?? t.forms[0] .id }];
+  });
+}
+
+/** Duplicate Clause, Shared Duplicate Clause, the "Same line as Fang" mark. Unknown: undefined (the Rule skips it). */
+const evolutionLineOf = (m           , s           )                              => m.species.get(s)?.evolutionLine;
+
+/** Type Restriction. The Form's first type in this Map. Unknown: undefined (the Rule skips it). */
+const primaryType = (m           , s           , f        )                   => getForm(m, s, f)?.types[0];
+
+/** Box type filter. */
+const formTypes = (m           , s           , f        )                              => getForm(m, s, f)?.types;
+
+/** Box filter grid: the types that exist in this Map, in the games' order. */
+function typesOf(m           )         {
+  const present = new Set(m.data.species.flatMap((s) => s.forms.flatMap((f) => f.types)));
+  return TYPE_ORDER.filter((t) => present.has(t        ))          ;
+}
+
+/** Box "National Dex" sort. Unknown: undefined (sorts last). */
+const dexNumber = (m           , s           )                     => m.species.get(s)?.dex;
+
+/**
+ * Progress denominator: Run list, Attempts screen, link preview.
+ * Every Place of the Map (all Games have all Places), Starter included,
+ * Event Places left out. The same for a solo Run and a Soul Link.
+ */
+function progressTotal(m           )         {
+  return m.data.places.filter((p) => p.kind !== "event").length;
+}
+
+// PROTOTYPE (NUZ-44 "Game data format"). Throwaway.
+// The fixture Map, as source files. Each constant is one file of
+// `sources/maps/fixture/` (see format.ts). Species are real; the Map is not.
+
+             
+                                                                               
+                     
+                                             
+
+/** sources/methods.yaml */
+const methods             = [
+  { id: "walk", name: "Walk", origin: "wild", oneTime: false },
+  { id: "surf", name: "Surf", origin: "wild", oneTime: false },
+  { id: "fishing", name: "Fishing", origin: "wild", oneTime: false },
+  { id: "rock-smash", name: "Rock Smash", origin: "wild", oneTime: false },
+  { id: "static", name: "Static", origin: "wild", oneTime: true },
+  { id: "gift", name: "Gift", origin: "gift", oneTime: true },
+  { id: "trade", name: "Trade", origin: "trade", oneTime: true },
+  { id: "roaming", name: "Roaming", origin: "wild", oneTime: true },
+];
+
+/** sources/maps/fixture/map.yaml */
+const map          = {
+  id: "fixture",
+  name: "Fixture Red and Blue",
+  region: "Testland",
+  generation: 4,
+  releaseOrder: 1,
+  games: [
+    { id: "fixture-red", name: "Fixture Red", monogram: "FR" },
+    { id: "fixture-blue", name: "Fixture Blue", monogram: "FB" },
+  ],
+  places: [
+    { id: "starter", kind: "starter", name: "Starter" },
+    { id: "route-1", name: "Route 1", areas: ["route-1-area"] },
+    // Two source areas, one recorded location.
+    { id: "route-2", name: "Route 2", areas: ["route-2-area", "route-2-north-area"] },
+    // Counterparts: one Place, a name per Game.
+    { id: "black-city", name: { "fixture-red": "Black City", "fixture-blue": "White Forest" }, areas: ["black-city-area"] },
+    { id: "trade-house", name: "Trade House" },
+    // A second counterpart pair.
+    { id: "magma-hideout", name: { "fixture-red": "Magma Hideout", "fixture-blue": "Aqua Hideout" } },
+    { id: "cloak-cave", name: "Cloak Cave", areas: ["cloak-cave-area"] },
+    // No table at all: an egg can still hatch here.
+    { id: "hatch-town", name: "Hatch Town" },
+    { id: "navel-rock", kind: "event", name: "Navel Rock" },
+  ],
+};
+
+/** sources/maps/fixture/generated/pokeapi.wild.json (importer output, committed) */
+const generatedWild                = {
+  importer: "pokeapi",
+  pin: "abc1234",
+  areas: {
+    "route-1-area": {
+      "fixture-red": [
+        { method: "walk", species: "pidgey", form: "base" },
+        { method: "walk", species: "rattata", form: "base" },
+      ],
+      "fixture-blue": [
+        { method: "walk", species: "pidgey", form: "base" },
+        { method: "walk", species: "rattata", form: "base" },
+      ],
+    },
+    "route-2-area": {
+      "fixture-red": [
+        { method: "walk", species: "pikachu", form: "base" },
+        { method: "walk", species: "nincada", form: "base" },
+        { method: "surf", species: "tentacool", form: "base" },
+        { method: "fishing", species: "magikarp", form: "base" },
+      ],
+      "fixture-blue": [
+        { method: "walk", species: "nincada", form: "base" },
+        { method: "surf", species: "tentacool", form: "base" },
+        { method: "fishing", species: "magikarp", form: "base" },
+      ],
+    },
+    "route-2-north-area": {
+      "fixture-red": [{ method: "walk", species: "pikachu", form: "base" }], // merged, deduped
+      "fixture-blue": [{ method: "walk", species: "pichu", form: "base" }],
+    },
+    "black-city-area": {
+      "fixture-red": [{ method: "walk", species: "rattata-alola", form: "base" }],
+      "fixture-blue": [{ method: "walk", species: "pichu", form: "base" }],
+    },
+    "cloak-cave-area": {
+      "fixture-red": [
+        { method: "walk", species: "burmy", form: "plant" },
+        { method: "walk", species: "burmy", form: "sandy" },
+        { method: "walk", species: "unown", form: "a" },
+        { method: "walk", species: "electrode", form: "base" }, // a source error
+        { method: "rock-smash", species: "voltorb", form: "base" },
+      ],
+      "fixture-blue": [
+        { method: "walk", species: "burmy", form: "plant" },
+        { method: "walk", species: "burmy", form: "trash" },
+        { method: "walk", species: "unown", form: "a" },
+        { method: "walk", species: "electrode", form: "base" }, // a source error
+      ],
+    },
+    "old-ruins-area": {
+      "fixture-red": [{ method: "walk", species: "unown", form: "a" }],
+    },
+  },
+};
+
+const one = (id        , name        , dex        , types          ) => ({
+  id, name, dex, forms: [{ id: "base", name, types }],
+})                                       ;
+
+/** sources/maps/fixture/generated/pokeapi.species.json (importer output, committed) */
+const generatedSpecies                   = {
+  importer: "pokeapi",
+  pin: "abc1234",
+  species: [
+    one("bulbasaur", "Bulbasaur", 1, ["grass", "poison"]),
+    one("ivysaur", "Ivysaur", 2, ["grass", "poison"]),
+    one("charmander", "Charmander", 4, ["fire"]),
+    one("charmeleon", "Charmeleon", 5, ["fire"]),
+    one("squirtle", "Squirtle", 7, ["water"]),
+    one("wartortle", "Wartortle", 8, ["water"]),
+    one("pidgey", "Pidgey", 16, ["normal", "flying"]),
+    one("pidgeotto", "Pidgeotto", 17, ["normal", "flying"]),
+    one("rattata", "Rattata", 19, ["normal"]),
+    one("rattata-alola", "Alolan Rattata", 19, ["dark", "normal"]),
+    one("raticate", "Raticate", 20, ["normal"]),
+    one("raticate-alola", "Alolan Raticate", 20, ["dark", "normal"]),
+    one("pikachu", "Pikachu", 25, ["electric"]),
+    one("raichu", "Raichu", 26, ["electric"]),
+    one("raichu-alola", "Alolan Raichu", 26, ["electric", "psychic"]),
+    // Normal here; Fairy in "fixture-later". Types are per Map.
+    one("clefairy", "Clefairy", 35, ["normal"]),
+    one("tentacool", "Tentacool", 72, ["water", "poison"]),
+    one("farfetchd", "Farfetch’d", 83, ["normal", "flying"]),
+    one("voltorb", "Voltorb", 100, ["electric"]),
+    one("electrode", "Electrode", 101, ["electric"]),
+    one("magikarp", "Magikarp", 129, ["water"]),
+    one("gyarados", "Gyarados", 130, ["water", "flying"]),
+    one("lapras", "Lapras", 131, ["water", "ice"]),
+    one("eevee", "Eevee", 133, ["normal"]),
+    one("vaporeon", "Vaporeon", 134, ["water"]),
+    one("snorlax", "Snorlax", 143, ["normal"]),
+    one("pichu", "Pichu", 172, ["electric"]),
+    one("espeon", "Espeon", 196, ["psychic"]),
+    { id: "unown", name: "Unown", dex: 201, forms: [{ id: "a", name: "Unown A", types: ["psychic"] }] },
+    one("raikou", "Raikou", 243, ["electric"]),
+    one("lugia", "Lugia", 249, ["psychic", "flying"]),
+    one("ho-oh", "Ho-Oh", 250, ["fire", "flying"]),
+    one("nincada", "Nincada", 290, ["bug", "ground"]),
+    one("ninjask", "Ninjask", 291, ["bug", "flying"]),
+    one("shedinja", "Shedinja", 292, ["bug", "ghost"]),
+    {
+      id: "burmy", name: "Burmy", dex: 412, forms: [ // differ only in look
+        { id: "plant", name: "Plant Cloak", types: ["bug"] },
+        { id: "sandy", name: "Sandy Cloak", types: ["bug"] },
+        { id: "trash", name: "Trash Cloak", types: ["bug"] },
+      ],
+    },
+    {
+      id: "wormadam", name: "Wormadam", dex: 413, forms: [ // differ in type
+        { id: "plant", name: "Plant Cloak", types: ["bug", "grass"] },
+        { id: "sandy", name: "Sandy Cloak", types: ["bug", "ground"] },
+        { id: "trash", name: "Trash Cloak", types: ["bug", "steel"] },
+      ],
+    },
+    one("mothim", "Mothim", 414, ["bug", "flying"]),
+    {
+      id: "arceus", name: "Arceus", dex: 493, forms: [
+        { id: "base", name: "Arceus", types: ["normal"] },
+        { id: "fire", name: "Flame Plate", types: ["normal"] }, // the source is wrong
+      ],
+    },
+  ],
+  evolutionLinks: [
+    { from: "bulbasaur", to: "ivysaur" },
+    { from: "charmander", to: "charmeleon" },
+    { from: "squirtle", to: "wartortle" },
+    { from: "pidgey", to: "pidgeotto" },
+    { from: "rattata", to: "raticate" },
+    { from: "rattata", to: "raticate-alola" }, // the source puts the variant in the old line
+    { from: "pichu", to: "pikachu" },
+    { from: "pikachu", to: "raichu" },
+    { from: "pikachu", to: "raichu-alola" },
+    { from: "voltorb", to: "electrode" },
+    { from: "magikarp", to: "gyarados" },
+    { from: "eevee", to: "vaporeon" },
+    { from: "eevee", to: "espeon" },
+    { from: "nincada", to: "ninjask" },
+    { from: "nincada", to: "shedinja" },
+    { from: "burmy", to: "wormadam" },
+    { from: "burmy", to: "mothim" },
+  ],
+};
+
+/** sources/maps/fixture/one-time.yaml */
+const oneTime               = [
+  ...["bulbasaur", "charmander", "squirtle"].map((species) => ({
+    place: "starter", games: ["fixture-red", "fixture-blue"], method: "gift", species, form: "base",
+  })),
+  { place: "route-1", games: ["fixture-red", "fixture-blue"], method: "roaming", species: "raikou", form: "base" },
+  { place: "route-2", games: ["fixture-red", "fixture-blue"], method: "roaming", species: "raikou", form: "base" },
+  { place: "trade-house", games: ["fixture-red", "fixture-blue"], method: "trade", species: "farfetchd", form: "base", note: "checked: scripts/trade_house.inc" },
+  { place: "trade-house", games: ["fixture-red", "fixture-blue"], method: "gift", species: "lapras", form: "base" },
+  { place: "magma-hideout", games: ["fixture-red"], method: "static", species: "snorlax", form: "base" },
+  { place: "magma-hideout", games: ["fixture-blue"], method: "static", species: "electrode", form: "base" },
+  { place: "navel-rock", games: ["fixture-red"], method: "static", species: "lugia", form: "base" },
+  { place: "navel-rock", games: ["fixture-blue"], method: "static", species: "ho-oh", form: "base" },
+];
+
+/** sources/maps/fixture/corrections.yaml */
+const corrections               = [
+  { op: "remove-wild", area: "cloak-cave-area", game: "fixture-red", row: { method: "walk", species: "electrode", form: "base" } },
+  { op: "remove-wild", area: "cloak-cave-area", game: "fixture-blue", row: { method: "walk", species: "electrode", form: "base" } },
+  { op: "ignore-area", area: "old-ruins-area", why: "Reached only with an item from outside the cartridge" },
+  { op: "set-types", species: "arceus", form: "fire", expect: ["normal"], types: ["fire"] },
+  { op: "add-form", species: "unown", form: { id: "b", name: "Unown B", types: ["psychic"] } },
+  { op: "remove-evolution-link", evolutionLink: { from: "rattata", to: "raticate-alola" } },
+  { op: "add-evolution-link", evolutionLink: { from: "rattata-alola", to: "raticate-alola" } },
+  { op: "own-evolution-line", species: "shedinja", why: "Recorded as its own Encounter" },
+];
+
+const fixtureSources             = { methods, map, generatedWild: [generatedWild], generatedSpecies, oneTime, corrections };
+
+/** A second, tiny Map: Clefairy's types differ by Game because the Games are on different Maps. */
+const laterSources             = {
+  methods,
+  map: {
+    id: "fixture-later", name: "Fixture X", region: "Testland", generation: 6, releaseOrder: 2,
+    games: [{ id: "fixture-x", name: "Fixture X", monogram: "X" }],
+    places: [{ id: "starter", kind: "starter", name: "Starter" }],
+  },
+  generatedWild: [],
+  generatedSpecies: {
+    importer: "pokeapi", pin: "abc1234",
+    species: [one("pikachu", "Pikachu", 25, ["electric"]), one("clefairy", "Clefairy", 35, ["fairy"])],
+    evolutionLinks: [],
+  },
+  oneTime: [{ place: "starter", games: ["fixture-x"], method: "gift", species: "clefairy", form: "base" }],
+  corrections: [],
+};
+
+
+// ---- Page shell (throwaway) -------------------------------------------------
+const clone = (x) => JSON.parse(JSON.stringify(x));
+const released = (() => { const r = compile(fixtureSources); return { map: r.map, lock: lockFor(r.map) }; })();
+const later = compile(laterSources).map;
+
+const S = {
+  sources: clone(fixtureSources), lock: clone(released.lock), launched: true,
+  game: "fixture-red", place: "route-2", species: "nincada", form: undefined, query: "",
+  last: "The released fixture Map.", scenario: 0, ci: null,
+};
+
+const SCENARIOS = [
+  { title: "Fix a Place name", text: "A typo fix: \"Hatch Town\" becomes \"Hatchling Town\". Names are corrections, so this reaches existing Runs and the release check passes.",
+    change: (s) => { s.map.places.find((p) => p.id === "hatch-town").name = "Hatchling Town"; } },
+  { title: "Add a Place", text: "A new Place, \"Route 3\", is added. The compile passes. The CI check (frozen) fails until the lock is updated and committed, so a new id cannot ship without becoming permanent on purpose.",
+    change: (s) => { s.map.places.splice(3, 0, { id: "route-3", name: "Route 3" }); }, lockStep: true },
+  { title: "Remove a released Place", text: "Someone deletes \"Hatch Town\". Runs that recorded it would show \"Unknown location\", so the release check stops.",
+    change: (s) => { s.map.places = s.map.places.filter((p) => p.id !== "hatch-town"); } },
+  { title: "Rename a Species id", text: "The id rattata-alola is renamed to alolan-rattata in every file. Everything compiles, but the released id no longer resolves, so the release check stops.",
+    change: (s) => { const t = JSON.stringify(s).replaceAll("\"rattata-alola\"", "\"alolan-rattata\""); Object.assign(s, JSON.parse(t)); } },
+  { title: "Re-import: the source fixed a row", text: "A new PokeAPI pin drops the wrong Electrode row in Cloak Cave. The hand correction that removed it now expects a row that is gone, so the compile stops and names it.",
+    change: (s) => { for (const g of ["fixture-red", "fixture-blue"]) { const a = s.generatedWild[0].areas["cloak-cave-area"]; a[g] = a[g].filter((r) => r.species !== "electrode"); } } },
+  { title: "Re-import: the source fixed Arceus", text: "The new source types the Flame Plate Form Fire. The hand correction expects Normal, so the compile stops for a review instead of applying a stale fix.",
+    change: (s) => { s.generatedSpecies.species.find((x) => x.id === "arceus").forms[1].types = ["fire"]; } },
+  { title: "Re-import: a new source area", text: "The new source has an area that no Place claims. The compile stops: claim it in map.yaml or ignore it in corrections.yaml.",
+    change: (s) => { s.generatedWild[0].areas["route-1-hidden-area"] = { "fixture-red": [{ method: "walk", species: "pidgey", form: "base" }] }; } },
+  { title: "Importer writes a one-time row", text: "An importer emits a Static Snorlax. One-time rows are hand-written only, so the compile stops.",
+    change: (s) => { s.generatedWild[0].areas["route-1-area"]["fixture-red"].push({ method: "static", species: "snorlax", form: "base" }); } },
+];
+
+function result() { return compile(S.sources); }
+
+function render() {
+  const r = result();
+  const perm = r.ok && S.launched ? checkPermanence(r.map, S.lock, false) : [];
+  const st = document.getElementById("status");
+  st.innerHTML = `
+    <dl>
+      <dt>Last change</dt><dd class="changed">${S.last}</dd>
+      <dt>Launch</dt><dd>${S.launched ? `Launched: the lock holds ${S.lock.places.length} Places, ${Object.keys(S.lock.species).length} Species, ${S.lock.forms.length} Forms.` : "Before launch: no lock, ids change freely."}
+        <button id="launch">${S.launched ? "Go back to before launch" : "Launch (create the lock)"}</button></dd>
+      <dt>Compile</dt><dd>${r.ok ? '<span class="ok">✔ merged and valid</span>' : '<span class="bad">✘ stopped</span><ul class="problems">' + r.problems.map((p) => `<li>${p}</li>`).join("") + "</ul>"}</dd>
+      <dt>Permanence</dt><dd>${!S.launched ? '<span class="muted">not checked before launch</span>' : !r.ok ? '<span class="muted">needs a compile</span>' : perm.length ? '<ul class="problems">' + perm.map((p) => `<li>${p}</li>`).join("") + "</ul>" : '<span class="ok">✔ every released id resolves with its meaning</span>'}</dd>
+      <dt>CI (frozen)</dt><dd>${S.ci ?? '<span class="muted">not run</span>'}</dd>
+    </dl>`;
+  document.getElementById("launch").onclick = () => { S.launched = !S.launched; S.lock = S.launched ? lockFor(r.ok ? r.map : released.map) : null; S.last = S.launched ? "Launched: the lock was created from the current compile." : "Back before launch."; S.ci = null; render(); };
+
+  // Tabs.
+  document.getElementById("tabs").innerHTML = SCENARIOS.map((s, i) => `<button class="${i === S.scenario ? "on" : ""}" data-i="${i}">${s.title}</button>`).join("");
+  document.querySelectorAll("#tabs button").forEach((b) => (b.onclick = () => { S.scenario = +b.dataset.i; render(); }));
+  const sc = SCENARIOS[S.scenario];
+  document.getElementById("scenario").innerHTML = `<p>${sc.text}</p><div class="steps">
+    <button id="s0">1 · Reset to the released Map</button>
+    <button id="s1" class="primary">2 · Make the change</button>
+    <button id="s2">3 · Run CI (compile + frozen check)</button>
+    ${sc.lockStep ? '<button id="s3">4 · Update and commit the lock</button><button id="s4">5 · Run CI again</button>' : ""}</div>`;
+  document.getElementById("s0").onclick = () => { S.sources = clone(fixtureSources); S.lock = clone(released.lock); S.launched = true; S.ci = null; S.last = "Reset to the released fixture Map."; render(); };
+  document.getElementById("s1").onclick = () => { sc.change(S.sources); S.ci = null; S.last = sc.title; render(); };
+  const runCi = () => { const c = result(); const p = c.ok ? checkPermanence(c.map, S.lock, true) : c.problems; S.ci = p.length ? '<span class="bad">✘ fails</span><ul class="problems">' + p.map((x) => `<li>${x}</li>`).join("") + "</ul>" : '<span class="ok">✔ passes: ready to release</span>'; S.last = "CI ran."; render(); };
+  document.getElementById("s2").onclick = runCi;
+  if (sc.lockStep) {
+    document.getElementById("s3").onclick = () => { const c = result(); if (c.ok) { S.lock = lockFor(c.map, S.lock); S.last = "The lock gained the new ids. They are permanent from this release."; S.ci = null; } render(); };
+    document.getElementById("s4").onclick = runCi;
+  }
+
+  if (!r.ok) { ["places", "drawer", "results", "species", "json", "progress"].forEach((id) => (document.getElementById(id).innerHTML = '<span class="muted">The compile stopped; the app keeps the last release.</span>')); renderGames(); return; }
+  const m = index(r.map);
+  const lm = index(later);
+  renderGames(m);
+  const gm = S.game === "fixture-x" ? lm : m;
+
+  // Encounters tab.
+  const rows = placesOf(gm, S.game);
+  if (!rows.some((p) => p.id === S.place)) S.place = rows[0]?.id;
+  document.getElementById("places").innerHTML = rows.map((p) => `<li class="${p.id === S.place ? "sel" : ""}" data-id="${p.id}"><span>${p.name}</span><span>${p.kind !== "standard" ? `<span class="tag ${p.kind}">${p.kind === "event" ? "Event" : "Starter"}</span>` : ""} <span class="tag">${p.id}</span></span></li>`).join("");
+  document.querySelectorAll("#places li").forEach((li) => (li.onclick = () => { S.place = li.dataset.id; render(); }));
+    document.getElementById("progress").innerHTML = `Progress denominator (progressTotal): ${progressTotal(gm)}, the same for every Game and a Soul Link. Event Places are left out.`;
+
+  // Drawer.
+  const sg = suggestions(gm, S.place, S.game);
+  const name = (ref) => { const s = getSpecies(gm, ref.species); const f = getForm(gm, ref.species, ref.form); return s ? (s.forms.length > 1 ? `${s.name} (${f?.name ?? "unknown form"})` : s.name) : `Unknown species (${ref.species})`; };
+  document.getElementById("drawer").innerHTML = `<p class="muted">${placeName(gm, S.place, S.game) ?? "Unknown location"} in ${getGame(gm, S.game)?.name}</p>` +
+    (sg.length ? sg.map((g) => `<div><strong>${g.name}</strong> <span class="tag">origin ${g.origin}</span><br>${g.entries.map((e) => `<button data-s="${e.species}" data-f="${e.form}">${name(e)}</button>`).join(" ")}</div>`).join("") : '<p class="muted">No suggestions here. Search all species.</p>');
+  document.querySelectorAll("#drawer button").forEach((b) => (b.onclick = () => { S.species = b.dataset.s; S.form = b.dataset.f; render(); }));
+
+  // Search.
+  const q = document.getElementById("q");
+  if (q.value !== S.query) q.value = S.query;
+  q.oninput = () => { S.query = q.value; render(); q.focus(); };
+  document.getElementById("results").innerHTML = searchSpecies(gm, S.query).map((s) => `<li data-s="${s.id}" class="${s.id === S.species ? "sel" : ""}"><span>#${s.dex} ${s.name}</span><span class="tag">${s.id}</span></li>`).join("");
+  document.querySelectorAll("#results li").forEach((li) => (li.onclick = () => { S.species = li.dataset.s; S.form = undefined; render(); }));
+
+  // Species details.
+  const sp = getSpecies(gm, S.species);
+  if (!sp) document.getElementById("species").innerHTML = '<span class="muted">Unknown species</span>';
+  else {
+    const form = getForm(gm, sp.id, S.form) ?? sp.forms[0];
+    const line = gm.data.species.filter((x) => x.evolutionLine === sp.evolutionLine);
+    const next = nextInLine(gm, sp.id, form.id);
+    document.getElementById("species").innerHTML = `<dl>
+      <dt>Species</dt><dd>${sp.name} <span class="tag">${sp.id}</span> · National Dex ${dexNumber(gm, sp.id)}</dd>
+      <dt>Form control</dt><dd>${hasFormChoice(gm, sp.id) ? sp.forms.map((f) => `<button class="${f.id === form.id ? "on" : ""}" data-f="${f.id}">${f.name}</button>`).join(" ") : '<span class="muted">hidden (one Form)</span>'}</dd>
+      <dt>Types</dt><dd>${formTypes(gm, sp.id, form.id).join(" / ")} · primary <strong>${primaryType(gm, sp.id, form.id)}</strong></dd>
+      <dt>Evolution Line</dt><dd><span class="tag">${evolutionLineOf(gm, sp.id)}</span> ${line.map((x) => x.name).join(", ")}</dd>
+      <dt>Next in its line</dt><dd>${next.length ? next.map((n) => `<button data-s="${n.species}" data-f="${n.form}">${name(n)}</button>`).join(" ") : '<span class="muted">does not evolve</span>'}</dd>
+    </dl>`;
+    document.querySelectorAll("#species button").forEach((b) => (b.onclick = () => { if (b.dataset.s) S.species = b.dataset.s; S.form = b.dataset.f; render(); }));
+  }
+  document.getElementById("json").textContent = JSON.stringify(gm.data, null, 2);
+}
+
+function renderGames(m) {
+  const all = [...(m ? m.data.games : []), ...later.games];
+  document.getElementById("games").innerHTML = all.map((g) => `<button class="${g.id === S.game ? "on" : ""}" data-g="${g.id}">${g.name}</button>`).join(" ") + ' <span class="muted">(Fixture X is a second Map where Clefairy is Fairy)</span>';
+  document.querySelectorAll("#games button").forEach((b) => (b.onclick = () => { S.game = b.dataset.g; S.place = undefined; render(); }));
+}
+render();
+</script>
+</body>
+</html>

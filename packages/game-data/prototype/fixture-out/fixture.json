@@ -1,0 +1,1193 @@
+{
+  "id": "fixture",
+  "name": "Fixture Red and Blue",
+  "region": "Testland",
+  "generation": 4,
+  "releaseOrder": 1,
+  "games": [
+    {
+      "id": "fixture-red",
+      "name": "Fixture Red",
+      "monogram": "FR"
+    },
+    {
+      "id": "fixture-blue",
+      "name": "Fixture Blue",
+      "monogram": "FB"
+    }
+  ],
+  "methods": [
+    {
+      "id": "walk",
+      "name": "Walk",
+      "origin": "wild"
+    },
+    {
+      "id": "surf",
+      "name": "Surf",
+      "origin": "wild"
+    },
+    {
+      "id": "fishing",
+      "name": "Fishing",
+      "origin": "wild"
+    },
+    {
+      "id": "rock-smash",
+      "name": "Rock Smash",
+      "origin": "wild"
+    },
+    {
+      "id": "static",
+      "name": "Static",
+      "origin": "wild"
+    },
+    {
+      "id": "gift",
+      "name": "Gift",
+      "origin": "gift"
+    },
+    {
+      "id": "trade",
+      "name": "Trade",
+      "origin": "trade"
+    },
+    {
+      "id": "roaming",
+      "name": "Roaming",
+      "origin": "wild"
+    }
+  ],
+  "places": [
+    {
+      "id": "starter",
+      "kind": "starter",
+      "names": {
+        "fixture-red": "Starter",
+        "fixture-blue": "Starter"
+      },
+      "tables": {
+        "fixture-red": [
+          {
+            "method": "gift",
+            "entries": [
+              {
+                "species": "bulbasaur",
+                "form": "base"
+              },
+              {
+                "species": "charmander",
+                "form": "base"
+              },
+              {
+                "species": "squirtle",
+                "form": "base"
+              }
+            ]
+          }
+        ],
+        "fixture-blue": [
+          {
+            "method": "gift",
+            "entries": [
+              {
+                "species": "bulbasaur",
+                "form": "base"
+              },
+              {
+                "species": "charmander",
+                "form": "base"
+              },
+              {
+                "species": "squirtle",
+                "form": "base"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "route-1",
+      "kind": "standard",
+      "names": {
+        "fixture-red": "Route 1",
+        "fixture-blue": "Route 1"
+      },
+      "tables": {
+        "fixture-red": [
+          {
+            "method": "walk",
+            "entries": [
+              {
+                "species": "pidgey",
+                "form": "base"
+              },
+              {
+                "species": "rattata",
+                "form": "base"
+              }
+            ]
+          },
+          {
+            "method": "roaming",
+            "entries": [
+              {
+                "species": "raikou",
+                "form": "base"
+              }
+            ]
+          }
+        ],
+        "fixture-blue": [
+          {
+            "method": "walk",
+            "entries": [
+              {
+                "species": "pidgey",
+                "form": "base"
+              },
+              {
+                "species": "rattata",
+                "form": "base"
+              }
+            ]
+          },
+          {
+            "method": "roaming",
+            "entries": [
+              {
+                "species": "raikou",
+                "form": "base"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "route-2",
+      "kind": "standard",
+      "names": {
+        "fixture-red": "Route 2",
+        "fixture-blue": "Route 2"
+      },
+      "tables": {
+        "fixture-red": [
+          {
+            "method": "walk",
+            "entries": [
+              {
+                "species": "pikachu",
+                "form": "base"
+              },
+              {
+                "species": "nincada",
+                "form": "base"
+              }
+            ]
+          },
+          {
+            "method": "surf",
+            "entries": [
+              {
+                "species": "tentacool",
+                "form": "base"
+              }
+            ]
+          },
+          {
+            "method": "fishing",
+            "entries": [
+              {
+                "species": "magikarp",
+                "form": "base"
+              }
+            ]
+          },
+          {
+            "method": "roaming",
+            "entries": [
+              {
+                "species": "raikou",
+                "form": "base"
+              }
+            ]
+          }
+        ],
+        "fixture-blue": [
+          {
+            "method": "walk",
+            "entries": [
+              {
+                "species": "nincada",
+                "form": "base"
+              },
+              {
+                "species": "pichu",
+                "form": "base"
+              }
+            ]
+          },
+          {
+            "method": "surf",
+            "entries": [
+              {
+                "species": "tentacool",
+                "form": "base"
+              }
+            ]
+          },
+          {
+            "method": "fishing",
+            "entries": [
+              {
+                "species": "magikarp",
+                "form": "base"
+              }
+            ]
+          },
+          {
+            "method": "roaming",
+            "entries": [
+              {
+                "species": "raikou",
+                "form": "base"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "black-city",
+      "kind": "standard",
+      "names": {
+        "fixture-red": "Black City",
+        "fixture-blue": "White Forest"
+      },
+      "tables": {
+        "fixture-red": [
+          {
+            "method": "walk",
+            "entries": [
+              {
+                "species": "rattata-alola",
+                "form": "base"
+              }
+            ]
+          }
+        ],
+        "fixture-blue": [
+          {
+            "method": "walk",
+            "entries": [
+              {
+                "species": "pichu",
+                "form": "base"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "trade-house",
+      "kind": "standard",
+      "names": {
+        "fixture-red": "Trade House",
+        "fixture-blue": "Trade House"
+      },
+      "tables": {
+        "fixture-red": [
+          {
+            "method": "gift",
+            "entries": [
+              {
+                "species": "lapras",
+                "form": "base"
+              }
+            ]
+          },
+          {
+            "method": "trade",
+            "entries": [
+              {
+                "species": "farfetchd",
+                "form": "base"
+              }
+            ]
+          }
+        ],
+        "fixture-blue": [
+          {
+            "method": "gift",
+            "entries": [
+              {
+                "species": "lapras",
+                "form": "base"
+              }
+            ]
+          },
+          {
+            "method": "trade",
+            "entries": [
+              {
+                "species": "farfetchd",
+                "form": "base"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "magma-hideout",
+      "kind": "standard",
+      "names": {
+        "fixture-red": "Magma Hideout",
+        "fixture-blue": "Aqua Hideout"
+      },
+      "tables": {
+        "fixture-red": [
+          {
+            "method": "static",
+            "entries": [
+              {
+                "species": "snorlax",
+                "form": "base"
+              }
+            ]
+          }
+        ],
+        "fixture-blue": [
+          {
+            "method": "static",
+            "entries": [
+              {
+                "species": "electrode",
+                "form": "base"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "cloak-cave",
+      "kind": "standard",
+      "names": {
+        "fixture-red": "Cloak Cave",
+        "fixture-blue": "Cloak Cave"
+      },
+      "tables": {
+        "fixture-red": [
+          {
+            "method": "walk",
+            "entries": [
+              {
+                "species": "burmy",
+                "form": "plant"
+              },
+              {
+                "species": "burmy",
+                "form": "sandy"
+              },
+              {
+                "species": "unown",
+                "form": "a"
+              }
+            ]
+          },
+          {
+            "method": "rock-smash",
+            "entries": [
+              {
+                "species": "voltorb",
+                "form": "base"
+              }
+            ]
+          }
+        ],
+        "fixture-blue": [
+          {
+            "method": "walk",
+            "entries": [
+              {
+                "species": "burmy",
+                "form": "plant"
+              },
+              {
+                "species": "burmy",
+                "form": "trash"
+              },
+              {
+                "species": "unown",
+                "form": "a"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "hatch-town",
+      "kind": "standard",
+      "names": {
+        "fixture-red": "Hatch Town",
+        "fixture-blue": "Hatch Town"
+      },
+      "tables": {}
+    },
+    {
+      "id": "navel-rock",
+      "kind": "event",
+      "names": {
+        "fixture-red": "Navel Rock",
+        "fixture-blue": "Navel Rock"
+      },
+      "tables": {
+        "fixture-red": [
+          {
+            "method": "static",
+            "entries": [
+              {
+                "species": "lugia",
+                "form": "base"
+              }
+            ]
+          }
+        ],
+        "fixture-blue": [
+          {
+            "method": "static",
+            "entries": [
+              {
+                "species": "ho-oh",
+                "form": "base"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "species": [
+    {
+      "id": "bulbasaur",
+      "name": "Bulbasaur",
+      "dex": 1,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Bulbasaur",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "ivysaur"
+      ],
+      "evolutionLine": "bulbasaur"
+    },
+    {
+      "id": "ivysaur",
+      "name": "Ivysaur",
+      "dex": 2,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ivysaur",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "bulbasaur"
+    },
+    {
+      "id": "charmander",
+      "name": "Charmander",
+      "dex": 4,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Charmander",
+          "types": [
+            "fire"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "charmeleon"
+      ],
+      "evolutionLine": "charmander"
+    },
+    {
+      "id": "charmeleon",
+      "name": "Charmeleon",
+      "dex": 5,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Charmeleon",
+          "types": [
+            "fire"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "charmander"
+    },
+    {
+      "id": "squirtle",
+      "name": "Squirtle",
+      "dex": 7,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Squirtle",
+          "types": [
+            "water"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "wartortle"
+      ],
+      "evolutionLine": "squirtle"
+    },
+    {
+      "id": "wartortle",
+      "name": "Wartortle",
+      "dex": 8,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Wartortle",
+          "types": [
+            "water"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "squirtle"
+    },
+    {
+      "id": "pidgey",
+      "name": "Pidgey",
+      "dex": 16,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pidgey",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "pidgeotto"
+      ],
+      "evolutionLine": "pidgey"
+    },
+    {
+      "id": "pidgeotto",
+      "name": "Pidgeotto",
+      "dex": 17,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pidgeotto",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "pidgey"
+    },
+    {
+      "id": "rattata",
+      "name": "Rattata",
+      "dex": 19,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Rattata",
+          "types": [
+            "normal"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "raticate"
+      ],
+      "evolutionLine": "rattata"
+    },
+    {
+      "id": "rattata-alola",
+      "name": "Alolan Rattata",
+      "dex": 19,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Alolan Rattata",
+          "types": [
+            "dark",
+            "normal"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "raticate-alola"
+      ],
+      "evolutionLine": "rattata-alola"
+    },
+    {
+      "id": "raticate",
+      "name": "Raticate",
+      "dex": 20,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Raticate",
+          "types": [
+            "normal"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "rattata"
+    },
+    {
+      "id": "raticate-alola",
+      "name": "Alolan Raticate",
+      "dex": 20,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Alolan Raticate",
+          "types": [
+            "dark",
+            "normal"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "rattata-alola"
+    },
+    {
+      "id": "pikachu",
+      "name": "Pikachu",
+      "dex": 25,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pikachu",
+          "types": [
+            "electric"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "raichu",
+        "raichu-alola"
+      ],
+      "evolutionLine": "pichu"
+    },
+    {
+      "id": "raichu",
+      "name": "Raichu",
+      "dex": 26,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Raichu",
+          "types": [
+            "electric"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "pichu"
+    },
+    {
+      "id": "raichu-alola",
+      "name": "Alolan Raichu",
+      "dex": 26,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Alolan Raichu",
+          "types": [
+            "electric",
+            "psychic"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "pichu"
+    },
+    {
+      "id": "clefairy",
+      "name": "Clefairy",
+      "dex": 35,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Clefairy",
+          "types": [
+            "normal"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "clefairy"
+    },
+    {
+      "id": "tentacool",
+      "name": "Tentacool",
+      "dex": 72,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Tentacool",
+          "types": [
+            "water",
+            "poison"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "tentacool"
+    },
+    {
+      "id": "farfetchd",
+      "name": "Farfetch’d",
+      "dex": 83,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Farfetch’d",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "farfetchd"
+    },
+    {
+      "id": "voltorb",
+      "name": "Voltorb",
+      "dex": 100,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Voltorb",
+          "types": [
+            "electric"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "electrode"
+      ],
+      "evolutionLine": "voltorb"
+    },
+    {
+      "id": "electrode",
+      "name": "Electrode",
+      "dex": 101,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Electrode",
+          "types": [
+            "electric"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "voltorb"
+    },
+    {
+      "id": "magikarp",
+      "name": "Magikarp",
+      "dex": 129,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Magikarp",
+          "types": [
+            "water"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "gyarados"
+      ],
+      "evolutionLine": "magikarp"
+    },
+    {
+      "id": "gyarados",
+      "name": "Gyarados",
+      "dex": 130,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Gyarados",
+          "types": [
+            "water",
+            "flying"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "magikarp"
+    },
+    {
+      "id": "lapras",
+      "name": "Lapras",
+      "dex": 131,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lapras",
+          "types": [
+            "water",
+            "ice"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "lapras"
+    },
+    {
+      "id": "eevee",
+      "name": "Eevee",
+      "dex": 133,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Eevee",
+          "types": [
+            "normal"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "vaporeon",
+        "espeon"
+      ],
+      "evolutionLine": "eevee"
+    },
+    {
+      "id": "vaporeon",
+      "name": "Vaporeon",
+      "dex": 134,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Vaporeon",
+          "types": [
+            "water"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "eevee"
+    },
+    {
+      "id": "snorlax",
+      "name": "Snorlax",
+      "dex": 143,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Snorlax",
+          "types": [
+            "normal"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "snorlax"
+    },
+    {
+      "id": "pichu",
+      "name": "Pichu",
+      "dex": 172,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pichu",
+          "types": [
+            "electric"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "pikachu"
+      ],
+      "evolutionLine": "pichu"
+    },
+    {
+      "id": "espeon",
+      "name": "Espeon",
+      "dex": 196,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Espeon",
+          "types": [
+            "psychic"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "eevee"
+    },
+    {
+      "id": "unown",
+      "name": "Unown",
+      "dex": 201,
+      "forms": [
+        {
+          "id": "a",
+          "name": "Unown A",
+          "types": [
+            "psychic"
+          ]
+        },
+        {
+          "id": "b",
+          "name": "Unown B",
+          "types": [
+            "psychic"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "unown"
+    },
+    {
+      "id": "raikou",
+      "name": "Raikou",
+      "dex": 243,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Raikou",
+          "types": [
+            "electric"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "raikou"
+    },
+    {
+      "id": "lugia",
+      "name": "Lugia",
+      "dex": 249,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lugia",
+          "types": [
+            "psychic",
+            "flying"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "lugia"
+    },
+    {
+      "id": "ho-oh",
+      "name": "Ho-Oh",
+      "dex": 250,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ho-Oh",
+          "types": [
+            "fire",
+            "flying"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "ho-oh"
+    },
+    {
+      "id": "nincada",
+      "name": "Nincada",
+      "dex": 290,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Nincada",
+          "types": [
+            "bug",
+            "ground"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "ninjask",
+        "shedinja"
+      ],
+      "evolutionLine": "nincada"
+    },
+    {
+      "id": "ninjask",
+      "name": "Ninjask",
+      "dex": 291,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ninjask",
+          "types": [
+            "bug",
+            "flying"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "nincada"
+    },
+    {
+      "id": "shedinja",
+      "name": "Shedinja",
+      "dex": 292,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Shedinja",
+          "types": [
+            "bug",
+            "ghost"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "shedinja"
+    },
+    {
+      "id": "burmy",
+      "name": "Burmy",
+      "dex": 412,
+      "forms": [
+        {
+          "id": "plant",
+          "name": "Plant Cloak",
+          "types": [
+            "bug"
+          ]
+        },
+        {
+          "id": "sandy",
+          "name": "Sandy Cloak",
+          "types": [
+            "bug"
+          ]
+        },
+        {
+          "id": "trash",
+          "name": "Trash Cloak",
+          "types": [
+            "bug"
+          ]
+        }
+      ],
+      "evolvesTo": [
+        "wormadam",
+        "mothim"
+      ],
+      "evolutionLine": "burmy"
+    },
+    {
+      "id": "wormadam",
+      "name": "Wormadam",
+      "dex": 413,
+      "forms": [
+        {
+          "id": "plant",
+          "name": "Plant Cloak",
+          "types": [
+            "bug",
+            "grass"
+          ]
+        },
+        {
+          "id": "sandy",
+          "name": "Sandy Cloak",
+          "types": [
+            "bug",
+            "ground"
+          ]
+        },
+        {
+          "id": "trash",
+          "name": "Trash Cloak",
+          "types": [
+            "bug",
+            "steel"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "burmy"
+    },
+    {
+      "id": "mothim",
+      "name": "Mothim",
+      "dex": 414,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Mothim",
+          "types": [
+            "bug",
+            "flying"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "burmy"
+    },
+    {
+      "id": "arceus",
+      "name": "Arceus",
+      "dex": 493,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Arceus",
+          "types": [
+            "normal"
+          ]
+        },
+        {
+          "id": "fire",
+          "name": "Flame Plate",
+          "types": [
+            "fire"
+          ]
+        }
+      ],
+      "evolvesTo": [],
+      "evolutionLine": "arceus"
+    }
+  ]
+}
