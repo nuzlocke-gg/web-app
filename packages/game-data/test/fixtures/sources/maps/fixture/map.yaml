@@ -1,0 +1,37 @@
+# A made-up Map with real Species. It covers each case of the format.
+id: fixture
+name: Fixture Red and Blue
+region: Testland
+generation: 4
+releaseOrder: 1
+games:
+  - { id: fixture-red, name: Fixture Red, monogram: FR }
+  - { id: fixture-blue, name: Fixture Blue, monogram: FB }
+places:
+  - id: starter
+    kind: starter
+    name: Starter
+  - id: route-1
+    name: Route 1
+    areas: [route-1-area]
+  # Two source areas, one recorded location.
+  - id: route-2
+    name: Route 2
+    areas: [route-2-area, route-2-north-area]
+  # Counterparts: one Place, a name per Game.
+  - id: black-city
+    name: { fixture-red: Black City, fixture-blue: White Forest }
+    areas: [black-city-area]
+  - id: trade-house
+    name: Trade House
+  - id: magma-hideout
+    name: { fixture-red: Magma Hideout, fixture-blue: Aqua Hideout }
+  - id: cloak-cave
+    name: Cloak Cave
+    areas: [cloak-cave-area]
+  # No table at all: an egg can still hatch here.
+  - id: hatch-town
+    name: Hatch Town
+  - id: navel-rock
+    kind: event
+    name: Navel Rock

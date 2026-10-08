@@ -1,0 +1,29 @@
+# The source lists Electrode in Cloak Cave. It is not there.
+- op: remove-wild
+  area: cloak-cave-area
+  game: fixture-red
+  row: { method: walk, species: electrode, form: base }
+- op: remove-wild
+  area: cloak-cave-area
+  game: fixture-blue
+  row: { method: walk, species: electrode, form: base }
+- op: ignore-area
+  area: old-ruins-area
+  why: Reached only with an item from outside the cartridge
+# The source types every Arceus plate Form Normal.
+- op: set-types
+  species: arceus
+  form: fire
+  expect: [normal]
+  types: [fire]
+- op: add-form
+  species: unown
+  form: { id: b, name: Unown B, types: [psychic] }
+# The source puts Alolan Raticate in the Raticate line.
+- op: remove-evolution-link
+  evolutionLink: { from: rattata, to: raticate-alola }
+- op: add-evolution-link
+  evolutionLink: { from: rattata-alola, to: raticate-alola }
+- op: own-evolution-line
+  species: shedinja
+  why: Recorded as its own Encounter

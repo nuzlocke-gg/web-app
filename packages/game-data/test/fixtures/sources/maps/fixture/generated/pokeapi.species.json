@@ -1,0 +1,569 @@
+{
+  "importer": "pokeapi",
+  "pin": "abc1234",
+  "species": [
+    {
+      "id": "bulbasaur",
+      "name": "Bulbasaur",
+      "dex": 1,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Bulbasaur",
+          "types": ["grass", "poison"]
+        }
+      ]
+    },
+    {
+      "id": "ivysaur",
+      "name": "Ivysaur",
+      "dex": 2,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ivysaur",
+          "types": ["grass", "poison"]
+        }
+      ]
+    },
+    {
+      "id": "charmander",
+      "name": "Charmander",
+      "dex": 4,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Charmander",
+          "types": ["fire"]
+        }
+      ]
+    },
+    {
+      "id": "charmeleon",
+      "name": "Charmeleon",
+      "dex": 5,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Charmeleon",
+          "types": ["fire"]
+        }
+      ]
+    },
+    {
+      "id": "squirtle",
+      "name": "Squirtle",
+      "dex": 7,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Squirtle",
+          "types": ["water"]
+        }
+      ]
+    },
+    {
+      "id": "wartortle",
+      "name": "Wartortle",
+      "dex": 8,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Wartortle",
+          "types": ["water"]
+        }
+      ]
+    },
+    {
+      "id": "pidgey",
+      "name": "Pidgey",
+      "dex": 16,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pidgey",
+          "types": ["normal", "flying"]
+        }
+      ]
+    },
+    {
+      "id": "pidgeotto",
+      "name": "Pidgeotto",
+      "dex": 17,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pidgeotto",
+          "types": ["normal", "flying"]
+        }
+      ]
+    },
+    {
+      "id": "rattata",
+      "name": "Rattata",
+      "dex": 19,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Rattata",
+          "types": ["normal"]
+        }
+      ]
+    },
+    {
+      "id": "rattata-alola",
+      "name": "Alolan Rattata",
+      "dex": 19,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Alolan Rattata",
+          "types": ["dark", "normal"]
+        }
+      ]
+    },
+    {
+      "id": "raticate",
+      "name": "Raticate",
+      "dex": 20,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Raticate",
+          "types": ["normal"]
+        }
+      ]
+    },
+    {
+      "id": "raticate-alola",
+      "name": "Alolan Raticate",
+      "dex": 20,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Alolan Raticate",
+          "types": ["dark", "normal"]
+        }
+      ]
+    },
+    {
+      "id": "pikachu",
+      "name": "Pikachu",
+      "dex": 25,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pikachu",
+          "types": ["electric"]
+        }
+      ]
+    },
+    {
+      "id": "raichu",
+      "name": "Raichu",
+      "dex": 26,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Raichu",
+          "types": ["electric"]
+        }
+      ]
+    },
+    {
+      "id": "raichu-alola",
+      "name": "Alolan Raichu",
+      "dex": 26,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Alolan Raichu",
+          "types": ["electric", "psychic"]
+        }
+      ]
+    },
+    {
+      "id": "clefairy",
+      "name": "Clefairy",
+      "dex": 35,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Clefairy",
+          "types": ["normal"]
+        }
+      ]
+    },
+    {
+      "id": "tentacool",
+      "name": "Tentacool",
+      "dex": 72,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Tentacool",
+          "types": ["water", "poison"]
+        }
+      ]
+    },
+    {
+      "id": "farfetchd",
+      "name": "Farfetch’d",
+      "dex": 83,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Farfetch’d",
+          "types": ["normal", "flying"]
+        }
+      ]
+    },
+    {
+      "id": "voltorb",
+      "name": "Voltorb",
+      "dex": 100,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Voltorb",
+          "types": ["electric"]
+        }
+      ]
+    },
+    {
+      "id": "electrode",
+      "name": "Electrode",
+      "dex": 101,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Electrode",
+          "types": ["electric"]
+        }
+      ]
+    },
+    {
+      "id": "magikarp",
+      "name": "Magikarp",
+      "dex": 129,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Magikarp",
+          "types": ["water"]
+        }
+      ]
+    },
+    {
+      "id": "gyarados",
+      "name": "Gyarados",
+      "dex": 130,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Gyarados",
+          "types": ["water", "flying"]
+        }
+      ]
+    },
+    {
+      "id": "lapras",
+      "name": "Lapras",
+      "dex": 131,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lapras",
+          "types": ["water", "ice"]
+        }
+      ]
+    },
+    {
+      "id": "eevee",
+      "name": "Eevee",
+      "dex": 133,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Eevee",
+          "types": ["normal"]
+        }
+      ]
+    },
+    {
+      "id": "vaporeon",
+      "name": "Vaporeon",
+      "dex": 134,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Vaporeon",
+          "types": ["water"]
+        }
+      ]
+    },
+    {
+      "id": "snorlax",
+      "name": "Snorlax",
+      "dex": 143,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Snorlax",
+          "types": ["normal"]
+        }
+      ]
+    },
+    {
+      "id": "pichu",
+      "name": "Pichu",
+      "dex": 172,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pichu",
+          "types": ["electric"]
+        }
+      ]
+    },
+    {
+      "id": "espeon",
+      "name": "Espeon",
+      "dex": 196,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Espeon",
+          "types": ["psychic"]
+        }
+      ]
+    },
+    {
+      "id": "unown",
+      "name": "Unown",
+      "dex": 201,
+      "forms": [
+        {
+          "id": "a",
+          "name": "Unown A",
+          "types": ["psychic"]
+        }
+      ]
+    },
+    {
+      "id": "raikou",
+      "name": "Raikou",
+      "dex": 243,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Raikou",
+          "types": ["electric"]
+        }
+      ]
+    },
+    {
+      "id": "lugia",
+      "name": "Lugia",
+      "dex": 249,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lugia",
+          "types": ["psychic", "flying"]
+        }
+      ]
+    },
+    {
+      "id": "ho-oh",
+      "name": "Ho-Oh",
+      "dex": 250,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ho-Oh",
+          "types": ["fire", "flying"]
+        }
+      ]
+    },
+    {
+      "id": "nincada",
+      "name": "Nincada",
+      "dex": 290,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Nincada",
+          "types": ["bug", "ground"]
+        }
+      ]
+    },
+    {
+      "id": "ninjask",
+      "name": "Ninjask",
+      "dex": 291,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ninjask",
+          "types": ["bug", "flying"]
+        }
+      ]
+    },
+    {
+      "id": "shedinja",
+      "name": "Shedinja",
+      "dex": 292,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Shedinja",
+          "types": ["bug", "ghost"]
+        }
+      ]
+    },
+    {
+      "id": "burmy",
+      "name": "Burmy",
+      "dex": 412,
+      "forms": [
+        {
+          "id": "plant",
+          "name": "Plant Cloak",
+          "types": ["bug"]
+        },
+        {
+          "id": "sandy",
+          "name": "Sandy Cloak",
+          "types": ["bug"]
+        },
+        {
+          "id": "trash",
+          "name": "Trash Cloak",
+          "types": ["bug"]
+        }
+      ]
+    },
+    {
+      "id": "wormadam",
+      "name": "Wormadam",
+      "dex": 413,
+      "forms": [
+        {
+          "id": "plant",
+          "name": "Plant Cloak",
+          "types": ["bug", "grass"]
+        },
+        {
+          "id": "sandy",
+          "name": "Sandy Cloak",
+          "types": ["bug", "ground"]
+        },
+        {
+          "id": "trash",
+          "name": "Trash Cloak",
+          "types": ["bug", "steel"]
+        }
+      ]
+    },
+    {
+      "id": "mothim",
+      "name": "Mothim",
+      "dex": 414,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Mothim",
+          "types": ["bug", "flying"]
+        }
+      ]
+    },
+    {
+      "id": "arceus",
+      "name": "Arceus",
+      "dex": 493,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Arceus",
+          "types": ["normal"]
+        },
+        {
+          "id": "fire",
+          "name": "Flame Plate",
+          "types": ["normal"]
+        }
+      ]
+    }
+  ],
+  "evolutionLinks": [
+    {
+      "from": "bulbasaur",
+      "to": "ivysaur"
+    },
+    {
+      "from": "charmander",
+      "to": "charmeleon"
+    },
+    {
+      "from": "squirtle",
+      "to": "wartortle"
+    },
+    {
+      "from": "pidgey",
+      "to": "pidgeotto"
+    },
+    {
+      "from": "rattata",
+      "to": "raticate"
+    },
+    {
+      "from": "rattata",
+      "to": "raticate-alola"
+    },
+    {
+      "from": "pichu",
+      "to": "pikachu"
+    },
+    {
+      "from": "pikachu",
+      "to": "raichu"
+    },
+    {
+      "from": "pikachu",
+      "to": "raichu-alola"
+    },
+    {
+      "from": "voltorb",
+      "to": "electrode"
+    },
+    {
+      "from": "magikarp",
+      "to": "gyarados"
+    },
+    {
+      "from": "eevee",
+      "to": "vaporeon"
+    },
+    {
+      "from": "eevee",
+      "to": "espeon"
+    },
+    {
+      "from": "nincada",
+      "to": "ninjask"
+    },
+    {
+      "from": "nincada",
+      "to": "shedinja"
+    },
+    {
+      "from": "burmy",
+      "to": "wormadam"
+    },
+    {
+      "from": "burmy",
+      "to": "mothim"
+    }
+  ]
+}

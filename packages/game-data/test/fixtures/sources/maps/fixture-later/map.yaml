@@ -1,0 +1,10 @@
+# A second, tiny Map: Clefairy is Fairy here and Normal in "fixture".
+id: fixture-later
+name: Fixture X
+region: Testland
+generation: 6
+releaseOrder: 2
+games:
+  - { id: fixture-x, name: Fixture X, monogram: X }
+places:
+  - { id: starter, kind: starter, name: Starter }
