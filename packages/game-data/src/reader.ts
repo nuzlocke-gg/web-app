@@ -25,6 +25,17 @@ export type MapSummary = Pick<
   "id" | "name" | "region" | "generation" | "releaseOrder" | "games"
 >
 
+/**
+ * The catalog entry of a Map. It drops the Places, Species, and method
+ * groups, so a catalog of every Map stays small enough to ship with the
+ * page while each full Map loads on demand.
+ */
+export function toSummary(map: CompiledMap): MapSummary {
+  const { id, name, region, generation, releaseOrder, games } = map
+
+  return { id, name, region, generation, releaseOrder, games }
+}
+
 /** The Maps the reader can load: a small catalog and one loader per Map. */
 export interface MapRegistry {
   /** Every Map the registry can load. */

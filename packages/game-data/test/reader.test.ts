@@ -17,6 +17,7 @@ import {
   progressTotal,
   searchSpecies,
   suggestions,
+  toSummary,
   typesOf,
   type LoadedMap,
   type MapRegistry,
@@ -28,16 +29,7 @@ const BLUE = "fixture-blue"
 
 function registryOf(maps: CompiledMap[]): MapRegistry {
   return {
-    catalog: maps.map(
-      ({ id, name, region, generation, releaseOrder, games }) => ({
-        id,
-        name,
-        region,
-        generation,
-        releaseOrder,
-        games,
-      })
-    ),
+    catalog: maps.map(toSummary),
     load: Object.fromEntries(maps.map((m) => [m.id, async () => m])),
   }
 }

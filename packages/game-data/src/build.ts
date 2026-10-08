@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url"
 import { compileMap } from "./compile.ts"
 import type { CompiledMap, MapId, ReleaseLock } from "./format.ts"
 import { checkPermanence, lockFor } from "./permanence.ts"
-import type { MapSummary } from "./reader.ts"
+import { toSummary } from "./reader.ts"
 import {
   listLockedMaps,
   listSourceMaps,
@@ -150,16 +150,7 @@ function registrySource(outDir: string, maps: CompiledMap[]): string {
   const srcDir = relative(outDir, fileURLToPath(new URL(".", import.meta.url)))
     .split(sep)
     .join("/")
-  const catalog: MapSummary[] = maps.map(
-    ({ id, name, region, generation, releaseOrder, games }) => ({
-      id,
-      name,
-      region,
-      generation,
-      releaseOrder,
-      games,
-    })
-  )
+  const catalog = maps.map(toSummary)
   const loaders = maps.map(
     (map) =>
       `    ${JSON.stringify(map.id)}: () =>\n      import(${JSON.stringify(`./${map.id}.json`)}, { with: { type: "json" } }).then(asMap),`

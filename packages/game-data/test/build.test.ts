@@ -59,6 +59,17 @@ describe("the build", () => {
     )) as {
       registry: MapRegistry
     }
+    for (const summary of registry.catalog) {
+      expect(Object.keys(summary).sort()).toEqual([
+        "games",
+        "generation",
+        "id",
+        "name",
+        "region",
+        "releaseOrder",
+      ])
+    }
+
     const reader = createReader(registry)
     const map = (await reader.loadMap("fixture"))!
 
