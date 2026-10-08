@@ -1,6 +1,6 @@
 # A new attempt keeps the players of the Failed Run
 
-Players retry a Nuzlocke many times, and a Run list that shows "Attempt 3" needs the Runs to know each other. We decided (2026-10-07, Linear "Run lifecycle") that a Failed Run has at most one next Run, made by "Try again" with the same kind, name, Rules, Custom Places, and one Journey for each player on the same Game. The new Run records the Failed Run as its previous Run, and the attempt number is computed from that chain. A Soul Link attempt goes straight to Active, with no "Waiting for players" and no invite link: the players are already known, and a chain with a different set of players is a different chain.
+Players retry a Nuzlocke many times, and a Run list that shows "Attempt 3" needs the Runs to know each other. We decided (2026-10-07, Linear "Run lifecycle") that a Failed Run has at most one next Run, made by "Try again" with the same kind, name, Rules, Custom Places, House rules (amended 2026-10-07, Linear "Progress tracking"), and one Journey for each player on the same Game. The new Run records the Failed Run as its previous Run, and the attempt number is computed from that chain. A Soul Link attempt goes straight to Active, with no "Waiting for players" and no invite link: the players are already known, and a chain with a different set of players is a different chain.
 
 ## Considered options
 

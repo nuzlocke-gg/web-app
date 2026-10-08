@@ -11,5 +11,5 @@ A Run is solo or a Soul Link from its creation, and it never changes kind. In a 
 ## Consequences
 
 - The mode of the headcanon root (`useRun` or `useLinkedRun`) is a property of the Run and never switches at run time.
-- The Soul Link Rules show when the Run is a Soul Link, not when it has two Journeys. A Run stores all seven Rule values from creation.
-- A partner who stops playing after the start is a matter of the Run's lifecycle (a failed or abandoned Run), not of membership.
+- The Soul Link Rules show when the Run is a Soul Link, not when it has two Journeys. A Run stores every Rule value from creation (seven when this was decided; eight since the Whiteout Rule was added on 2026-10-07, Linear "Navigation and the other screens on a phone"; nine since the Shared Fate Rule was added on 2026-10-07 in the simplification pass of the version 1 spec).
+- A partner who stops playing after the start is a matter of the Run's lifecycle (the players mark the Run Failed or archive it; there is no Abandoned state), not of membership.

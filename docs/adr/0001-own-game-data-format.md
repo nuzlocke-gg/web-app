@@ -12,3 +12,4 @@ Mainline Games start from PokeAPI and ROM hacks from sources we supply, and no s
 - An importer supplies only repeatable wild tables and Species facts. One-time encounters (gift, trade, static, roaming) are always hand-written, because PokeAPI has errors there and decompiled source code keeps them in scripts.
 - Corrections reach existing Runs. From the launch, a released identifier (Game, Map, Place, Species, Form) is permanent and never gets a different meaning; a change that breaks this makes a new Map. There are no edition numbers.
 - A second source costs one importer, not a redesign.
+- Importers are one-off generators whose output is committed apart from the hand-written files (2026-10-07). A build never calls a data source, and a re-import is reviewed as a diff; the compile merges, validates, and checks that released identifiers stay permanent.
