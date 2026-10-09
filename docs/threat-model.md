@@ -1,10 +1,10 @@
-# nuzlocke.gg version 1 — spec-based threat model
+# nuzlocke.gg version 1 — threat model
 
 ## 1. Overview
 
-**Status: design model, 8 October 2026.** This document models the planned version 1 application, as requested. Controls described as “specified” are requirements, not verified implementation. Attack stories are hypotheses for implementation review, not vulnerability findings.
+**Status: milestone 1 implementation and remaining version 1 design, 9 October 2026.** The game-data importer, compiler, reader, sprite downloader, and web sprite components now exist. Their controls below are backed by source inspection. Account, Run, database, and live-access controls remain planned requirements. Attack stories are hypotheses for implementation review, not vulnerability findings.
 
-The inspected app entry page is a starter screen (`apps/web/app/page.tsx:3-11`); its dependency list does not yet include the planned authentication, database, or headcanon integration (`apps/web/package.json:15-21`). No deployed service, dependency internals, or provider configuration was tested.
+The app entry page remains a starter screen (`apps/web/app/page.tsx:3-11`). The app now depends on `@workspace/game-data`, but its dependency list does not yet include the planned authentication, database, or headcanon integration (`apps/web/package.json:15-23`). No deployed service, dependency internals, or provider configuration was tested.
 
 The local version 1 spec takes precedence over earlier tickets and ADRs (`docs/spec/version-1/README.md:18`). Evidence below uses these short names:
 
@@ -16,7 +16,44 @@ The local version 1 spec takes precedence over earlier tickets and ADRs (`docs/s
 | V | `docs/spec/version-1/testing.md`: required verification |
 | Glossary | `apps/web/CONTEXT.md`: domain terms |
 
-Citations such as **T:147** mean repository-relative `docs/spec/version-1/technical-design.md:147`. The external tickets, prototypes, headcanon checkout, and hosted design document were not inspected. The local specification is the authority for this model. The security-policy resolver returned no applicable SECURITY.md content for the spec scope.
+Citations such as **T:147** mean repository-relative `docs/spec/version-1/technical-design.md:147`. The external tickets, prototypes, headcanon checkout, and hosted design document were not inspected. Source code establishes implemented behavior; the local specification remains the authority for planned product behavior. The security-policy resolver returned no applicable SECURITY.md content at the repository root.
+
+### Implemented milestone: third-party data
+
+There are two distinct network workflows. Neither is a public request handler:
+
+1. **Manual CSV import.** An operator selects a Map. The script fetches 16 named CSV tables from `https://raw.githubusercontent.com/PokeAPI/pokeapi/2fe95532d27a9bf340575253aff50868319d8182/data/v2/csv/<file>.csv`, parses them, and writes only `pokeapi.wild.json` and `pokeapi.species.json` under that Map's `generated/` directory. Each fetch has a 60-second deadline. Review and commit the generated output before release (`packages/game-data/importers/pokeapi.ts:18-38`, `packages/game-data/scripts/import-pokeapi.ts:18-64`).
+2. **Build-time sprites.** A build compiles committed JSON and YAML, validates identifiers and references, checks release locks, then resolves sprites. Missing cached sprites are fetched from `https://raw.githubusercontent.com/PokeAPI/sprites/35fdbe9bdec8f519f882c3edc3c0185f08af4d86/sprites/pokemon/<file>.png`. The downloader limits concurrency to 16, attempts to three, and each attempt to 30 seconds (`packages/game-data/scripts/compile.ts:18-30`, `packages/game-data/src/build.ts:53-137`, `packages/game-data/src/pokeapi-sprites.ts:11-88`).
+
+The current source Map is Emerald. The compiler writes JSON and a generated TypeScript registry. Its static imports and JSON-escaped values avoid treating imported names as source code. The reader selects only an own property of that registry; a browser Map id is not an arbitrary file path (`packages/game-data/src/build.ts:136-217`, `packages/game-data/src/reader.ts:112-138`).
+
+The web copy step publishes the built sprites locally. `Sprite` supplies only a local URL, fallback URL, and label to the client image component. It does not pass an upstream URL or the Map to that component. These components exist but are not yet used by the starter page (`apps/web/scripts/copy-sprites.ts:9-25`, `apps/web/components/sprite.tsx:40-51`, `apps/web/components/sprite-image.tsx:47-76`, `apps/web/app/page.tsx:3-19`). The design's “no runtime data-source call” remains accurate; it must not be read as “builds never use the network.” T:18 now explicitly exempts sprites.
+
+```mermaid
+flowchart LR
+  CSV["Pinned third-party CSV"] --> I["Operator import and diff review"]
+  I --> S["Committed JSON plus hand-written YAML"]
+  S --> C["Shape, semantic and permanence checks"]
+  PNG["Pinned third-party PNG responses"] --> K["Local sprite cache"]
+  K --> B["Build resolves sprites"]
+  C --> B
+  B --> D["dist JSON, registry and sprites"]
+  D --> W["Web build: public/sprites"]
+  W --> R["Browser: local image URL"]
+```
+
+### Implemented resource boundaries
+
+Paths below are repository-relative. Build paths resolve from script/module locations, not the process working directory. No provider credentials are sent explicitly by either data-fetch script. Trust in HTTPS/GitHub delivery and build storage remains necessary; a pinned URL is not a verified content digest.
+
+| Deployment or workflow | Resource or capability | Configuration and precedence | Safe effective value or location | Readers, writers, or recipients | Enforcing control | Evidence or unknowns |
+| --- | --- | --- | --- | --- | --- | --- |
+| Manual import | Fetch CSV; replace generated source | Hard-coded repository, commit and file list; operator Map argument chooses local destination | `packages/game-data/sources/maps/<map>/generated/pokeapi.{wild,species}.json` | Import operator, reviewer, later compiler | Fixed network base; timeout; importer rejects unsupported data cases | `packages/game-data/scripts/import-pokeapi.ts:18-64`, `packages/game-data/importers/pokeapi.ts:18-38`; response size and record length are not capped in the script |
+| Build or lock command | Read sources and release locks; create distributable files | Script sets sources, dist, released; `--frozen` versus `--lock` | `packages/game-data/dist/{<map>.json,registry.ts,sprites/**}`; locks at `packages/game-data/released/<map>.lock.json` | Local build and CI; app build consumes output | All collected validation problems stop output; frozen mode does not write locks | `packages/game-data/scripts/compile.ts:11-30`, `packages/game-data/src/build.ts:53-177`; output replacement is not transactional across filesystem failures |
+| Sprite fetch/cache | Reuse external bytes and remembered 404s | Cache hit first, then `.missing`, then pinned URL | `packages/game-data/node_modules/.cache/pokeapi-sprites/<SPRITES_PIN>/<file>.png` or `.png.missing` | Build process; any actor able to write that cache | Atomic temporary-file rename; retry/deadline/concurrency bounds | `packages/game-data/src/pokeapi-sprites.ts:44-116`; no hash, PNG decode or byte limit before caching/copying |
+| Root build/dev/test and CI | Schedule compiler; restore build artifacts | Workspace dependency; Turbo task dependencies and declared outputs | Package `dist/**`; web `public/sprites/**` and Next output | Build task runner and downstream tasks | Frozen compiler is a build prerequisite for package tests/typecheck and web dev/tests | `packages/game-data/turbo.json:5-14`, `apps/web/turbo.json:5-12`, `turbo.json:5-8`, `.github/workflows/ci.yml:18-24`; no remote cache deployment or cache-writer policy verified |
+| Web dev/build | Replace published sprite tree | `spritesDir` resolves package output; copy script resolves app destination | `packages/game-data/dist/sprites` → `apps/web/public/sprites` → `/sprites/<species>/<form>.png` | Build writes; public browsers read | Fixed copy roots; app `Sprite` uses reader-validated form URLs | `packages/game-data/src/sprites-dir.ts:9-11`, `apps/web/scripts/copy-sprites.ts:9-25`, `apps/web/package.json:7-8`; direct `next build` bypasses copy orchestration |
+| Browser images | Display public third-party bytes | Valid known Form URL, otherwise local unknown image | `/sprites/unknown.png` fallback; `public, max-age=604800` | Any browser; public HTTP caches | Image-element rendering; unknown Form yields no arbitrary URL | `packages/game-data/src/reader.ts:52-73`, `apps/web/components/sprite-image.tsx:61-76`, `apps/web/next.config.ts:8-17`; one week of stale sprites is intentional |
 
 ### Intended architecture
 
@@ -29,7 +66,7 @@ Players sign in with Google and manually track Runs. A Run is solo or a Soul Lin
 | headcanon | Command admission, receipts, optimistic state and retry queues | T:140-153 |
 | Neon Postgres through Drizzle Pool | Accounts, Runs, Journeys, child records, receipts; transactional authority | T:77-128 |
 | Ably | Subscribe-only invalidations; clients refresh authoritative state | T:149 |
-| Compiled game data and sprites | Release-time assets; no runtime external game-data source | T:16-29 |
+| Compiled game data and sprites | Implemented release pipeline described above; no runtime external game-data source | T:16-29; `packages/game-data/scripts/compile.ts:21-30` |
 
 ```mermaid
 flowchart LR
@@ -49,7 +86,7 @@ For a write: browser args → session-derived actor → membership screen → lo
 
 ### Effective resources and capabilities
 
-These are specified effective values. Actual hosts, secrets, environment precedence, and deployed permissions remain unverified.
+The following resources describe the remaining application design. The implemented game-data resources are listed separately above. Actual service hosts, secrets, environment precedence, and deployed permissions remain unverified.
 
 | Deployment or workflow | Resource or capability | Configuration and precedence | Safe effective value or location | Readers, writers, or recipients | Enforcing control | Evidence or unknowns |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -67,6 +104,7 @@ These are specified effective values. Actual hosts, secrets, environment precede
 
 ### Protected assets and objectives
 
+- **Implemented data and release assets:** protect generated Map facts, permanent identifiers, sprite bytes, the build worker's resources, and published output. Generated source, local download caches, and task artifacts are separate trust surfaces. Format validity does not establish game accuracy or byte authenticity (`packages/game-data/src/sources.ts:158-215`, `packages/game-data/src/permanence.ts:41-98`, `packages/game-data/src/pokeapi-sprites.ts:70-83`).
 - **Account identity and private identity fields:** sessions, OAuth account linkage, Google id/email/name/image. Email is visible only to its own Player. Public identity is Display Name; deletion removes identifying account fields and sessions (P:298-302; T:72-84).
 - **Run privacy:** private Runs, membership, child records, and private Attempt details must not leak through alternate routes, metadata, serialized page data, previews, receipts, or realtime access. Link-readable content is intentionally disclosed (P:306-311).
 - **Write ownership and integrity:** only a Player's own Journey can be changed by that Player. Run-wide permissions are shared by all Players. Records, revisions, receipts, and Chain transitions must remain coherent (P:269; T:61, T:127-148).
@@ -83,6 +121,15 @@ These are specified effective values. Actual hosts, secrets, environment precede
 5. **Former/deleted Player or stale browser:** may retain IDs, queued args, prior page data, and old live tokens. Current server authorization still governs requests.
 6. **External website:** can attempt to induce signed-in browser requests or abuse sign-in return state. It has no legitimate session-reading authority.
 7. **Build/release operator and providers:** privileged trusted actors for their intended functions. No assumption that an ordinary attacker already owns their credentials. Compromise through a concrete dependency or secret leak is a conditional path, not an established capability.
+8. **Third-party data or cache attacker:** may supply hostile bytes only if they can affect the selected upstream revision/delivery, a newly approved pin, or a cache/artifact consumed by a build. Changing today's upstream branch does not change the pinned URL. A contributor can propose data changes, but acceptance and release require repository authority. A public visitor cannot currently select fetch URLs, CLI Map arguments, filesystem roots, or sprite overrides.
+
+### Implemented data controls and limits
+
+- **Source validation:** JSON/YAML are parsed as data and checked with strict object schemas. The compiler checks identifier grammar, duplicates, references, correction expectations, one-time versus imported methods, and play order. Species and Form identifiers cannot contain path separators; sprite override filenames allow only lowercase ASCII letters, digits and hyphens. These checks run before normal build output (`packages/game-data/src/sources.ts:27-215`, `packages/game-data/src/format.ts:12-15`, `packages/game-data/src/compile.ts:47-66`, `packages/game-data/src/compile.ts:282-308`).
+- **Permanence is narrower than authenticity:** locks preserve identifiers and Species dex numbers, and frozen builds reject additions not recorded in an existing lock. A Map with no lock is allowed. Locks do not freeze names, types, encounter tables or sprite bytes. Source `pin` fields are strings, not cryptographic attestations (`packages/game-data/src/permanence.ts:41-98`, `packages/game-data/src/sources.ts:139-163`).
+- **Cache is trusted input:** a cached PNG is returned without revalidation; a remembered 404 can force a fallback or fail a required sprite. The downloader writes cache files atomically, but this protects incomplete writes, not malicious bytes. A separate test checks PNG signatures and 96 × 96 header dimensions for Map sprites; it is not a full image decoder or build-time authenticity gate (`packages/game-data/src/pokeapi-sprites.ts:70-102`, `packages/game-data/test/sprites.test.ts:13-43`).
+- **Helper authority stays local:** `buildMaps` accepts directory roots and deletes old output JSON/sprites; the importer accepts an operator Map directory. These are trusted caller obligations, not remote APIs. Do not expose those helpers directly to user-selected paths. `SpriteImage` similarly accepts generic URLs, while its current `Sprite` caller supplies local validated paths (`packages/game-data/src/build.ts:25-46`, `packages/game-data/src/build.ts:140-168`, `packages/game-data/scripts/import-pokeapi.ts:20-44`, `apps/web/components/sprite.tsx:40-48`).
+- **Failures are not all-or-nothing publication:** semantic/sprite resolution failure precedes output writes, but a disk failure during replacement can leave partial output; the web copy removes its destination before copying. Build failure must prevent promotion, and development/release jobs must not share writable output trees with untrusted work (`packages/game-data/src/build.ts:118-168`, `apps/web/scripts/copy-sprites.ts:15-25`).
 
 ### Boundaries and required invariants
 
@@ -101,6 +148,8 @@ These are specified effective values. Actual hosts, secrets, environment precede
 
 ### Assumptions, accepted behavior, and open decisions
 
+**Milestone decisions to resolve:** choose whether to verify expected sprite hashes and validate PNG structure/size in the downloader, including cache hits; bound downloaded bytes and CSV record/input sizes; establish who may write local or restored build caches; and define how pin updates and generated-source diffs are approved. Confirm production promotion uses the tested artifact or repeats the same gates. No credential exposure or exploitable image parser defect is established by the absence of those checks.
+
 **Accepted by the spec:** any Player may publish or archive a shared Run; Archive is not access revocation. Display Names are nonunique Unicode text, not identity proof. Shared fate is a Warning, not permission to mutate a partner's Pokémon. History is editable game history, not an audit log. A same-Player stale Undo may undo a newer death. Closing a tab can lose pending changes. Account deletion can race with create/join and leave the described stray rows (P:226, P:269-290, P:298; T:39, T:73, T:150).
 
 **Important privacy limits:** noindex and random IDs reduce discovery but do not prevent forwarding or copying. Switching private prevents future authorized reads; it cannot erase an already downloaded page or a third-party preview. The spec says live renewal is refused after visibility changes, but an issued token can last until its 10-minute expiry. Model the intervening invalidation timing/revision exposure separately from full data access (P:306-311; T:149).
@@ -116,11 +165,24 @@ These are specified effective values. Actual hosts, secrets, environment precede
 7. Clarify the offline boundary: the product excludes offline entry, while the technical design supports retrying saves made while offline. Treat recovery of already-built changes as a supported untrusted-input path either way (P:324; T:150; V:41).
 8. Verify the published headcanon version and receipt binding/retention behavior. The spec requires a persistence queue ordering fix; it also describes a nonblocking ambiguous stale-client outcome. These are dependency requirements, not independently validated findings here (T:10, T:159-160).
 
-Payments, save-file/emulator imports, arbitrary user code execution, uploads, and runtime game-data fetches are not planned surfaces. Build-time importers remain a separate conditional surface (P:314-340; T:16-29). No new product permissions are proposed by this model.
+Payments, save-file/emulator imports, arbitrary user code execution, uploads, and runtime game-data fetches are not planned surfaces. The manual CSV importer and build-time sprite fetcher are now implemented operator surfaces (P:314-340; T:16-29). No new product permissions are proposed by this model.
 
 ## 3. Attack Surface, Mitigations, and Attacker Stories
 
-**All rows are design hypotheses.** Priority means implementation-review order, not an assigned vulnerability severity. “Existing controls” means controls specified in the design.
+**All attack stories are hypotheses.** Priority means review order, not an assigned vulnerability severity. The first table uses source-established milestone controls. The second retains planned application scenarios; its controls are specified, not implemented.
+
+### Implemented milestone scenarios
+
+| Priority | Scenario and capability gain | Prerequisites | Impact | Existing controls | Mitigation | Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| First | Poison sprite cache or restored artifact to publish substituted bytes | Write access to a cache/artifact consumed by a trusted build, without equivalent release authority | Defaced or malformed public assets; possible build disruption | Commit-specific cache paths, atomic cache writes, sprite header tests | Separate untrusted CI/cache writers; verify content digests on hits and downloads; validate artifacts before publication | `packages/game-data/src/pokeapi-sprites.ts:70-102`, `packages/game-data/test/sprites.test.ts:21-43`, `apps/web/scripts/copy-sprites.ts:24-25` |
+| First | Malformed or oversized upstream response consumes memory or produces invalid images | Influence selected response/pin; operator import or cold sprite build runs | Import/build outage; malformed bytes reach public assets | Fixed hosts/pins, fetch deadlines, 16 concurrent sprite downloads and three attempts; CSV semantic checks | Limit response bytes and CSV record size; validate PNG structure/dimensions before caching; bound total work | `packages/game-data/scripts/import-pokeapi.ts:46-60`, `packages/game-data/src/pokeapi-sprites.ts:11-70`; no browser execution or server compromise established |
+| Next | Valid-looking imported changes silently change game facts | Malicious upstream change approved in pin update, or generated diff accepted without adequate review | Wrong suggestions/types/evolution lines across consumers; future Warning changes | Strict shapes, semantic checks, correction expectations, frozen permanence locks | Review semantic source diffs and provenance; compare important facts against independent game sources | `packages/game-data/src/compile.ts:47-66`, `packages/game-data/src/permanence.ts:41-98`; ordinary wrong game facts are usually quality defects, not an authorization break |
+| Next | Data-derived identifier attempts path escape or generated-code injection | Malicious imported/source identifier reaches output construction | Conditional overwrite or build-code execution if controls regress | Identifier grammar, Map-directory match, constrained sprite filenames, JSON escaping in registry | Keep all caller paths behind compile validation; test hostile identifiers at build seam; do not turn CLI helpers into public endpoints | `packages/game-data/src/build.ts:69-76`, `packages/game-data/src/build.ts:192-217`, `packages/game-data/src/compile.ts:110-140`, `packages/game-data/src/sources.ts:160-163`; no current bypass established |
+| Next | Build failure leaves mixed/stale artifacts that are then published | Filesystem/copy failure plus promotion ignoring failure or reuse of shared output | Missing/substituted assets or mismatched registry; usually availability/integrity | Errors propagate; validation precedes writes; web script checks source exists | Promote only successful isolated build output; avoid parallel writes to the same output tree | `packages/game-data/src/build.ts:118-168`, `apps/web/scripts/copy-sprites.ts:15-25` |
+| Later | Bad pin or stale negative cache suppresses required image | Unavailable source, cached 404, or bad approved override | Failed cold build, fallback image, or stale public sprite | Required sprites fail; optional Forms fall back; local unknown image; bounded retries | Keep source availability and cache recovery procedures; review pin/override changes; preserve intentional one-week HTTP cache policy | `packages/game-data/src/sprites.ts:119-157`, `packages/game-data/src/pokeapi-sprites.ts:57-88`, `apps/web/next.config.ts:11-16` |
+
+### Planned application scenarios
 
 | Priority | Scenario and capability gain | Prerequisites | Impact | Existing controls | Mitigation | Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -138,7 +200,9 @@ Payments, save-file/emulator imports, arbitrary user code execution, uploads, an
 | Next | Preview exposes copied production rows or build dependency exposes credentials | Preview access/secret grants or trusted build input is compromised | Broad private-data disclosure or service write authority | Separate branch/namespace; pinned sources; compile validation | Restrict preview audience/data/secrets; least-privilege runtime and migration roles; review dependencies and immutable inputs | T:9-10, T:16-29, T:149, T:152 |
 | Later | Old/new deployment or malformed stored args produce reordered/duplicate effects | Required package fix absent, incompatible schema/protocol, or receipt failure | Usually same-Run data integrity loss; scope depends on affected actors | Additive protocol, lenient readers, receipts; explicit NUZ-41 prerequisite | Verify queue ordering fix before screens; test supported old-tab saves and migrations with current authorization | T:150-160; V:41-42 |
 
-Verification should use the specified real-Postgres command/loader seam and small browser/live/recovery suites (V:9-16). Add focused assertions for unresolved privacy projections, cross-origin requests, cron authority, and resource limits when their designs are decided. No tests were run for this document, and no runtime security coverage is claimed.
+Existing milestone tests cover cache hits, negative caching, retries/timeouts, compiler failure, sprite selection, permanence, and reader lookup. They were inspected as evidence of intended checks, not executed for this document (`packages/game-data/test/pokeapi-sprites.test.ts:56-115`, `packages/game-data/test/build.test.ts:97-262`, `packages/game-data/test/sprites.test.ts:21-43`). The sprite-source unit tests use mocked fetches; CI can still fetch real sprites because package tests depend on build. The inspected CI workflow runs on pushes to main and pull requests, but does not itself run a full Next production build or publish a deployment. Token permissions, required checks, and release/cache-writer authorization are not established by that file (.github/workflows/ci.yml:3-24). Deployed gates and browser image-decoder behavior were not validated.
+
+Future application verification should use the specified real-Postgres command/loader seam and small browser/live/recovery suites (V:9-16). Add focused assertions for unresolved privacy projections, cross-origin requests, cron authority, and resource limits when their designs are decided.
 
 ## 4. Severity Calibration (Critical, High, Medium, Low)
 
@@ -151,11 +215,13 @@ Use proven authority gain, affected audience, and reachability to rate an implem
 | Medium | Bounded private metadata disclosure; targeted cross-user disruption under realistic quotas; unauthorized account-state action with narrower reach | A post-revocation token carrying only minimal invalidations has less impact than a loader returning private records; quantify actual payload and duration |
 | Low | Small unintended non-sensitive disclosure or limited cross-user nuisance with constrained reach | Self-only forged local predictions, ordinary Warning violations, nonunique names, and accepted self-device races need not be security findings at all |
 
+For the implemented pipeline, a proven data-to-build-code execution path with release credentials could be High or Critical depending on authority reached. Cache poisoning that only changes pictures or blocks one operator build is much narrower; rating it requires proof that the attacker crosses a real cache-writer/release boundary. Missing hashes, malformed PNG bytes, or a provider outage alone do not establish code execution. Incorrect encounter facts, an intended first-Form fallback, and the accepted week of stale sprites are not by themselves security vulnerabilities.
+
 Do not assign Critical simply because a third-party service or build exists. Do not assign High to normal link sharing, archival, editable game history, or an authorized partner's shared-setting changes. A leaked invite's consequence is significant, but its deliberate lack of expiry/rotation is an explicit product choice. No severity is assigned to an unverified scaffold omission.
 
-**Review method:** An independent fresh-context architecture review checked the local specification. Its material boundaries, resource mappings, and open questions were reconciled into this document. Neither pass tested runtime enforcement.
+**Review method:** Source inspection and an independent fresh-context architecture review covered the milestone's importer, compile, cache, reader, sprite consumers and build/CI configuration. The earlier spec-based application model is retained as planned behavior. No network fetches, imports, builds or tests were executed for this update.
 
-**Provenance:** Local working-tree specification, including pre-existing uncommitted edits, based on HEAD `2e81fa90b9a455beb29567124dcf8e8ea75b09df`. Reviewed content inventory: all five `docs/spec/version-1/*.md` documents, `apps/web/CONTEXT.md`, `apps/web/app/page.tsx`, and `apps/web/package.json`. Snapshot hashes the sorted relative-path/file-SHA256 inventory as compact JSON. This scope is the planned v1 design plus a scaffold check, not a repository-wide implementation audit.
+**Provenance:** Source revision `46c31079170a5a7478e0666fefb22bbc905d1afe` (clean checkout before this document update). Scope: milestone implementation in `packages/game-data`, its web sprite consumers, root/workspace task configuration, CI, and the version 1 spec. Generated Emerald data and the release lock are inputs, not independently fact-checked game content. This is an architecture threat model, not a completed vulnerability scan.
 
 Repository: sha256:ec74bfc1d4ae5e66f679d8d1e0adaa09e27f3d5684d720e1cd3d34dfa8e5cda6
-Version: codex-security-snapshot/v1:sha256:0edfe7bb425c5b0a6b18ff6a64be022c79995adaa68e1c75c7609aa0819438a4
+Version: 46c31079170a5a7478e0666fefb22bbc905d1afe
