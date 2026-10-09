@@ -1,10 +1,12 @@
-// Compiles sources/ into dist/ and runs the permanence check.
+// Compiles sources/ into dist/, runs the permanence check, and writes the
+// sprites (downloaded from the pinned PokeAPI commit on a cache miss).
 //   node scripts/compile.ts --frozen        every build and CI: never writes a lock
 //   node scripts/compile.ts --lock [map…]   updates existing locks; names Maps to lock at launch
 
 import { fileURLToPath } from "node:url"
 
 import { buildMaps } from "../src/build.ts"
+import { pokeApiSprites } from "../src/pokeapi-sprites.ts"
 
 const [flag, ...maps] = process.argv.slice(2)
 
@@ -22,6 +24,9 @@ const built = await buildMaps({
   releasedDir: packageDir("released"),
   mode: flag === "--frozen" ? "frozen" : "lock",
   maps,
+  sprites: pokeApiSprites({
+    cacheDir: packageDir("node_modules/.cache/pokeapi-sprites"),
+  }),
 })
 
 if (!built.ok) {

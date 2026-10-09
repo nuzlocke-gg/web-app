@@ -16,9 +16,11 @@ import {
   primaryType,
   progressTotal,
   searchSpecies,
+  spriteUrl,
   suggestions,
   toSummary,
   typesOf,
+  unknownSpriteUrl,
   type LoadedMap,
   type MapRegistry,
 } from "../src/reader.ts"
@@ -283,6 +285,19 @@ describe("Forms and types", () => {
   })
 })
 
+describe("sprites", () => {
+  it("gives every Form a sprite URL", () => {
+    expect(spriteUrl(map, "unown", "b")).toBe("/sprites/unown/b.png")
+    expect(spriteUrl(map, "bulbasaur", "base")).toBe(
+      "/sprites/bulbasaur/base.png"
+    )
+  })
+
+  it("gives the unknown sprite a URL beside them", () => {
+    expect(unknownSpriteUrl).toBe("/sprites/unknown.png")
+  })
+})
+
 describe("Evolution Lines", () => {
   it("names a line by its earliest Species", () => {
     expect(evolutionLineOf(map, "raichu")).toBe("pichu")
@@ -338,6 +353,7 @@ describe("unknown identifiers read as unknown", () => {
     expect(evolutionLineOf(map, "missingno")).toBeUndefined()
     expect(dexNumber(map, "missingno")).toBeUndefined()
     expect(primaryType(map, "missingno", "base")).toBeUndefined()
+    expect(spriteUrl(map, "missingno", "base")).toBeUndefined()
   })
 
   it("for a Form", () => {
@@ -345,5 +361,6 @@ describe("unknown identifiers read as unknown", () => {
     expect(formTypes(map, "burmy", "missing")).toBeUndefined()
     expect(primaryType(map, "burmy", "missing")).toBeUndefined()
     expect(nextInLine(map, "burmy", "missing")).toEqual([])
+    expect(spriteUrl(map, "burmy", "missing")).toBeUndefined()
   })
 })

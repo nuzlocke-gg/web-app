@@ -1,0 +1,15 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "outputs": ["$TURBO_EXTENDS$", "public/sprites/**"]
+    },
+    "dev": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["$TURBO_EXTENDS$", "^build"]
+    }
+  }
+}

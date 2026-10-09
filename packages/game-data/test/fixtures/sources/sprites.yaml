@@ -1,0 +1,4 @@
+# Regional Variants share their dex number with the ordinary Species.
+rattata-alola/base: "10091"
+raticate-alola/base: "10092"
+raichu-alola/base: "10100"

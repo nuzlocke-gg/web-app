@@ -8,10 +8,21 @@ The app imports only `@workspace/game-data`. Load a Map once per Run with `loadM
 
 The reader reads `dist/`, which the build writes. `dist/` is not committed. A consumer must depend on this package so that `turbo build` builds it first. A plain `next build` does not.
 
+## Sprites
+
+The build writes a sprite for every Species and Form of every Map to `dist/sprites/<species>/<form>.png`: PokeAPI's default front sprites (Black/White style, 96 × 96) from the commit pinned in `src/pokeapi-sprites.ts`. A Form uses the file that `sources/sprites.yaml` names for it; else the first Form uses `<dex>.png`, and another Form uses `<dex>-<form>.png` when it exists, else the first Form's sprite. It also writes `unknown.png`, PokeAPI's `0.png` placeholder (a grey "?").
+
+`sources/sprites.yaml` is needed for a Regional Variant (it shares its dex number), a ROM-hack Species (its dex number is its own; a `:` in its id becomes `--` in the path), and a Form that PokeAPI names by its Pokémon id (`deoxys/attack: "10001"`). The build stops on a missing required file, a dex number that several Species share without overrides, a ROM-hack Species without one, or an override for no Form.
+
+- The app gets a sprite URL only from `spriteUrl(map, species, form)`, which gives `/sprites/<species>/<form>.png` for a Form of the Map and `undefined` for an unknown one, and from `unknownSpriteUrl` for the placeholder.
+- A build script serves the files by copying `spritesDir` (from `@workspace/game-data/sprites-dir`) to the app's `public/sprites/`. The web app does this before `next dev` and `next build`; run it through the root `npm run dev` or `npm run build`, which build this package first.
+- The build downloads a sprite only on a cache miss. The cache is `node_modules/.cache/pokeapi-sprites/`, and it can be deleted at any time.
+
 ## Sources
 
 ```
 sources/methods.yaml                         the method groups, in record Drawer order
+sources/sprites.yaml                         PokeAPI sprite files for Forms that need one
 sources/maps/<map>/map.yaml                  Map facts, Games, Places in play order with their source areas
 sources/maps/<map>/one-time.yaml             Static, Roaming, Gift, Trade rows (hand-written only)
 sources/maps/<map>/corrections.yaml          changes to generated data, each with what it expects
@@ -29,6 +40,6 @@ An importer is a one-off generator: it writes only its own files under `generate
 
 ## Commands
 
-- `npm run build`: compile every Map into `dist/`. It never writes a lock, and it fails when a released identifier no longer resolves, a Species changes its dex number, or a lock is out of date. CI runs it.
+- `npm run build`: compile every Map into `dist/`, with its sprites. It never writes a lock, and it fails when a released identifier no longer resolves, a Species changes its dex number, or a lock is out of date. CI runs it.
 - `npm run lock`: the same compile, then it adds new identifiers to every existing lock. Commit the result.
 - `npm run lock -- <map>`: create the lock for a Map at its release. From then on, its identifiers are permanent.

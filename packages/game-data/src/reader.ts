@@ -45,6 +45,35 @@ export interface MapRegistry {
 }
 
 /**
+ * Where a Form's sprite is, under the sprite directory. A ROM hack's `:`
+ * becomes `--`, which no other identifier has, because `:` is not valid in
+ * a Windows file name.
+ */
+export function spritePath(ref: FormRef): string {
+  return `${ref.species.replace(":", "--")}/${ref.form}.png`
+}
+
+/** Where the sprite for an unknown Pokémon is, under the sprite directory. */
+export const UNKNOWN_SPRITE_PATH = "unknown.png"
+
+/** The URL of the sprite for an unknown Pokémon, or for a sprite that cannot load. */
+export const unknownSpriteUrl = `/sprites/${UNKNOWN_SPRITE_PATH}`
+
+/**
+ * The URL of a Form's sprite, `/sprites/<species>/<form>.png`. A Form of the
+ * Map always has one; an unknown Species or Form gives `undefined`.
+ */
+export function spriteUrl(
+  map: LoadedMap,
+  species: SpeciesId,
+  form: FormId
+): string | undefined {
+  if (!getForm(map, species, form)) return undefined
+
+  return `/sprites/${spritePath({ species, form })}`
+}
+
+/**
  * A loaded Map with lookup indexes. Every reader function takes it first.
  * It is shared by every caller: treat it, and everything a reader function
  * returns from it, as read-only.

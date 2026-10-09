@@ -1,5 +1,6 @@
 import {
   cp,
+  mkdir,
   mkdtemp,
   readdir,
   readFile,
@@ -8,7 +9,7 @@ import {
   writeFile,
 } from "node:fs/promises"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 import { ok } from "serializable-result"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
@@ -20,7 +21,7 @@ import {
   placesOf,
   type MapRegistry,
 } from "../src/reader.ts"
-import { fixtureSourcesDir } from "./fixture.ts"
+import { fakeSprites, fixtureSourcesDir } from "./fixture.ts"
 
 let root: string
 let options: BuildOptions
@@ -32,6 +33,7 @@ beforeEach(async () => {
     outDir: join(root, "dist"),
     releasedDir: join(root, "released"),
     mode: "frozen",
+    sprites: fakeSprites(["201-b"]),
   }
 
   await cp(fixtureSourcesDir, options.sourcesDir, { recursive: true })
@@ -60,6 +62,7 @@ describe("the build", () => {
       "fixture-later.json",
       "fixture.json",
       "registry.ts",
+      "sprites",
     ])
 
     const { registry } = (await import(
@@ -128,6 +131,142 @@ describe("the build", () => {
       "fixture: The Map needs exactly one Starter Place; it has 2"
     )
     expect(await outFiles()).toEqual([])
+  })
+})
+
+describe("sprites", () => {
+  const spritesYaml = () => join(options.sourcesDir, "sprites.yaml")
+
+  async function spriteText(species: string, form: string) {
+    return readFile(
+      join(options.outDir, "sprites", species, `${form}.png`),
+      "utf8"
+    )
+  }
+
+  it("writes a sprite for every Species and Form of every Map", async () => {
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+
+    const { registry } = (await import(
+      join(options.outDir, "registry.ts")
+    )) as { registry: MapRegistry }
+    const reader = createReader(registry)
+
+    for (const { id } of reader.listMaps()) {
+      const map = (await reader.loadMap(id))!
+
+      for (const species of map.data.species) {
+        for (const form of species.forms) {
+          expect(await spriteText(species.id, form.id)).not.toBe("")
+        }
+      }
+    }
+  })
+
+  it("gives a Form its own sprite when the source has one", async () => {
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+    expect(await spriteText("unown", "a")).toBe("201")
+    expect(await spriteText("unown", "b")).toBe("201-b")
+  })
+
+  it("gives a Form with no sprite the sprite of its Species' first Form", async () => {
+    expect(await buildMaps({ ...options, sprites: fakeSprites() })).toEqual(
+      ok(undefined)
+    )
+    expect(await spriteText("unown", "b")).toBe("201")
+  })
+
+  it("stops, naming the Form, when a first Form has no sprite", async () => {
+    const sprites = fakeSprites()
+
+    expect(
+      await problemsOf({
+        ...options,
+        sprites: async (file) => (file === "201" ? undefined : sprites(file)),
+      })
+    ).toEqual(["unown/a.png: no sprite 201.png at the pinned commit"])
+    expect(await outFiles()).toEqual([])
+  })
+
+  it("writes the unknown sprite, and stops without it", async () => {
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+    expect(
+      await readFile(join(options.outDir, "sprites", "unknown.png"), "utf8")
+    ).toBe("0")
+
+    const sprites = fakeSprites()
+
+    expect(
+      await problemsOf({
+        ...options,
+        sprites: async (file) => (file === "0" ? undefined : sprites(file)),
+      })
+    ).toEqual(["no unknown sprite 0.png at the pinned commit"])
+  })
+
+  it("gives a Regional Variant the sprite that sprites.yaml names", async () => {
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+    expect(await spriteText("rattata", "base")).toBe("19")
+    expect(await spriteText("rattata-alola", "base")).toBe("10091")
+  })
+
+  it("stops when Species share a dex number without overrides", async () => {
+    const yaml = await readFile(spritesYaml(), "utf8")
+
+    await writeFile(spritesYaml(), yaml.replace(/^rattata-alola.*\n/m, ""))
+
+    expect(await problemsOf(options)).toEqual([
+      "rattata, rattata-alola share dex 19: give all but one a sprite for its first Form in sprites.yaml",
+    ])
+  })
+
+  it("stops on an override for no Form, or one that is not valid", async () => {
+    await writeFile(spritesYaml(), 'missingno/base: "1"\n', { flag: "a" })
+
+    expect(await problemsOf(options)).toEqual([
+      'sprites.yaml: "missingno/base" is not a Form of any Map',
+    ])
+
+    await writeFile(spritesYaml(), 'missingno: "1"\n')
+
+    expect(await problemsOf(options)).toEqual([
+      expect.stringMatching(/^sprites\.yaml: missingno: /),
+    ])
+  })
+
+  it("needs an override for a ROM-hack Species, and writes it without a colon", async () => {
+    await writeFile(
+      join(options.sourcesDir, "maps/fixture/corrections.yaml"),
+      [
+        "- op: add-species",
+        "  species:",
+        "    id: unbound:foo",
+        "    name: Foo",
+        "    dex: 1001",
+        "    forms: [{ id: base, name: Foo, types: [normal] }]",
+        "",
+      ].join("\n"),
+      { flag: "a" }
+    )
+
+    expect(await problemsOf(options)).toEqual([
+      "unbound:foo: a ROM-hack Species needs a sprite for its first Form in sprites.yaml",
+    ])
+
+    await writeFile(spritesYaml(), 'unbound:foo/base: "1"\n', { flag: "a" })
+
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+    expect(await spriteText("unbound--foo", "base")).toBe("1")
+  })
+
+  it("removes the sprites of an earlier build", async () => {
+    const old = join(options.outDir, "sprites", "missingno", "base.png")
+
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+    await mkdir(dirname(old), { recursive: true })
+    await writeFile(old, "old")
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+    await expect(readFile(old)).rejects.toThrow()
   })
 })
 

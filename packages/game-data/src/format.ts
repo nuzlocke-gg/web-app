@@ -274,6 +274,13 @@ export interface MapSources {
   corrections: Correction[]
 }
 
+/**
+ * `sources/sprites.yaml`: the PokeAPI file (`"10091"`, without `.png`) for a
+ * Form whose sprite is neither `<dex>.png` nor `<dex>-<form>.png`, by
+ * `species/form`. A Regional Variant shares its dex number, so it needs one.
+ */
+export type SpriteOverrides = Record<string, string>
+
 // ---------------------------------------------------------------------------
 // 4. The release lock: `released/<map>.lock.json`, committed from launch
 // ---------------------------------------------------------------------------

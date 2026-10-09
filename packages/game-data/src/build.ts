@@ -1,5 +1,5 @@
 import { mkdir, readdir, rm, writeFile } from "node:fs/promises"
-import { join, relative, sep } from "node:path"
+import { dirname, join, relative, sep } from "node:path"
 import { fileURLToPath } from "node:url"
 import { err, ok, type Result } from "serializable-result"
 
@@ -8,18 +8,27 @@ import type { CompiledMap, MapId, ReleaseLock } from "./format.ts"
 import { checkPermanence, lockFor } from "./permanence.ts"
 import { toSummary } from "./reader.ts"
 import {
+  resolveSprites,
+  type SpriteFiles,
+  type SpriteSource,
+} from "./sprites.ts"
+import {
   listLockedMaps,
   listSourceMaps,
   lockFileName,
   readLock,
   readMapSources,
+  readSpriteOverrides,
 } from "./sources.ts"
 
 /** Where the build reads and writes. */
 export interface BuildOptions {
-  /** Holds `methods.yaml` and `maps/<map>/`. */
+  /** Holds `methods.yaml`, `sprites.yaml`, and `maps/<map>/`. */
   sourcesDir: string
-  /** Receives `<map>.json` and `registry.ts`. Its old JSON files are removed. */
+  /**
+   * Receives `<map>.json`, `registry.ts`, and `sprites/`. Its old JSON files
+   * and sprites are removed.
+   */
   outDir: string
   /** Holds the release locks, `<map>.lock.json`. */
   releasedDir: string
@@ -31,6 +40,8 @@ export interface BuildOptions {
   mode: "frozen" | "lock"
   /** In `lock` mode, Maps to lock even though they have no lock yet. */
   maps?: MapId[]
+  /** Where the sprite of every Species and Form comes from. */
+  sprites: SpriteSource
 }
 
 /**
@@ -97,9 +108,20 @@ export async function buildMaps(
     if (!sourceMaps.includes(map)) problems.push(`No Map "${map}" to lock`)
   }
 
-  if (problems.length > 0) return err(problems)
+  const overrides = await readSpriteOverrides(sourcesDir)
 
-  await writeOutput(options.outDir, compiled)
+  if (!overrides.ok) problems.push(...overrides.error)
+  if (problems.length > 0 || !overrides.ok) return err(problems)
+
+  const sprites = await resolveSprites(
+    compiled,
+    overrides.value,
+    options.sprites
+  )
+
+  if (!sprites.ok) return err(sprites.error)
+
+  await writeOutput(options.outDir, compiled, sprites.value)
 
   if (mode === "lock") {
     await writeLocks(
@@ -111,7 +133,11 @@ export async function buildMaps(
   return ok(undefined)
 }
 
-async function writeOutput(outDir: string, maps: CompiledMap[]) {
+async function writeOutput(
+  outDir: string,
+  maps: CompiledMap[],
+  sprites: SpriteFiles
+) {
   await mkdir(outDir, { recursive: true })
 
   for (const file of await readdir(outDir)) {
@@ -122,7 +148,19 @@ async function writeOutput(outDir: string, maps: CompiledMap[]) {
     await writeFile(join(outDir, `${map.id}.json`), JSON.stringify(map))
   }
 
+  await writeSprites(join(outDir, "sprites"), sprites)
   await writeFile(join(outDir, "registry.ts"), registrySource(outDir, maps))
+}
+
+async function writeSprites(spritesDir: string, sprites: SpriteFiles) {
+  await rm(spritesDir, { recursive: true, force: true })
+
+  for (const [path, bytes] of sprites) {
+    const file = join(spritesDir, path)
+
+    await mkdir(dirname(file), { recursive: true })
+    await writeFile(file, bytes)
+  }
 }
 
 /** The lock of each Map that has one, and of each named Map. */
