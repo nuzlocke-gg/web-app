@@ -19,7 +19,13 @@ sources/maps/<map>/generated/<importer>.*.json  written only by that importer
 released/<map>.lock.json                     every released identifier of the Map
 ```
 
-`test/fixtures/sources/` is a small Map that uses every part of the format.
+`test/fixtures/sources/` is a small Map that uses every part of the format. `sources/maps/emerald/` is the first real Map.
+
+## Importers
+
+An importer is a one-off generator: it writes only its own files under `generated/`, its output is committed, and a re-import is reviewed as a `git diff`. No build or test calls one.
+
+- `npm run import:pokeapi -- <map>`: the repeatable wild tables (Walk, Surf, Fishing, Rock Smash) and the Species facts of the Map's generation, from PokeAPI's CSV at the commit pinned in `importers/pokeapi.ts`. Each Game id of `map.yaml` must be a PokeAPI version. One-time rows are left out: they are hand-written in `one-time.yaml`.
 
 ## Commands
 

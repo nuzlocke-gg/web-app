@@ -1,0 +1,6319 @@
+{
+  "importer": "pokeapi",
+  "pin": "2fe95532d27a9bf340575253aff50868319d8182",
+  "species": [
+    {
+      "id": "bulbasaur",
+      "name": "Bulbasaur",
+      "dex": 1,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Bulbasaur",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ivysaur",
+      "name": "Ivysaur",
+      "dex": 2,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ivysaur",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "venusaur",
+      "name": "Venusaur",
+      "dex": 3,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Venusaur",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "charmander",
+      "name": "Charmander",
+      "dex": 4,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Charmander",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "charmeleon",
+      "name": "Charmeleon",
+      "dex": 5,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Charmeleon",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "charizard",
+      "name": "Charizard",
+      "dex": 6,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Charizard",
+          "types": [
+            "fire",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "squirtle",
+      "name": "Squirtle",
+      "dex": 7,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Squirtle",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wartortle",
+      "name": "Wartortle",
+      "dex": 8,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Wartortle",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blastoise",
+      "name": "Blastoise",
+      "dex": 9,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Blastoise",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "caterpie",
+      "name": "Caterpie",
+      "dex": 10,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Caterpie",
+          "types": [
+            "bug"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "metapod",
+      "name": "Metapod",
+      "dex": 11,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Metapod",
+          "types": [
+            "bug"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "butterfree",
+      "name": "Butterfree",
+      "dex": 12,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Butterfree",
+          "types": [
+            "bug",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weedle",
+      "name": "Weedle",
+      "dex": 13,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Weedle",
+          "types": [
+            "bug",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kakuna",
+      "name": "Kakuna",
+      "dex": 14,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Kakuna",
+          "types": [
+            "bug",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "beedrill",
+      "name": "Beedrill",
+      "dex": 15,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Beedrill",
+          "types": [
+            "bug",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pidgey",
+      "name": "Pidgey",
+      "dex": 16,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pidgey",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pidgeotto",
+      "name": "Pidgeotto",
+      "dex": 17,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pidgeotto",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pidgeot",
+      "name": "Pidgeot",
+      "dex": 18,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pidgeot",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rattata",
+      "name": "Rattata",
+      "dex": 19,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Rattata",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "raticate",
+      "name": "Raticate",
+      "dex": 20,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Raticate",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "spearow",
+      "name": "Spearow",
+      "dex": 21,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Spearow",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fearow",
+      "name": "Fearow",
+      "dex": 22,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Fearow",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ekans",
+      "name": "Ekans",
+      "dex": 23,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ekans",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arbok",
+      "name": "Arbok",
+      "dex": 24,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Arbok",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pikachu",
+      "name": "Pikachu",
+      "dex": 25,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pikachu",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "raichu",
+      "name": "Raichu",
+      "dex": 26,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Raichu",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sandshrew",
+      "name": "Sandshrew",
+      "dex": 27,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Sandshrew",
+          "types": [
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sandslash",
+      "name": "Sandslash",
+      "dex": 28,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Sandslash",
+          "types": [
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nidoran-f",
+      "name": "Nidoran♀",
+      "dex": 29,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Nidoran♀",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nidorina",
+      "name": "Nidorina",
+      "dex": 30,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Nidorina",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nidoqueen",
+      "name": "Nidoqueen",
+      "dex": 31,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Nidoqueen",
+          "types": [
+            "poison",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nidoran-m",
+      "name": "Nidoran♂",
+      "dex": 32,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Nidoran♂",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nidorino",
+      "name": "Nidorino",
+      "dex": 33,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Nidorino",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nidoking",
+      "name": "Nidoking",
+      "dex": 34,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Nidoking",
+          "types": [
+            "poison",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "clefairy",
+      "name": "Clefairy",
+      "dex": 35,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Clefairy",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "clefable",
+      "name": "Clefable",
+      "dex": 36,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Clefable",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vulpix",
+      "name": "Vulpix",
+      "dex": 37,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Vulpix",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ninetales",
+      "name": "Ninetales",
+      "dex": 38,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ninetales",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jigglypuff",
+      "name": "Jigglypuff",
+      "dex": 39,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Jigglypuff",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wigglytuff",
+      "name": "Wigglytuff",
+      "dex": 40,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Wigglytuff",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "zubat",
+      "name": "Zubat",
+      "dex": 41,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Zubat",
+          "types": [
+            "poison",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "golbat",
+      "name": "Golbat",
+      "dex": 42,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Golbat",
+          "types": [
+            "poison",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oddish",
+      "name": "Oddish",
+      "dex": 43,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Oddish",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gloom",
+      "name": "Gloom",
+      "dex": 44,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Gloom",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vileplume",
+      "name": "Vileplume",
+      "dex": 45,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Vileplume",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "paras",
+      "name": "Paras",
+      "dex": 46,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Paras",
+          "types": [
+            "bug",
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parasect",
+      "name": "Parasect",
+      "dex": 47,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Parasect",
+          "types": [
+            "bug",
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "venonat",
+      "name": "Venonat",
+      "dex": 48,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Venonat",
+          "types": [
+            "bug",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "venomoth",
+      "name": "Venomoth",
+      "dex": 49,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Venomoth",
+          "types": [
+            "bug",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "diglett",
+      "name": "Diglett",
+      "dex": 50,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Diglett",
+          "types": [
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dugtrio",
+      "name": "Dugtrio",
+      "dex": 51,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Dugtrio",
+          "types": [
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "meowth",
+      "name": "Meowth",
+      "dex": 52,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Meowth",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "persian",
+      "name": "Persian",
+      "dex": 53,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Persian",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "psyduck",
+      "name": "Psyduck",
+      "dex": 54,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Psyduck",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "golduck",
+      "name": "Golduck",
+      "dex": 55,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Golduck",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mankey",
+      "name": "Mankey",
+      "dex": 56,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Mankey",
+          "types": [
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "primeape",
+      "name": "Primeape",
+      "dex": 57,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Primeape",
+          "types": [
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "growlithe",
+      "name": "Growlithe",
+      "dex": 58,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Growlithe",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arcanine",
+      "name": "Arcanine",
+      "dex": 59,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Arcanine",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "poliwag",
+      "name": "Poliwag",
+      "dex": 60,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Poliwag",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "poliwhirl",
+      "name": "Poliwhirl",
+      "dex": 61,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Poliwhirl",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "poliwrath",
+      "name": "Poliwrath",
+      "dex": 62,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Poliwrath",
+          "types": [
+            "water",
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "abra",
+      "name": "Abra",
+      "dex": 63,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Abra",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kadabra",
+      "name": "Kadabra",
+      "dex": 64,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Kadabra",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "alakazam",
+      "name": "Alakazam",
+      "dex": 65,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Alakazam",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "machop",
+      "name": "Machop",
+      "dex": 66,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Machop",
+          "types": [
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "machoke",
+      "name": "Machoke",
+      "dex": 67,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Machoke",
+          "types": [
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "machamp",
+      "name": "Machamp",
+      "dex": 68,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Machamp",
+          "types": [
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bellsprout",
+      "name": "Bellsprout",
+      "dex": 69,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Bellsprout",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weepinbell",
+      "name": "Weepinbell",
+      "dex": 70,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Weepinbell",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "victreebel",
+      "name": "Victreebel",
+      "dex": 71,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Victreebel",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tentacool",
+      "name": "Tentacool",
+      "dex": 72,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Tentacool",
+          "types": [
+            "water",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tentacruel",
+      "name": "Tentacruel",
+      "dex": 73,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Tentacruel",
+          "types": [
+            "water",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "geodude",
+      "name": "Geodude",
+      "dex": 74,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Geodude",
+          "types": [
+            "rock",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "graveler",
+      "name": "Graveler",
+      "dex": 75,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Graveler",
+          "types": [
+            "rock",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "golem",
+      "name": "Golem",
+      "dex": 76,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Golem",
+          "types": [
+            "rock",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ponyta",
+      "name": "Ponyta",
+      "dex": 77,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ponyta",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rapidash",
+      "name": "Rapidash",
+      "dex": 78,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Rapidash",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "slowpoke",
+      "name": "Slowpoke",
+      "dex": 79,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Slowpoke",
+          "types": [
+            "water",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "slowbro",
+      "name": "Slowbro",
+      "dex": 80,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Slowbro",
+          "types": [
+            "water",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "magnemite",
+      "name": "Magnemite",
+      "dex": 81,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Magnemite",
+          "types": [
+            "electric",
+            "steel"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "magneton",
+      "name": "Magneton",
+      "dex": 82,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Magneton",
+          "types": [
+            "electric",
+            "steel"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "farfetchd",
+      "name": "Farfetch’d",
+      "dex": 83,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Farfetch’d",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "doduo",
+      "name": "Doduo",
+      "dex": 84,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Doduo",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dodrio",
+      "name": "Dodrio",
+      "dex": 85,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Dodrio",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "seel",
+      "name": "Seel",
+      "dex": 86,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Seel",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dewgong",
+      "name": "Dewgong",
+      "dex": 87,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Dewgong",
+          "types": [
+            "water",
+            "ice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grimer",
+      "name": "Grimer",
+      "dex": 88,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Grimer",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "muk",
+      "name": "Muk",
+      "dex": 89,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Muk",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shellder",
+      "name": "Shellder",
+      "dex": 90,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Shellder",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cloyster",
+      "name": "Cloyster",
+      "dex": 91,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Cloyster",
+          "types": [
+            "water",
+            "ice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gastly",
+      "name": "Gastly",
+      "dex": 92,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Gastly",
+          "types": [
+            "ghost",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "haunter",
+      "name": "Haunter",
+      "dex": 93,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Haunter",
+          "types": [
+            "ghost",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gengar",
+      "name": "Gengar",
+      "dex": 94,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Gengar",
+          "types": [
+            "ghost",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "onix",
+      "name": "Onix",
+      "dex": 95,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Onix",
+          "types": [
+            "rock",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "drowzee",
+      "name": "Drowzee",
+      "dex": 96,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Drowzee",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hypno",
+      "name": "Hypno",
+      "dex": 97,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Hypno",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "krabby",
+      "name": "Krabby",
+      "dex": 98,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Krabby",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kingler",
+      "name": "Kingler",
+      "dex": 99,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Kingler",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "voltorb",
+      "name": "Voltorb",
+      "dex": 100,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Voltorb",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "electrode",
+      "name": "Electrode",
+      "dex": 101,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Electrode",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exeggcute",
+      "name": "Exeggcute",
+      "dex": 102,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Exeggcute",
+          "types": [
+            "grass",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exeggutor",
+      "name": "Exeggutor",
+      "dex": 103,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Exeggutor",
+          "types": [
+            "grass",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cubone",
+      "name": "Cubone",
+      "dex": 104,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Cubone",
+          "types": [
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "marowak",
+      "name": "Marowak",
+      "dex": 105,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Marowak",
+          "types": [
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hitmonlee",
+      "name": "Hitmonlee",
+      "dex": 106,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Hitmonlee",
+          "types": [
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hitmonchan",
+      "name": "Hitmonchan",
+      "dex": 107,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Hitmonchan",
+          "types": [
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lickitung",
+      "name": "Lickitung",
+      "dex": 108,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lickitung",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "koffing",
+      "name": "Koffing",
+      "dex": 109,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Koffing",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weezing",
+      "name": "Weezing",
+      "dex": 110,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Weezing",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rhyhorn",
+      "name": "Rhyhorn",
+      "dex": 111,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Rhyhorn",
+          "types": [
+            "ground",
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rhydon",
+      "name": "Rhydon",
+      "dex": 112,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Rhydon",
+          "types": [
+            "ground",
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chansey",
+      "name": "Chansey",
+      "dex": 113,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Chansey",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tangela",
+      "name": "Tangela",
+      "dex": 114,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Tangela",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kangaskhan",
+      "name": "Kangaskhan",
+      "dex": 115,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Kangaskhan",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "horsea",
+      "name": "Horsea",
+      "dex": 116,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Horsea",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "seadra",
+      "name": "Seadra",
+      "dex": 117,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Seadra",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "goldeen",
+      "name": "Goldeen",
+      "dex": 118,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Goldeen",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "seaking",
+      "name": "Seaking",
+      "dex": 119,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Seaking",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "staryu",
+      "name": "Staryu",
+      "dex": 120,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Staryu",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "starmie",
+      "name": "Starmie",
+      "dex": 121,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Starmie",
+          "types": [
+            "water",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mr-mime",
+      "name": "Mr. Mime",
+      "dex": 122,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Mr. Mime",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scyther",
+      "name": "Scyther",
+      "dex": 123,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Scyther",
+          "types": [
+            "bug",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jynx",
+      "name": "Jynx",
+      "dex": 124,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Jynx",
+          "types": [
+            "ice",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "electabuzz",
+      "name": "Electabuzz",
+      "dex": 125,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Electabuzz",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "magmar",
+      "name": "Magmar",
+      "dex": 126,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Magmar",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pinsir",
+      "name": "Pinsir",
+      "dex": 127,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pinsir",
+          "types": [
+            "bug"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tauros",
+      "name": "Tauros",
+      "dex": 128,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Tauros",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "magikarp",
+      "name": "Magikarp",
+      "dex": 129,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Magikarp",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gyarados",
+      "name": "Gyarados",
+      "dex": 130,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Gyarados",
+          "types": [
+            "water",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lapras",
+      "name": "Lapras",
+      "dex": 131,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lapras",
+          "types": [
+            "water",
+            "ice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ditto",
+      "name": "Ditto",
+      "dex": 132,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ditto",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eevee",
+      "name": "Eevee",
+      "dex": 133,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Eevee",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vaporeon",
+      "name": "Vaporeon",
+      "dex": 134,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Vaporeon",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jolteon",
+      "name": "Jolteon",
+      "dex": 135,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Jolteon",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "flareon",
+      "name": "Flareon",
+      "dex": 136,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Flareon",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "porygon",
+      "name": "Porygon",
+      "dex": 137,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Porygon",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "omanyte",
+      "name": "Omanyte",
+      "dex": 138,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Omanyte",
+          "types": [
+            "rock",
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "omastar",
+      "name": "Omastar",
+      "dex": 139,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Omastar",
+          "types": [
+            "rock",
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kabuto",
+      "name": "Kabuto",
+      "dex": 140,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Kabuto",
+          "types": [
+            "rock",
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kabutops",
+      "name": "Kabutops",
+      "dex": 141,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Kabutops",
+          "types": [
+            "rock",
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aerodactyl",
+      "name": "Aerodactyl",
+      "dex": 142,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Aerodactyl",
+          "types": [
+            "rock",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "snorlax",
+      "name": "Snorlax",
+      "dex": 143,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Snorlax",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "articuno",
+      "name": "Articuno",
+      "dex": 144,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Articuno",
+          "types": [
+            "ice",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "zapdos",
+      "name": "Zapdos",
+      "dex": 145,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Zapdos",
+          "types": [
+            "electric",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moltres",
+      "name": "Moltres",
+      "dex": 146,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Moltres",
+          "types": [
+            "fire",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dratini",
+      "name": "Dratini",
+      "dex": 147,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Dratini",
+          "types": [
+            "dragon"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dragonair",
+      "name": "Dragonair",
+      "dex": 148,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Dragonair",
+          "types": [
+            "dragon"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dragonite",
+      "name": "Dragonite",
+      "dex": 149,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Dragonite",
+          "types": [
+            "dragon",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mewtwo",
+      "name": "Mewtwo",
+      "dex": 150,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Mewtwo",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mew",
+      "name": "Mew",
+      "dex": 151,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Mew",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chikorita",
+      "name": "Chikorita",
+      "dex": 152,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Chikorita",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bayleef",
+      "name": "Bayleef",
+      "dex": 153,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Bayleef",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "meganium",
+      "name": "Meganium",
+      "dex": 154,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Meganium",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cyndaquil",
+      "name": "Cyndaquil",
+      "dex": 155,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Cyndaquil",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quilava",
+      "name": "Quilava",
+      "dex": 156,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Quilava",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "typhlosion",
+      "name": "Typhlosion",
+      "dex": 157,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Typhlosion",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "totodile",
+      "name": "Totodile",
+      "dex": 158,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Totodile",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "croconaw",
+      "name": "Croconaw",
+      "dex": 159,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Croconaw",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "feraligatr",
+      "name": "Feraligatr",
+      "dex": 160,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Feraligatr",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sentret",
+      "name": "Sentret",
+      "dex": 161,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Sentret",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "furret",
+      "name": "Furret",
+      "dex": 162,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Furret",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hoothoot",
+      "name": "Hoothoot",
+      "dex": 163,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Hoothoot",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "noctowl",
+      "name": "Noctowl",
+      "dex": 164,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Noctowl",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ledyba",
+      "name": "Ledyba",
+      "dex": 165,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ledyba",
+          "types": [
+            "bug",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ledian",
+      "name": "Ledian",
+      "dex": 166,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ledian",
+          "types": [
+            "bug",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "spinarak",
+      "name": "Spinarak",
+      "dex": 167,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Spinarak",
+          "types": [
+            "bug",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ariados",
+      "name": "Ariados",
+      "dex": 168,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ariados",
+          "types": [
+            "bug",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crobat",
+      "name": "Crobat",
+      "dex": 169,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Crobat",
+          "types": [
+            "poison",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chinchou",
+      "name": "Chinchou",
+      "dex": 170,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Chinchou",
+          "types": [
+            "water",
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lanturn",
+      "name": "Lanturn",
+      "dex": 171,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lanturn",
+          "types": [
+            "water",
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pichu",
+      "name": "Pichu",
+      "dex": 172,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pichu",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cleffa",
+      "name": "Cleffa",
+      "dex": 173,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Cleffa",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "igglybuff",
+      "name": "Igglybuff",
+      "dex": 174,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Igglybuff",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "togepi",
+      "name": "Togepi",
+      "dex": 175,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Togepi",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "togetic",
+      "name": "Togetic",
+      "dex": 176,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Togetic",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "natu",
+      "name": "Natu",
+      "dex": 177,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Natu",
+          "types": [
+            "psychic",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "xatu",
+      "name": "Xatu",
+      "dex": 178,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Xatu",
+          "types": [
+            "psychic",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mareep",
+      "name": "Mareep",
+      "dex": 179,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Mareep",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "flaaffy",
+      "name": "Flaaffy",
+      "dex": 180,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Flaaffy",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ampharos",
+      "name": "Ampharos",
+      "dex": 181,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ampharos",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bellossom",
+      "name": "Bellossom",
+      "dex": 182,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Bellossom",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "marill",
+      "name": "Marill",
+      "dex": 183,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Marill",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "azumarill",
+      "name": "Azumarill",
+      "dex": 184,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Azumarill",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sudowoodo",
+      "name": "Sudowoodo",
+      "dex": 185,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Sudowoodo",
+          "types": [
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "politoed",
+      "name": "Politoed",
+      "dex": 186,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Politoed",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hoppip",
+      "name": "Hoppip",
+      "dex": 187,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Hoppip",
+          "types": [
+            "grass",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "skiploom",
+      "name": "Skiploom",
+      "dex": 188,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Skiploom",
+          "types": [
+            "grass",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jumpluff",
+      "name": "Jumpluff",
+      "dex": 189,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Jumpluff",
+          "types": [
+            "grass",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aipom",
+      "name": "Aipom",
+      "dex": 190,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Aipom",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sunkern",
+      "name": "Sunkern",
+      "dex": 191,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Sunkern",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sunflora",
+      "name": "Sunflora",
+      "dex": 192,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Sunflora",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "yanma",
+      "name": "Yanma",
+      "dex": 193,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Yanma",
+          "types": [
+            "bug",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wooper",
+      "name": "Wooper",
+      "dex": 194,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Wooper",
+          "types": [
+            "water",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quagsire",
+      "name": "Quagsire",
+      "dex": 195,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Quagsire",
+          "types": [
+            "water",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "espeon",
+      "name": "Espeon",
+      "dex": 196,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Espeon",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "umbreon",
+      "name": "Umbreon",
+      "dex": 197,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Umbreon",
+          "types": [
+            "dark"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "murkrow",
+      "name": "Murkrow",
+      "dex": 198,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Murkrow",
+          "types": [
+            "dark",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "slowking",
+      "name": "Slowking",
+      "dex": 199,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Slowking",
+          "types": [
+            "water",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "misdreavus",
+      "name": "Misdreavus",
+      "dex": 200,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Misdreavus",
+          "types": [
+            "ghost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unown",
+      "name": "Unown",
+      "dex": 201,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Unown",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wobbuffet",
+      "name": "Wobbuffet",
+      "dex": 202,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Wobbuffet",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "girafarig",
+      "name": "Girafarig",
+      "dex": 203,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Girafarig",
+          "types": [
+            "normal",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pineco",
+      "name": "Pineco",
+      "dex": 204,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pineco",
+          "types": [
+            "bug"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forretress",
+      "name": "Forretress",
+      "dex": 205,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Forretress",
+          "types": [
+            "bug",
+            "steel"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dunsparce",
+      "name": "Dunsparce",
+      "dex": 206,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Dunsparce",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gligar",
+      "name": "Gligar",
+      "dex": 207,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Gligar",
+          "types": [
+            "ground",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "steelix",
+      "name": "Steelix",
+      "dex": 208,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Steelix",
+          "types": [
+            "steel",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "snubbull",
+      "name": "Snubbull",
+      "dex": 209,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Snubbull",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "granbull",
+      "name": "Granbull",
+      "dex": 210,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Granbull",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "qwilfish",
+      "name": "Qwilfish",
+      "dex": 211,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Qwilfish",
+          "types": [
+            "water",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scizor",
+      "name": "Scizor",
+      "dex": 212,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Scizor",
+          "types": [
+            "bug",
+            "steel"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shuckle",
+      "name": "Shuckle",
+      "dex": 213,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Shuckle",
+          "types": [
+            "bug",
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "heracross",
+      "name": "Heracross",
+      "dex": 214,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Heracross",
+          "types": [
+            "bug",
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sneasel",
+      "name": "Sneasel",
+      "dex": 215,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Sneasel",
+          "types": [
+            "dark",
+            "ice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "teddiursa",
+      "name": "Teddiursa",
+      "dex": 216,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Teddiursa",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ursaring",
+      "name": "Ursaring",
+      "dex": 217,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ursaring",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "slugma",
+      "name": "Slugma",
+      "dex": 218,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Slugma",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "magcargo",
+      "name": "Magcargo",
+      "dex": 219,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Magcargo",
+          "types": [
+            "fire",
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swinub",
+      "name": "Swinub",
+      "dex": 220,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Swinub",
+          "types": [
+            "ice",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "piloswine",
+      "name": "Piloswine",
+      "dex": 221,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Piloswine",
+          "types": [
+            "ice",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "corsola",
+      "name": "Corsola",
+      "dex": 222,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Corsola",
+          "types": [
+            "water",
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remoraid",
+      "name": "Remoraid",
+      "dex": 223,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Remoraid",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "octillery",
+      "name": "Octillery",
+      "dex": 224,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Octillery",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delibird",
+      "name": "Delibird",
+      "dex": 225,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Delibird",
+          "types": [
+            "ice",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mantine",
+      "name": "Mantine",
+      "dex": 226,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Mantine",
+          "types": [
+            "water",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "skarmory",
+      "name": "Skarmory",
+      "dex": 227,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Skarmory",
+          "types": [
+            "steel",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "houndour",
+      "name": "Houndour",
+      "dex": 228,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Houndour",
+          "types": [
+            "dark",
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "houndoom",
+      "name": "Houndoom",
+      "dex": 229,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Houndoom",
+          "types": [
+            "dark",
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kingdra",
+      "name": "Kingdra",
+      "dex": 230,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Kingdra",
+          "types": [
+            "water",
+            "dragon"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phanpy",
+      "name": "Phanpy",
+      "dex": 231,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Phanpy",
+          "types": [
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "donphan",
+      "name": "Donphan",
+      "dex": 232,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Donphan",
+          "types": [
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "porygon2",
+      "name": "Porygon2",
+      "dex": 233,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Porygon2",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stantler",
+      "name": "Stantler",
+      "dex": 234,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Stantler",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "smeargle",
+      "name": "Smeargle",
+      "dex": 235,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Smeargle",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tyrogue",
+      "name": "Tyrogue",
+      "dex": 236,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Tyrogue",
+          "types": [
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hitmontop",
+      "name": "Hitmontop",
+      "dex": 237,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Hitmontop",
+          "types": [
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "smoochum",
+      "name": "Smoochum",
+      "dex": 238,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Smoochum",
+          "types": [
+            "ice",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "elekid",
+      "name": "Elekid",
+      "dex": 239,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Elekid",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "magby",
+      "name": "Magby",
+      "dex": 240,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Magby",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "miltank",
+      "name": "Miltank",
+      "dex": 241,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Miltank",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blissey",
+      "name": "Blissey",
+      "dex": 242,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Blissey",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "raikou",
+      "name": "Raikou",
+      "dex": 243,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Raikou",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "entei",
+      "name": "Entei",
+      "dex": 244,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Entei",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "suicune",
+      "name": "Suicune",
+      "dex": 245,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Suicune",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "larvitar",
+      "name": "Larvitar",
+      "dex": 246,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Larvitar",
+          "types": [
+            "rock",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pupitar",
+      "name": "Pupitar",
+      "dex": 247,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pupitar",
+          "types": [
+            "rock",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tyranitar",
+      "name": "Tyranitar",
+      "dex": 248,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Tyranitar",
+          "types": [
+            "rock",
+            "dark"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lugia",
+      "name": "Lugia",
+      "dex": 249,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lugia",
+          "types": [
+            "psychic",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ho-oh",
+      "name": "Ho-Oh",
+      "dex": 250,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ho-Oh",
+          "types": [
+            "fire",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "celebi",
+      "name": "Celebi",
+      "dex": 251,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Celebi",
+          "types": [
+            "psychic",
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "treecko",
+      "name": "Treecko",
+      "dex": 252,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Treecko",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grovyle",
+      "name": "Grovyle",
+      "dex": 253,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Grovyle",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sceptile",
+      "name": "Sceptile",
+      "dex": 254,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Sceptile",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "torchic",
+      "name": "Torchic",
+      "dex": 255,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Torchic",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "combusken",
+      "name": "Combusken",
+      "dex": 256,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Combusken",
+          "types": [
+            "fire",
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blaziken",
+      "name": "Blaziken",
+      "dex": 257,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Blaziken",
+          "types": [
+            "fire",
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mudkip",
+      "name": "Mudkip",
+      "dex": 258,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Mudkip",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "marshtomp",
+      "name": "Marshtomp",
+      "dex": 259,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Marshtomp",
+          "types": [
+            "water",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swampert",
+      "name": "Swampert",
+      "dex": 260,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Swampert",
+          "types": [
+            "water",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "poochyena",
+      "name": "Poochyena",
+      "dex": 261,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Poochyena",
+          "types": [
+            "dark"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mightyena",
+      "name": "Mightyena",
+      "dex": 262,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Mightyena",
+          "types": [
+            "dark"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "zigzagoon",
+      "name": "Zigzagoon",
+      "dex": 263,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Zigzagoon",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "linoone",
+      "name": "Linoone",
+      "dex": 264,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Linoone",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wurmple",
+      "name": "Wurmple",
+      "dex": 265,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Wurmple",
+          "types": [
+            "bug"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "silcoon",
+      "name": "Silcoon",
+      "dex": 266,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Silcoon",
+          "types": [
+            "bug"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "beautifly",
+      "name": "Beautifly",
+      "dex": 267,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Beautifly",
+          "types": [
+            "bug",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cascoon",
+      "name": "Cascoon",
+      "dex": 268,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Cascoon",
+          "types": [
+            "bug"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dustox",
+      "name": "Dustox",
+      "dex": 269,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Dustox",
+          "types": [
+            "bug",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lotad",
+      "name": "Lotad",
+      "dex": 270,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lotad",
+          "types": [
+            "water",
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lombre",
+      "name": "Lombre",
+      "dex": 271,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lombre",
+          "types": [
+            "water",
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ludicolo",
+      "name": "Ludicolo",
+      "dex": 272,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ludicolo",
+          "types": [
+            "water",
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "seedot",
+      "name": "Seedot",
+      "dex": 273,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Seedot",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nuzleaf",
+      "name": "Nuzleaf",
+      "dex": 274,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Nuzleaf",
+          "types": [
+            "grass",
+            "dark"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shiftry",
+      "name": "Shiftry",
+      "dex": 275,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Shiftry",
+          "types": [
+            "grass",
+            "dark"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "taillow",
+      "name": "Taillow",
+      "dex": 276,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Taillow",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swellow",
+      "name": "Swellow",
+      "dex": 277,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Swellow",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wingull",
+      "name": "Wingull",
+      "dex": 278,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Wingull",
+          "types": [
+            "water",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pelipper",
+      "name": "Pelipper",
+      "dex": 279,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pelipper",
+          "types": [
+            "water",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ralts",
+      "name": "Ralts",
+      "dex": 280,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ralts",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kirlia",
+      "name": "Kirlia",
+      "dex": 281,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Kirlia",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gardevoir",
+      "name": "Gardevoir",
+      "dex": 282,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Gardevoir",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "surskit",
+      "name": "Surskit",
+      "dex": 283,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Surskit",
+          "types": [
+            "bug",
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "masquerain",
+      "name": "Masquerain",
+      "dex": 284,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Masquerain",
+          "types": [
+            "bug",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shroomish",
+      "name": "Shroomish",
+      "dex": 285,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Shroomish",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "breloom",
+      "name": "Breloom",
+      "dex": 286,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Breloom",
+          "types": [
+            "grass",
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "slakoth",
+      "name": "Slakoth",
+      "dex": 287,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Slakoth",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vigoroth",
+      "name": "Vigoroth",
+      "dex": 288,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Vigoroth",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "slaking",
+      "name": "Slaking",
+      "dex": 289,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Slaking",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nincada",
+      "name": "Nincada",
+      "dex": 290,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Nincada",
+          "types": [
+            "bug",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ninjask",
+      "name": "Ninjask",
+      "dex": 291,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Ninjask",
+          "types": [
+            "bug",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shedinja",
+      "name": "Shedinja",
+      "dex": 292,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Shedinja",
+          "types": [
+            "bug",
+            "ghost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "whismur",
+      "name": "Whismur",
+      "dex": 293,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Whismur",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loudred",
+      "name": "Loudred",
+      "dex": 294,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Loudred",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exploud",
+      "name": "Exploud",
+      "dex": 295,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Exploud",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "makuhita",
+      "name": "Makuhita",
+      "dex": 296,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Makuhita",
+          "types": [
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hariyama",
+      "name": "Hariyama",
+      "dex": 297,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Hariyama",
+          "types": [
+            "fighting"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "azurill",
+      "name": "Azurill",
+      "dex": 298,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Azurill",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nosepass",
+      "name": "Nosepass",
+      "dex": 299,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Nosepass",
+          "types": [
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "skitty",
+      "name": "Skitty",
+      "dex": 300,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Skitty",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delcatty",
+      "name": "Delcatty",
+      "dex": 301,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Delcatty",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sableye",
+      "name": "Sableye",
+      "dex": 302,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Sableye",
+          "types": [
+            "dark",
+            "ghost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mawile",
+      "name": "Mawile",
+      "dex": 303,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Mawile",
+          "types": [
+            "steel"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aron",
+      "name": "Aron",
+      "dex": 304,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Aron",
+          "types": [
+            "steel",
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lairon",
+      "name": "Lairon",
+      "dex": 305,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lairon",
+          "types": [
+            "steel",
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aggron",
+      "name": "Aggron",
+      "dex": 306,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Aggron",
+          "types": [
+            "steel",
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "meditite",
+      "name": "Meditite",
+      "dex": 307,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Meditite",
+          "types": [
+            "fighting",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "medicham",
+      "name": "Medicham",
+      "dex": 308,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Medicham",
+          "types": [
+            "fighting",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "electrike",
+      "name": "Electrike",
+      "dex": 309,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Electrike",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "manectric",
+      "name": "Manectric",
+      "dex": 310,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Manectric",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plusle",
+      "name": "Plusle",
+      "dex": 311,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Plusle",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "minun",
+      "name": "Minun",
+      "dex": 312,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Minun",
+          "types": [
+            "electric"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "volbeat",
+      "name": "Volbeat",
+      "dex": 313,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Volbeat",
+          "types": [
+            "bug"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "illumise",
+      "name": "Illumise",
+      "dex": 314,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Illumise",
+          "types": [
+            "bug"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "roselia",
+      "name": "Roselia",
+      "dex": 315,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Roselia",
+          "types": [
+            "grass",
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gulpin",
+      "name": "Gulpin",
+      "dex": 316,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Gulpin",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swalot",
+      "name": "Swalot",
+      "dex": 317,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Swalot",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "carvanha",
+      "name": "Carvanha",
+      "dex": 318,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Carvanha",
+          "types": [
+            "water",
+            "dark"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sharpedo",
+      "name": "Sharpedo",
+      "dex": 319,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Sharpedo",
+          "types": [
+            "water",
+            "dark"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wailmer",
+      "name": "Wailmer",
+      "dex": 320,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Wailmer",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wailord",
+      "name": "Wailord",
+      "dex": 321,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Wailord",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "numel",
+      "name": "Numel",
+      "dex": 322,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Numel",
+          "types": [
+            "fire",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "camerupt",
+      "name": "Camerupt",
+      "dex": 323,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Camerupt",
+          "types": [
+            "fire",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "torkoal",
+      "name": "Torkoal",
+      "dex": 324,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Torkoal",
+          "types": [
+            "fire"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "spoink",
+      "name": "Spoink",
+      "dex": 325,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Spoink",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grumpig",
+      "name": "Grumpig",
+      "dex": 326,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Grumpig",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "spinda",
+      "name": "Spinda",
+      "dex": 327,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Spinda",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trapinch",
+      "name": "Trapinch",
+      "dex": 328,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Trapinch",
+          "types": [
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vibrava",
+      "name": "Vibrava",
+      "dex": 329,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Vibrava",
+          "types": [
+            "ground",
+            "dragon"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "flygon",
+      "name": "Flygon",
+      "dex": 330,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Flygon",
+          "types": [
+            "ground",
+            "dragon"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cacnea",
+      "name": "Cacnea",
+      "dex": 331,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Cacnea",
+          "types": [
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cacturne",
+      "name": "Cacturne",
+      "dex": 332,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Cacturne",
+          "types": [
+            "grass",
+            "dark"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swablu",
+      "name": "Swablu",
+      "dex": 333,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Swablu",
+          "types": [
+            "normal",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "altaria",
+      "name": "Altaria",
+      "dex": 334,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Altaria",
+          "types": [
+            "dragon",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "zangoose",
+      "name": "Zangoose",
+      "dex": 335,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Zangoose",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "seviper",
+      "name": "Seviper",
+      "dex": 336,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Seviper",
+          "types": [
+            "poison"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lunatone",
+      "name": "Lunatone",
+      "dex": 337,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lunatone",
+          "types": [
+            "rock",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "solrock",
+      "name": "Solrock",
+      "dex": 338,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Solrock",
+          "types": [
+            "rock",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "barboach",
+      "name": "Barboach",
+      "dex": 339,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Barboach",
+          "types": [
+            "water",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "whiscash",
+      "name": "Whiscash",
+      "dex": 340,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Whiscash",
+          "types": [
+            "water",
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "corphish",
+      "name": "Corphish",
+      "dex": 341,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Corphish",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crawdaunt",
+      "name": "Crawdaunt",
+      "dex": 342,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Crawdaunt",
+          "types": [
+            "water",
+            "dark"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "baltoy",
+      "name": "Baltoy",
+      "dex": 343,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Baltoy",
+          "types": [
+            "ground",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "claydol",
+      "name": "Claydol",
+      "dex": 344,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Claydol",
+          "types": [
+            "ground",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lileep",
+      "name": "Lileep",
+      "dex": 345,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Lileep",
+          "types": [
+            "rock",
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cradily",
+      "name": "Cradily",
+      "dex": 346,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Cradily",
+          "types": [
+            "rock",
+            "grass"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "anorith",
+      "name": "Anorith",
+      "dex": 347,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Anorith",
+          "types": [
+            "rock",
+            "bug"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "armaldo",
+      "name": "Armaldo",
+      "dex": 348,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Armaldo",
+          "types": [
+            "rock",
+            "bug"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "feebas",
+      "name": "Feebas",
+      "dex": 349,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Feebas",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "milotic",
+      "name": "Milotic",
+      "dex": 350,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Milotic",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "castform",
+      "name": "Castform",
+      "dex": 351,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Castform",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kecleon",
+      "name": "Kecleon",
+      "dex": 352,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Kecleon",
+          "types": [
+            "normal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shuppet",
+      "name": "Shuppet",
+      "dex": 353,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Shuppet",
+          "types": [
+            "ghost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "banette",
+      "name": "Banette",
+      "dex": 354,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Banette",
+          "types": [
+            "ghost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "duskull",
+      "name": "Duskull",
+      "dex": 355,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Duskull",
+          "types": [
+            "ghost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dusclops",
+      "name": "Dusclops",
+      "dex": 356,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Dusclops",
+          "types": [
+            "ghost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tropius",
+      "name": "Tropius",
+      "dex": 357,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Tropius",
+          "types": [
+            "grass",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chimecho",
+      "name": "Chimecho",
+      "dex": 358,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Chimecho",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "absol",
+      "name": "Absol",
+      "dex": 359,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Absol",
+          "types": [
+            "dark"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wynaut",
+      "name": "Wynaut",
+      "dex": 360,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Wynaut",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "snorunt",
+      "name": "Snorunt",
+      "dex": 361,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Snorunt",
+          "types": [
+            "ice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "glalie",
+      "name": "Glalie",
+      "dex": 362,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Glalie",
+          "types": [
+            "ice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "spheal",
+      "name": "Spheal",
+      "dex": 363,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Spheal",
+          "types": [
+            "ice",
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sealeo",
+      "name": "Sealeo",
+      "dex": 364,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Sealeo",
+          "types": [
+            "ice",
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "walrein",
+      "name": "Walrein",
+      "dex": 365,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Walrein",
+          "types": [
+            "ice",
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "clamperl",
+      "name": "Clamperl",
+      "dex": 366,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Clamperl",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "huntail",
+      "name": "Huntail",
+      "dex": 367,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Huntail",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gorebyss",
+      "name": "Gorebyss",
+      "dex": 368,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Gorebyss",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "relicanth",
+      "name": "Relicanth",
+      "dex": 369,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Relicanth",
+          "types": [
+            "water",
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "luvdisc",
+      "name": "Luvdisc",
+      "dex": 370,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Luvdisc",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bagon",
+      "name": "Bagon",
+      "dex": 371,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Bagon",
+          "types": [
+            "dragon"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shelgon",
+      "name": "Shelgon",
+      "dex": 372,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Shelgon",
+          "types": [
+            "dragon"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "salamence",
+      "name": "Salamence",
+      "dex": 373,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Salamence",
+          "types": [
+            "dragon",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "beldum",
+      "name": "Beldum",
+      "dex": 374,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Beldum",
+          "types": [
+            "steel",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "metang",
+      "name": "Metang",
+      "dex": 375,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Metang",
+          "types": [
+            "steel",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "metagross",
+      "name": "Metagross",
+      "dex": 376,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Metagross",
+          "types": [
+            "steel",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "regirock",
+      "name": "Regirock",
+      "dex": 377,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Regirock",
+          "types": [
+            "rock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "regice",
+      "name": "Regice",
+      "dex": 378,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Regice",
+          "types": [
+            "ice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "registeel",
+      "name": "Registeel",
+      "dex": 379,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Registeel",
+          "types": [
+            "steel"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "latias",
+      "name": "Latias",
+      "dex": 380,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Latias",
+          "types": [
+            "dragon",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "latios",
+      "name": "Latios",
+      "dex": 381,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Latios",
+          "types": [
+            "dragon",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kyogre",
+      "name": "Kyogre",
+      "dex": 382,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Kyogre",
+          "types": [
+            "water"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "groudon",
+      "name": "Groudon",
+      "dex": 383,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Groudon",
+          "types": [
+            "ground"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rayquaza",
+      "name": "Rayquaza",
+      "dex": 384,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Rayquaza",
+          "types": [
+            "dragon",
+            "flying"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jirachi",
+      "name": "Jirachi",
+      "dex": 385,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Jirachi",
+          "types": [
+            "steel",
+            "psychic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deoxys",
+      "name": "Deoxys",
+      "dex": 386,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Deoxys",
+          "types": [
+            "psychic"
+          ]
+        }
+      ]
+    }
+  ],
+  "evolutionLinks": [
+    {
+      "from": "bulbasaur",
+      "to": "ivysaur"
+    },
+    {
+      "from": "ivysaur",
+      "to": "venusaur"
+    },
+    {
+      "from": "charmander",
+      "to": "charmeleon"
+    },
+    {
+      "from": "charmeleon",
+      "to": "charizard"
+    },
+    {
+      "from": "squirtle",
+      "to": "wartortle"
+    },
+    {
+      "from": "wartortle",
+      "to": "blastoise"
+    },
+    {
+      "from": "caterpie",
+      "to": "metapod"
+    },
+    {
+      "from": "metapod",
+      "to": "butterfree"
+    },
+    {
+      "from": "weedle",
+      "to": "kakuna"
+    },
+    {
+      "from": "kakuna",
+      "to": "beedrill"
+    },
+    {
+      "from": "pidgey",
+      "to": "pidgeotto"
+    },
+    {
+      "from": "pidgeotto",
+      "to": "pidgeot"
+    },
+    {
+      "from": "rattata",
+      "to": "raticate"
+    },
+    {
+      "from": "spearow",
+      "to": "fearow"
+    },
+    {
+      "from": "ekans",
+      "to": "arbok"
+    },
+    {
+      "from": "pikachu",
+      "to": "raichu"
+    },
+    {
+      "from": "sandshrew",
+      "to": "sandslash"
+    },
+    {
+      "from": "nidoran-f",
+      "to": "nidorina"
+    },
+    {
+      "from": "nidorina",
+      "to": "nidoqueen"
+    },
+    {
+      "from": "nidoran-m",
+      "to": "nidorino"
+    },
+    {
+      "from": "nidorino",
+      "to": "nidoking"
+    },
+    {
+      "from": "clefairy",
+      "to": "clefable"
+    },
+    {
+      "from": "vulpix",
+      "to": "ninetales"
+    },
+    {
+      "from": "jigglypuff",
+      "to": "wigglytuff"
+    },
+    {
+      "from": "zubat",
+      "to": "golbat"
+    },
+    {
+      "from": "golbat",
+      "to": "crobat"
+    },
+    {
+      "from": "oddish",
+      "to": "gloom"
+    },
+    {
+      "from": "gloom",
+      "to": "vileplume"
+    },
+    {
+      "from": "gloom",
+      "to": "bellossom"
+    },
+    {
+      "from": "paras",
+      "to": "parasect"
+    },
+    {
+      "from": "venonat",
+      "to": "venomoth"
+    },
+    {
+      "from": "diglett",
+      "to": "dugtrio"
+    },
+    {
+      "from": "meowth",
+      "to": "persian"
+    },
+    {
+      "from": "psyduck",
+      "to": "golduck"
+    },
+    {
+      "from": "mankey",
+      "to": "primeape"
+    },
+    {
+      "from": "growlithe",
+      "to": "arcanine"
+    },
+    {
+      "from": "poliwag",
+      "to": "poliwhirl"
+    },
+    {
+      "from": "poliwhirl",
+      "to": "poliwrath"
+    },
+    {
+      "from": "poliwhirl",
+      "to": "politoed"
+    },
+    {
+      "from": "abra",
+      "to": "kadabra"
+    },
+    {
+      "from": "kadabra",
+      "to": "alakazam"
+    },
+    {
+      "from": "machop",
+      "to": "machoke"
+    },
+    {
+      "from": "machoke",
+      "to": "machamp"
+    },
+    {
+      "from": "bellsprout",
+      "to": "weepinbell"
+    },
+    {
+      "from": "weepinbell",
+      "to": "victreebel"
+    },
+    {
+      "from": "tentacool",
+      "to": "tentacruel"
+    },
+    {
+      "from": "geodude",
+      "to": "graveler"
+    },
+    {
+      "from": "graveler",
+      "to": "golem"
+    },
+    {
+      "from": "ponyta",
+      "to": "rapidash"
+    },
+    {
+      "from": "slowpoke",
+      "to": "slowbro"
+    },
+    {
+      "from": "slowpoke",
+      "to": "slowking"
+    },
+    {
+      "from": "magnemite",
+      "to": "magneton"
+    },
+    {
+      "from": "doduo",
+      "to": "dodrio"
+    },
+    {
+      "from": "seel",
+      "to": "dewgong"
+    },
+    {
+      "from": "grimer",
+      "to": "muk"
+    },
+    {
+      "from": "shellder",
+      "to": "cloyster"
+    },
+    {
+      "from": "gastly",
+      "to": "haunter"
+    },
+    {
+      "from": "haunter",
+      "to": "gengar"
+    },
+    {
+      "from": "onix",
+      "to": "steelix"
+    },
+    {
+      "from": "drowzee",
+      "to": "hypno"
+    },
+    {
+      "from": "krabby",
+      "to": "kingler"
+    },
+    {
+      "from": "voltorb",
+      "to": "electrode"
+    },
+    {
+      "from": "exeggcute",
+      "to": "exeggutor"
+    },
+    {
+      "from": "cubone",
+      "to": "marowak"
+    },
+    {
+      "from": "koffing",
+      "to": "weezing"
+    },
+    {
+      "from": "rhyhorn",
+      "to": "rhydon"
+    },
+    {
+      "from": "chansey",
+      "to": "blissey"
+    },
+    {
+      "from": "horsea",
+      "to": "seadra"
+    },
+    {
+      "from": "seadra",
+      "to": "kingdra"
+    },
+    {
+      "from": "goldeen",
+      "to": "seaking"
+    },
+    {
+      "from": "staryu",
+      "to": "starmie"
+    },
+    {
+      "from": "scyther",
+      "to": "scizor"
+    },
+    {
+      "from": "magikarp",
+      "to": "gyarados"
+    },
+    {
+      "from": "eevee",
+      "to": "vaporeon"
+    },
+    {
+      "from": "eevee",
+      "to": "jolteon"
+    },
+    {
+      "from": "eevee",
+      "to": "flareon"
+    },
+    {
+      "from": "eevee",
+      "to": "espeon"
+    },
+    {
+      "from": "eevee",
+      "to": "umbreon"
+    },
+    {
+      "from": "porygon",
+      "to": "porygon2"
+    },
+    {
+      "from": "omanyte",
+      "to": "omastar"
+    },
+    {
+      "from": "kabuto",
+      "to": "kabutops"
+    },
+    {
+      "from": "dratini",
+      "to": "dragonair"
+    },
+    {
+      "from": "dragonair",
+      "to": "dragonite"
+    },
+    {
+      "from": "chikorita",
+      "to": "bayleef"
+    },
+    {
+      "from": "bayleef",
+      "to": "meganium"
+    },
+    {
+      "from": "cyndaquil",
+      "to": "quilava"
+    },
+    {
+      "from": "quilava",
+      "to": "typhlosion"
+    },
+    {
+      "from": "totodile",
+      "to": "croconaw"
+    },
+    {
+      "from": "croconaw",
+      "to": "feraligatr"
+    },
+    {
+      "from": "sentret",
+      "to": "furret"
+    },
+    {
+      "from": "hoothoot",
+      "to": "noctowl"
+    },
+    {
+      "from": "ledyba",
+      "to": "ledian"
+    },
+    {
+      "from": "spinarak",
+      "to": "ariados"
+    },
+    {
+      "from": "chinchou",
+      "to": "lanturn"
+    },
+    {
+      "from": "pichu",
+      "to": "pikachu"
+    },
+    {
+      "from": "cleffa",
+      "to": "clefairy"
+    },
+    {
+      "from": "igglybuff",
+      "to": "jigglypuff"
+    },
+    {
+      "from": "togepi",
+      "to": "togetic"
+    },
+    {
+      "from": "natu",
+      "to": "xatu"
+    },
+    {
+      "from": "mareep",
+      "to": "flaaffy"
+    },
+    {
+      "from": "flaaffy",
+      "to": "ampharos"
+    },
+    {
+      "from": "marill",
+      "to": "azumarill"
+    },
+    {
+      "from": "hoppip",
+      "to": "skiploom"
+    },
+    {
+      "from": "skiploom",
+      "to": "jumpluff"
+    },
+    {
+      "from": "sunkern",
+      "to": "sunflora"
+    },
+    {
+      "from": "wooper",
+      "to": "quagsire"
+    },
+    {
+      "from": "pineco",
+      "to": "forretress"
+    },
+    {
+      "from": "snubbull",
+      "to": "granbull"
+    },
+    {
+      "from": "teddiursa",
+      "to": "ursaring"
+    },
+    {
+      "from": "slugma",
+      "to": "magcargo"
+    },
+    {
+      "from": "swinub",
+      "to": "piloswine"
+    },
+    {
+      "from": "remoraid",
+      "to": "octillery"
+    },
+    {
+      "from": "houndour",
+      "to": "houndoom"
+    },
+    {
+      "from": "phanpy",
+      "to": "donphan"
+    },
+    {
+      "from": "tyrogue",
+      "to": "hitmonlee"
+    },
+    {
+      "from": "tyrogue",
+      "to": "hitmonchan"
+    },
+    {
+      "from": "tyrogue",
+      "to": "hitmontop"
+    },
+    {
+      "from": "smoochum",
+      "to": "jynx"
+    },
+    {
+      "from": "elekid",
+      "to": "electabuzz"
+    },
+    {
+      "from": "magby",
+      "to": "magmar"
+    },
+    {
+      "from": "larvitar",
+      "to": "pupitar"
+    },
+    {
+      "from": "pupitar",
+      "to": "tyranitar"
+    },
+    {
+      "from": "treecko",
+      "to": "grovyle"
+    },
+    {
+      "from": "grovyle",
+      "to": "sceptile"
+    },
+    {
+      "from": "torchic",
+      "to": "combusken"
+    },
+    {
+      "from": "combusken",
+      "to": "blaziken"
+    },
+    {
+      "from": "mudkip",
+      "to": "marshtomp"
+    },
+    {
+      "from": "marshtomp",
+      "to": "swampert"
+    },
+    {
+      "from": "poochyena",
+      "to": "mightyena"
+    },
+    {
+      "from": "zigzagoon",
+      "to": "linoone"
+    },
+    {
+      "from": "wurmple",
+      "to": "silcoon"
+    },
+    {
+      "from": "wurmple",
+      "to": "cascoon"
+    },
+    {
+      "from": "silcoon",
+      "to": "beautifly"
+    },
+    {
+      "from": "cascoon",
+      "to": "dustox"
+    },
+    {
+      "from": "lotad",
+      "to": "lombre"
+    },
+    {
+      "from": "lombre",
+      "to": "ludicolo"
+    },
+    {
+      "from": "seedot",
+      "to": "nuzleaf"
+    },
+    {
+      "from": "nuzleaf",
+      "to": "shiftry"
+    },
+    {
+      "from": "taillow",
+      "to": "swellow"
+    },
+    {
+      "from": "wingull",
+      "to": "pelipper"
+    },
+    {
+      "from": "ralts",
+      "to": "kirlia"
+    },
+    {
+      "from": "kirlia",
+      "to": "gardevoir"
+    },
+    {
+      "from": "surskit",
+      "to": "masquerain"
+    },
+    {
+      "from": "shroomish",
+      "to": "breloom"
+    },
+    {
+      "from": "slakoth",
+      "to": "vigoroth"
+    },
+    {
+      "from": "vigoroth",
+      "to": "slaking"
+    },
+    {
+      "from": "nincada",
+      "to": "ninjask"
+    },
+    {
+      "from": "nincada",
+      "to": "shedinja"
+    },
+    {
+      "from": "whismur",
+      "to": "loudred"
+    },
+    {
+      "from": "loudred",
+      "to": "exploud"
+    },
+    {
+      "from": "makuhita",
+      "to": "hariyama"
+    },
+    {
+      "from": "azurill",
+      "to": "marill"
+    },
+    {
+      "from": "skitty",
+      "to": "delcatty"
+    },
+    {
+      "from": "aron",
+      "to": "lairon"
+    },
+    {
+      "from": "lairon",
+      "to": "aggron"
+    },
+    {
+      "from": "meditite",
+      "to": "medicham"
+    },
+    {
+      "from": "electrike",
+      "to": "manectric"
+    },
+    {
+      "from": "gulpin",
+      "to": "swalot"
+    },
+    {
+      "from": "carvanha",
+      "to": "sharpedo"
+    },
+    {
+      "from": "wailmer",
+      "to": "wailord"
+    },
+    {
+      "from": "numel",
+      "to": "camerupt"
+    },
+    {
+      "from": "spoink",
+      "to": "grumpig"
+    },
+    {
+      "from": "trapinch",
+      "to": "vibrava"
+    },
+    {
+      "from": "vibrava",
+      "to": "flygon"
+    },
+    {
+      "from": "cacnea",
+      "to": "cacturne"
+    },
+    {
+      "from": "swablu",
+      "to": "altaria"
+    },
+    {
+      "from": "barboach",
+      "to": "whiscash"
+    },
+    {
+      "from": "corphish",
+      "to": "crawdaunt"
+    },
+    {
+      "from": "baltoy",
+      "to": "claydol"
+    },
+    {
+      "from": "lileep",
+      "to": "cradily"
+    },
+    {
+      "from": "anorith",
+      "to": "armaldo"
+    },
+    {
+      "from": "feebas",
+      "to": "milotic"
+    },
+    {
+      "from": "shuppet",
+      "to": "banette"
+    },
+    {
+      "from": "duskull",
+      "to": "dusclops"
+    },
+    {
+      "from": "wynaut",
+      "to": "wobbuffet"
+    },
+    {
+      "from": "snorunt",
+      "to": "glalie"
+    },
+    {
+      "from": "spheal",
+      "to": "sealeo"
+    },
+    {
+      "from": "sealeo",
+      "to": "walrein"
+    },
+    {
+      "from": "clamperl",
+      "to": "huntail"
+    },
+    {
+      "from": "clamperl",
+      "to": "gorebyss"
+    },
+    {
+      "from": "bagon",
+      "to": "shelgon"
+    },
+    {
+      "from": "shelgon",
+      "to": "salamence"
+    },
+    {
+      "from": "beldum",
+      "to": "metang"
+    },
+    {
+      "from": "metang",
+      "to": "metagross"
+    }
+  ]
+}

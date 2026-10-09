@@ -228,6 +228,23 @@ export async function listSourceMaps(sourcesDir: string): Promise<string[]> {
 }
 
 /**
+ * Reads and parses `maps/<mapDir>/map.yaml` alone, as an importer needs it.
+ * A missing or invalid file gives problems that name it; other file system
+ * errors throw.
+ */
+export async function readHandMap(
+  sourcesDir: string,
+  mapDir: string
+): Promise<Parsed<HandMap>> {
+  const file = join("maps", mapDir, "map.yaml")
+  const text = await readOptional(join(sourcesDir, file))
+
+  if (text === undefined) return err([`${file}: missing`])
+
+  return parseText(handMap, text, file)
+}
+
+/**
  * Reads and parses every source file of one Map. `one-time.yaml`,
  * `corrections.yaml`, and `generated/` are optional. Problems name the file
  * (relative to `sourcesDir`) and the path in it.
@@ -268,7 +285,10 @@ export async function readMapSources(
   const speciesFiles = generatedFiles.filter((f) => f.endsWith(".species.json"))
 
   const methods = await read(methodList, "methods.yaml")
-  const map = await read(handMap, join("maps", mapDir, "map.yaml"))
+  const map = await readHandMap(sourcesDir, mapDir)
+
+  if (!map.ok) problems.push(...map.error)
+
   const oneTime = await read(
     oneTimeRows,
     join("maps", mapDir, "one-time.yaml"),
@@ -286,11 +306,11 @@ export async function readMapSources(
     speciesFiles.map((f) => read(generatedSpecies, join(generatedDir, f)))
   )
 
-  if (problems.length > 0) return err(problems)
+  if (!map.ok || problems.length > 0) return err(problems)
 
   return ok({
     methods: methods!,
-    map: map!,
+    map: map.value,
     oneTime: oneTime!,
     corrections: mapCorrections!,
     generatedWild: wild as GeneratedWild[],

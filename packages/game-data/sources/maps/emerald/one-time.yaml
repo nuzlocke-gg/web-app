@@ -1,0 +1,89 @@
+# Emerald's one-time encounters, each checked against pokeemerald at
+# pret/pokeemerald@731ad5bfd6e6f265508d0efcca0ba42f9dcf5881. A note names the
+# file; the compile merges repeated rows, so a count stands in the note.
+#
+# Not here: the Wynaut egg from Lavaridge Town (data/maps/LavaridgeTown/
+# scripts.inc). An egg's Place is where it hatches, which is not fixed.
+# The Pichu egg is Mystery Gift only (data/scripts/gift_pichu.inc).
+
+# Gifts. A gift's Place is where the player receives it.
+- { place: starter, games: [emerald], method: gift, species: treecko, form: base, note: "src/starter_choose.c; one of three" }
+- { place: starter, games: [emerald], method: gift, species: torchic, form: base, note: "src/starter_choose.c; one of three" }
+- { place: starter, games: [emerald], method: gift, species: mudkip, form: base, note: "src/starter_choose.c; one of three" }
+- { place: rustboro-city, games: [emerald], method: gift, species: lileep, form: base, note: "data/maps/RustboroCity_DevonCorp_2F/scripts.inc (Root Fossil)" }
+- { place: rustboro-city, games: [emerald], method: gift, species: anorith, form: base, note: "data/maps/RustboroCity_DevonCorp_2F/scripts.inc (Claw Fossil)" }
+- { place: route-119, games: [emerald], method: gift, species: castform, form: base, note: "data/maps/Route119_WeatherInstitute_2F/scripts.inc" }
+- { place: mossdeep-city, games: [emerald], method: gift, species: beldum, form: base, note: "data/maps/MossdeepCity_StevensHouse/scripts.inc" }
+- { place: littleroot-town, games: [emerald], method: gift, species: chikorita, form: base, note: "data/maps/LittlerootTown_ProfessorBirchsLab/scripts.inc; one of three" }
+- { place: littleroot-town, games: [emerald], method: gift, species: cyndaquil, form: base, note: "data/maps/LittlerootTown_ProfessorBirchsLab/scripts.inc; one of three" }
+- { place: littleroot-town, games: [emerald], method: gift, species: totodile, form: base, note: "data/maps/LittlerootTown_ProfessorBirchsLab/scripts.inc; one of three" }
+
+# In-game trades (src/data/trade.h). The Place is where the player receives it.
+- { place: rustboro-city, games: [emerald], method: trade, species: seedot, form: base, note: "data/maps/RustboroCity_House1/scripts.inc; for Ralts" }
+- { place: fortree-city, games: [emerald], method: trade, species: plusle, form: base, note: "data/maps/FortreeCity_House1/scripts.inc; for Volbeat" }
+- { place: pacifidlog-town, games: [emerald], method: trade, species: horsea, form: base, note: "data/maps/PacifidlogTown_House3/scripts.inc; for Bagon" }
+- { place: battle-frontier, games: [emerald], method: trade, species: meowth, form: base, note: "data/maps/BattleFrontier_Lounge6/scripts.inc; for Skitty" }
+
+# Static battles.
+- { place: route-119, games: [emerald], method: static, species: kecleon, form: base, note: "data/scripts/kecleon.inc; 2 on the map" }
+- { place: route-120, games: [emerald], method: static, species: kecleon, form: base, note: "data/scripts/kecleon.inc and data/maps/Route120/scripts.inc; 6 on the map" }
+- { place: aqua-hideout, games: [emerald], method: static, species: electrode, form: base, note: "data/maps/AquaHideout_B1F/scripts.inc; 2" }
+- { place: new-mauville, games: [emerald], method: static, species: voltorb, form: base, note: "data/maps/NewMauville_Inside/scripts.inc; 3" }
+- { place: battle-frontier, games: [emerald], method: static, species: sudowoodo, form: base, note: "data/maps/BattleFrontier_OutsideEast/scripts.inc" }
+- { place: desert-ruins, games: [emerald], method: static, species: regirock, form: base, note: "data/maps/DesertRuins/scripts.inc" }
+- { place: island-cave, games: [emerald], method: static, species: regice, form: base, note: "data/maps/IslandCave/scripts.inc" }
+- { place: ancient-tomb, games: [emerald], method: static, species: registeel, form: base, note: "data/maps/AncientTomb/scripts.inc" }
+- { place: sky-pillar, games: [emerald], method: static, species: rayquaza, form: base, note: "data/maps/SkyPillar_Top/scripts.inc" }
+- { place: marine-cave, games: [emerald], method: static, species: kyogre, form: base, note: "data/maps/MarineCave_End/scripts.inc" }
+- { place: terra-cave, games: [emerald], method: static, species: groudon, form: base, note: "data/maps/TerraCave_End/scripts.inc" }
+
+# Event Places: each needs an event ticket.
+- { place: southern-island, games: [emerald], method: static, species: latias, form: base, note: "data/maps/SouthernIsland_Interior/scripts.inc; the one the player did not choose to roam" }
+- { place: southern-island, games: [emerald], method: static, species: latios, form: base, note: "data/maps/SouthernIsland_Interior/scripts.inc; the one the player did not choose to roam" }
+- { place: birth-island, games: [emerald], method: static, species: deoxys, form: base, note: "data/maps/BirthIsland_Exterior/scripts.inc" }
+- { place: faraway-island, games: [emerald], method: static, species: mew, form: base, note: "data/maps/FarawayIsland_Interior/scripts.inc" }
+- { place: navel-rock, games: [emerald], method: static, species: lugia, form: base, note: "data/maps/NavelRock_Bottom/scripts.inc" }
+- { place: navel-rock, games: [emerald], method: static, species: ho-oh, form: base, note: "data/maps/NavelRock_Top/scripts.inc" }
+
+# The roamer: Latias or Latios, by the player's choice, on every route of
+# sRoamerLocations in src/roamer.c.
+- { place: route-110, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-110, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-111, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-111, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-117, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-117, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-118, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-118, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-119, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-119, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-120, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-120, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-121, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-121, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-122, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-122, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-123, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-123, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-124, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-124, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-125, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-125, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-126, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-126, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-127, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-127, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-128, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-128, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-129, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-129, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-130, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-130, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-131, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-131, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-132, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-132, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-133, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-133, games: [emerald], method: roaming, species: latios, form: base }
+- { place: route-134, games: [emerald], method: roaming, species: latias, form: base }
+- { place: route-134, games: [emerald], method: roaming, species: latios, form: base }

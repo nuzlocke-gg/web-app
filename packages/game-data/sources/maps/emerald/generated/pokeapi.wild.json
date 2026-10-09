@@ -1,0 +1,3300 @@
+{
+  "importer": "pokeapi",
+  "pin": "2fe95532d27a9bf340575253aff50868319d8182",
+  "areas": {
+    "abandoned-ship-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacruel",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacruel",
+          "form": "base"
+        }
+      ]
+    },
+    "artisan-cave-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "smeargle",
+          "form": "base"
+        }
+      ]
+    },
+    "cave-of-origin-1f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "sableye",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        }
+      ]
+    },
+    "cave-of-origin-b1f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "sableye",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        }
+      ]
+    },
+    "cave-of-origin-b2f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "sableye",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        }
+      ]
+    },
+    "cave-of-origin-b3f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "sableye",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        }
+      ]
+    },
+    "cave-of-origin-entrance": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        }
+      ]
+    },
+    "desert-underpass-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "ditto",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "whismur",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "loudred",
+          "form": "base"
+        }
+      ]
+    },
+    "dewford-town-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "ever-grande-city-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "luvdisc",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "corsola",
+          "form": "base"
+        }
+      ]
+    },
+    "fiery-path-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "numel",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "koffing",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "torkoal",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "machop",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "slugma",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "grimer",
+          "form": "base"
+        }
+      ]
+    },
+    "granite-cave-1f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "makuhita",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "abra",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "geodude",
+          "form": "base"
+        }
+      ]
+    },
+    "granite-cave-1fsmall-room": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "makuhita",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "abra",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "aron",
+          "form": "base"
+        }
+      ]
+    },
+    "granite-cave-b1f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "aron",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "abra",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "makuhita",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "sableye",
+          "form": "base"
+        }
+      ]
+    },
+    "granite-cave-b2f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "aron",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "sableye",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "abra",
+          "form": "base"
+        },
+        {
+          "method": "rock-smash",
+          "species": "geodude",
+          "form": "base"
+        },
+        {
+          "method": "rock-smash",
+          "species": "nosepass",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-altering-cave-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-101-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "wurmple",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "poochyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zigzagoon",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-102-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "poochyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wurmple",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "lotad",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zigzagoon",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "ralts",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "seedot",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "marill",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "corphish",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-103-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "poochyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zigzagoon",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-104-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "poochyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wurmple",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "marill",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "taillow",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-105-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-106-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-107-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-108-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-109-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-110-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "electrike",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "poochyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "gulpin",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "minun",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "oddish",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "plusle",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-111-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "sandshrew",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "trapinch",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "baltoy",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "cacnea",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "marill",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "barboach",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "rock-smash",
+          "species": "geodude",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-112-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "numel",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "marill",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-113-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "spinda",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "slugma",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "skarmory",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-114-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "swablu",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "lotad",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "lombre",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "seviper",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "nuzleaf",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "marill",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "barboach",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "rock-smash",
+          "species": "geodude",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-115-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "taillow",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "swablu",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "swellow",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "jigglypuff",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-116-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "poochyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "whismur",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "nincada",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "taillow",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "abra",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "skitty",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-117-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "oddish",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "poochyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "illumise",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "marill",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "volbeat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "seedot",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "marill",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "corphish",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-118-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "zigzagoon",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "electrike",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "linoone",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "manectric",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "kecleon",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "carvanha",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-119-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "zigzagoon",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "linoone",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "oddish",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "tropius",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "kecleon",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "carvanha",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "feebas",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-120-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "mightyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "oddish",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "poochyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "marill",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "absol",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "kecleon",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "seedot",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "marill",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "barboach",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-121-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "shuppet",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "poochyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "mightyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "oddish",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "gloom",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "kecleon",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-122-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-123-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "shuppet",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "poochyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "mightyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "oddish",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "gloom",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "kecleon",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-124-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-124-underwater": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "clamperl",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "chinchou",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "relicanth",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-125-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-126-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-126-underwater": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "clamperl",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "chinchou",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "relicanth",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-127-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-128-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "luvdisc",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "corsola",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-129-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wailord",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-130-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "wynaut",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-131-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-132-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "horsea",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-133-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "horsea",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-route-134-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "horsea",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-safari-zone-expansion-north": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "aipom",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "teddiursa",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "sunkern",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "ledyba",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "hoothoot",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "pineco",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "houndour",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "miltank",
+          "form": "base"
+        },
+        {
+          "method": "rock-smash",
+          "species": "shuckle",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-safari-zone-expansion-south": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "sunkern",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "mareep",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "aipom",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "spinarak",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "hoothoot",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "snubbull",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "stantler",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "gligar",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wooper",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "marill",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "quagsire",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "remoraid",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "octillery",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-safari-zone-neacro-bike-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "phanpy",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "oddish",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "natu",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "gloom",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "xatu",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "heracross",
+          "form": "base"
+        },
+        {
+          "method": "rock-smash",
+          "species": "geodude",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-safari-zone-nwmach-bike-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "rhyhorn",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "oddish",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "doduo",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "gloom",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "dodrio",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "pinsir",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "psyduck",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "golduck",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "seaking",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-safari-zone-se": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "oddish",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "girafarig",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "natu",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "doduo",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wobbuffet",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "gloom",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "pikachu",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-safari-zone-sw": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "oddish",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "girafarig",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "natu",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "doduo",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wobbuffet",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "gloom",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "pikachu",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "psyduck",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "seaking",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-victory-road-1f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "hariyama",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "lairon",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "loudred",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "makuhita",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "aron",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "whismur",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-victory-road-b1f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "hariyama",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "lairon",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "mawile",
+          "form": "base"
+        },
+        {
+          "method": "rock-smash",
+          "species": "graveler",
+          "form": "base"
+        },
+        {
+          "method": "rock-smash",
+          "species": "geodude",
+          "form": "base"
+        }
+      ]
+    },
+    "hoenn-victory-road-b2f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "sableye",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "lairon",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "mawile",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "barboach",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "whiscash",
+          "form": "base"
+        }
+      ]
+    },
+    "jagged-pass-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "numel",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "machop",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "spoink",
+          "form": "base"
+        }
+      ]
+    },
+    "lilycove-city-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "staryu",
+          "form": "base"
+        }
+      ]
+    },
+    "magma-hideout-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "geodude",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "torkoal",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "graveler",
+          "form": "base"
+        }
+      ]
+    },
+    "meteor-falls-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "solrock",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "solrock",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "barboach",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        }
+      ]
+    },
+    "meteor-falls-b1f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "solrock",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "solrock",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "barboach",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "whiscash",
+          "form": "base"
+        }
+      ]
+    },
+    "meteor-falls-back": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "solrock",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "solrock",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "barboach",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "whiscash",
+          "form": "base"
+        }
+      ]
+    },
+    "meteor-falls-backsmall-room": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "bagon",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "solrock",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "solrock",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "barboach",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "whiscash",
+          "form": "base"
+        }
+      ]
+    },
+    "mirage-island-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "wynaut",
+          "form": "base"
+        }
+      ]
+    },
+    "mirage-tower-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "sandshrew",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "trapinch",
+          "form": "base"
+        }
+      ]
+    },
+    "mossdeep-city-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "mt-pyre-1f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "shuppet",
+          "form": "base"
+        }
+      ]
+    },
+    "mt-pyre-2f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "shuppet",
+          "form": "base"
+        }
+      ]
+    },
+    "mt-pyre-3f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "shuppet",
+          "form": "base"
+        }
+      ]
+    },
+    "mt-pyre-4f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "shuppet",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "duskull",
+          "form": "base"
+        }
+      ]
+    },
+    "mt-pyre-5f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "shuppet",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "duskull",
+          "form": "base"
+        }
+      ]
+    },
+    "mt-pyre-6f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "shuppet",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "duskull",
+          "form": "base"
+        }
+      ]
+    },
+    "mt-pyre-outside": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "shuppet",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "vulpix",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wingull",
+          "form": "base"
+        }
+      ]
+    },
+    "mt-pyre-summit": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "shuppet",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "duskull",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "chimecho",
+          "form": "base"
+        }
+      ]
+    },
+    "new-mauville-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "voltorb",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "magnemite",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "electrode",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "magneton",
+          "form": "base"
+        }
+      ]
+    },
+    "new-mauville-entrance": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "voltorb",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "magnemite",
+          "form": "base"
+        }
+      ]
+    },
+    "pacifidlog-town-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "sharpedo",
+          "form": "base"
+        }
+      ]
+    },
+    "petalburg-city-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "marill",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "corphish",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "goldeen",
+          "form": "base"
+        }
+      ]
+    },
+    "petalburg-woods-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "poochyena",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "wurmple",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "shroomish",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "silcoon",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "cascoon",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "taillow",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "slakoth",
+          "form": "base"
+        }
+      ]
+    },
+    "rusturf-tunnel-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "whismur",
+          "form": "base"
+        }
+      ]
+    },
+    "seafloor-cavern-area": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "shoal-cave-b1f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "spheal",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        }
+      ]
+    },
+    "shoal-cave-b2f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "spheal",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        }
+      ]
+    },
+    "shoal-cave-b3f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "spheal",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "snorunt",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        }
+      ]
+    },
+    "shoal-cave-high-tide": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "spheal",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "spheal",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "shoal-cave-low-tide": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "spheal",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "zubat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        }
+      ]
+    },
+    "sky-pillar-1f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "sableye",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "claydol",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "banette",
+          "form": "base"
+        }
+      ]
+    },
+    "sky-pillar-3f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "sableye",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "claydol",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "banette",
+          "form": "base"
+        }
+      ]
+    },
+    "sky-pillar-5f": {
+      "emerald": [
+        {
+          "method": "walk",
+          "species": "sableye",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "golbat",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "claydol",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "banette",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "altaria",
+          "form": "base"
+        }
+      ]
+    },
+    "slateport-city-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "wingull",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "pelipper",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "wailmer",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        }
+      ]
+    },
+    "sootopolis-city-area": {
+      "emerald": [
+        {
+          "method": "surf",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "gyarados",
+          "form": "base"
+        }
+      ]
+    }
+  }
+}
