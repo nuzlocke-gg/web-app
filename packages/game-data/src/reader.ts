@@ -42,6 +42,13 @@ export interface MapRegistry {
   catalog: MapSummary[]
   /** Loads one compiled Map, by Map id. */
   load: Record<MapId, () => Promise<CompiledMap>>
+  /** The directory under `/sprites/` that holds this build's sprites. */
+  spriteVersion: string
+}
+
+/** Where a Form's sprite is, under the sprite version's directory. */
+export function spritePath(ref: FormRef): string {
+  return `${ref.species}/${ref.form}.png`
 }
 
 /**
@@ -77,6 +84,16 @@ export interface Reader {
    * A failed load rejects and is not cached, so a later call tries again.
    */
   loadMap(id: MapId): Promise<LoadedMap | undefined>
+  /**
+   * The URL of a Form's sprite, `/sprites/<version>/<species>/<form>.png`.
+   * A Form of the Map always has one; an unknown Species or Form gives
+   * `undefined`.
+   */
+  spriteUrl(
+    map: LoadedMap,
+    species: SpeciesId,
+    form: FormId
+  ): string | undefined
 }
 
 /** Binds the reader to a registry. The app uses the one bound to the compiled Maps. */
@@ -107,6 +124,12 @@ export function createReader(registry: MapRegistry): Reader {
       loading.catch(() => cache.delete(id))
 
       return loading
+    },
+
+    spriteUrl(map, species, form) {
+      if (!getForm(map, species, form)) return undefined
+
+      return `/sprites/${registry.spriteVersion}/${spritePath({ species, form })}`
     },
   }
 }

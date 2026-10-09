@@ -1,5 +1,5 @@
 import { mkdir, readdir, rm, writeFile } from "node:fs/promises"
-import { join, relative, sep } from "node:path"
+import { dirname, join, relative, sep } from "node:path"
 import { fileURLToPath } from "node:url"
 import { err, ok, type Result } from "serializable-result"
 
@@ -7,6 +7,7 @@ import { compileMap } from "./compile.ts"
 import type { CompiledMap, MapId, ReleaseLock } from "./format.ts"
 import { checkPermanence, lockFor } from "./permanence.ts"
 import { toSummary } from "./reader.ts"
+import { resolveSprites, type SpriteSet, type SpriteSource } from "./sprites.ts"
 import {
   listLockedMaps,
   listSourceMaps,
@@ -19,7 +20,10 @@ import {
 export interface BuildOptions {
   /** Holds `methods.yaml` and `maps/<map>/`. */
   sourcesDir: string
-  /** Receives `<map>.json` and `registry.ts`. Its old JSON files are removed. */
+  /**
+   * Receives `<map>.json`, `registry.ts`, and `sprites/<version>/`. Its old
+   * JSON files and sprites are removed.
+   */
   outDir: string
   /** Holds the release locks, `<map>.lock.json`. */
   releasedDir: string
@@ -31,6 +35,8 @@ export interface BuildOptions {
   mode: "frozen" | "lock"
   /** In `lock` mode, Maps to lock even though they have no lock yet. */
   maps?: MapId[]
+  /** Where the sprite of every Species and Form comes from. */
+  sprites: SpriteSource
 }
 
 /**
@@ -99,7 +105,11 @@ export async function buildMaps(
 
   if (problems.length > 0) return err(problems)
 
-  await writeOutput(options.outDir, compiled)
+  const sprites = await resolveSprites(compiled, options.sprites)
+
+  if (!sprites.ok) return err(sprites.error)
+
+  await writeOutput(options.outDir, compiled, sprites.value)
 
   if (mode === "lock") {
     await writeLocks(
@@ -111,7 +121,11 @@ export async function buildMaps(
   return ok(undefined)
 }
 
-async function writeOutput(outDir: string, maps: CompiledMap[]) {
+async function writeOutput(
+  outDir: string,
+  maps: CompiledMap[],
+  sprites: SpriteSet
+) {
   await mkdir(outDir, { recursive: true })
 
   for (const file of await readdir(outDir)) {
@@ -122,7 +136,22 @@ async function writeOutput(outDir: string, maps: CompiledMap[]) {
     await writeFile(join(outDir, `${map.id}.json`), JSON.stringify(map))
   }
 
-  await writeFile(join(outDir, "registry.ts"), registrySource(outDir, maps))
+  await writeSprites(join(outDir, "sprites"), sprites)
+  await writeFile(
+    join(outDir, "registry.ts"),
+    registrySource(outDir, maps, sprites.version)
+  )
+}
+
+async function writeSprites(spritesDir: string, sprites: SpriteSet) {
+  await rm(spritesDir, { recursive: true, force: true })
+
+  for (const [path, bytes] of sprites.files) {
+    const file = join(spritesDir, sprites.version, path)
+
+    await mkdir(dirname(file), { recursive: true })
+    await writeFile(file, bytes)
+  }
 }
 
 /** The lock of each Map that has one, and of each named Map. */
@@ -151,7 +180,11 @@ async function writeLocks(releasedDir: string, locks: ReleaseLock[]) {
  * The generated registry module. One static `import()` per Map lets a
  * bundler split each Map into its own chunk.
  */
-function registrySource(outDir: string, maps: CompiledMap[]): string {
+function registrySource(
+  outDir: string,
+  maps: CompiledMap[],
+  spriteVersion: string
+): string {
   const srcDir = relative(outDir, fileURLToPath(new URL(".", import.meta.url)))
     .split(sep)
     .join("/")
@@ -173,6 +206,7 @@ function registrySource(outDir: string, maps: CompiledMap[]): string {
     "  load: {",
     ...loaders,
     "  },",
+    `  spriteVersion: ${JSON.stringify(spriteVersion)},`,
     "}",
     "",
   ].join("\n")

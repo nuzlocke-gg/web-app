@@ -1,0 +1,46 @@
+import { readdir, readFile } from "node:fs/promises"
+import { join } from "node:path"
+import { fileURLToPath } from "node:url"
+import { describe, expect, it } from "vitest"
+
+import type { CompiledMap } from "../src/format.ts"
+import { spritePath } from "../src/reader.ts"
+
+// The real build output: run `npm run build` first (Turbo does).
+
+const distDir = fileURLToPath(new URL("../dist", import.meta.url))
+
+const PNG_SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10]
+
+/** Width and height from a PNG's header chunk. */
+function pngSize(bytes: Buffer) {
+  return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) }
+}
+
+describe("the built sprites", () => {
+  it("are a 96 × 96 PNG for every Species and Form of every compiled Map", async () => {
+    const versions = await readdir(join(distDir, "sprites"))
+    const mapFiles = (await readdir(distDir)).filter((f) => f.endsWith(".json"))
+
+    expect(versions).toHaveLength(1)
+    expect(mapFiles).not.toEqual([])
+
+    for (const file of mapFiles) {
+      const map = JSON.parse(
+        await readFile(join(distDir, file), "utf8")
+      ) as CompiledMap
+
+      for (const species of map.species) {
+        for (const form of species.forms) {
+          const path = spritePath({ species: species.id, form: form.id })
+          const bytes = await readFile(
+            join(distDir, "sprites", versions[0]!, path)
+          )
+
+          expect([...bytes.subarray(0, 8)], path).toEqual(PNG_SIGNATURE)
+          expect(pngSize(bytes), path).toEqual({ width: 96, height: 96 })
+        }
+      }
+    }
+  })
+})

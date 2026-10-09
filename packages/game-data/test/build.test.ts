@@ -20,7 +20,7 @@ import {
   placesOf,
   type MapRegistry,
 } from "../src/reader.ts"
-import { fixtureSourcesDir } from "./fixture.ts"
+import { fakeSprites, fixtureSourcesDir } from "./fixture.ts"
 
 let root: string
 let options: BuildOptions
@@ -32,6 +32,7 @@ beforeEach(async () => {
     outDir: join(root, "dist"),
     releasedDir: join(root, "released"),
     mode: "frozen",
+    sprites: fakeSprites(["201-b"]),
   }
 
   await cp(fixtureSourcesDir, options.sourcesDir, { recursive: true })
@@ -60,6 +61,7 @@ describe("the build", () => {
       "fixture-later.json",
       "fixture.json",
       "registry.ts",
+      "sprites",
     ])
 
     const { registry } = (await import(
@@ -128,6 +130,86 @@ describe("the build", () => {
       "fixture: The Map needs exactly one Starter Place; it has 2"
     )
     expect(await outFiles()).toEqual([])
+  })
+})
+
+describe("sprites", () => {
+  /** The one version directory under `dist/sprites`. */
+  async function spriteVersions() {
+    return readdir(join(options.outDir, "sprites"))
+  }
+
+  async function spriteText(species: string, form: string) {
+    const [version] = await spriteVersions()
+
+    return readFile(
+      join(options.outDir, "sprites", version!, species, `${form}.png`),
+      "utf8"
+    )
+  }
+
+  it("writes a sprite for every Species and Form of every Map", async () => {
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+
+    const { registry } = (await import(
+      join(options.outDir, "registry.ts")
+    )) as { registry: MapRegistry }
+    const reader = createReader(registry)
+
+    expect(await spriteVersions()).toEqual([registry.spriteVersion])
+
+    for (const { id } of reader.listMaps()) {
+      const map = (await reader.loadMap(id))!
+
+      for (const species of map.data.species) {
+        for (const form of species.forms) {
+          expect(await spriteText(species.id, form.id)).not.toBe("")
+        }
+      }
+    }
+  })
+
+  it("gives a Form its own sprite when the source has one", async () => {
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+    expect(await spriteText("unown", "a")).toBe("201")
+    expect(await spriteText("unown", "b")).toBe("201-b")
+  })
+
+  it("gives a Form with no sprite the sprite of its Species' first Form", async () => {
+    expect(await buildMaps({ ...options, sprites: fakeSprites() })).toEqual(
+      ok(undefined)
+    )
+    expect(await spriteText("unown", "b")).toBe("201")
+  })
+
+  it("stops, naming the Species, when a first Form has no sprite", async () => {
+    const sprites = fakeSprites()
+
+    expect(
+      await problemsOf({
+        ...options,
+        sprites: async (file) => (file === "201" ? undefined : sprites(file)),
+      })
+    ).toEqual(["unown: no sprite 201.png at the pinned commit"])
+    expect(await outFiles()).toEqual([])
+  })
+
+  it("changes the version, and replaces the old sprites, when a sprite changes", async () => {
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+
+    const first = await spriteVersions()
+
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+    expect(await spriteVersions()).toEqual(first)
+
+    expect(await buildMaps({ ...options, sprites: fakeSprites() })).toEqual(
+      ok(undefined)
+    )
+
+    const second = await spriteVersions()
+
+    expect(second).toHaveLength(1)
+    expect(second).not.toEqual(first)
   })
 })
 

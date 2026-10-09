@@ -23,7 +23,7 @@ Read these with the spec: the technical design document [Headcanon integration â
 
 ## Open details for the build tickets
 
-Small decisions the map left to the build, listed so no ticket invents them silently: whether the lifecycle and metadata actions join `run.v1` or stay separate server actions; the Refusal kind for "wrong state" (reuse `gone` or add one); the denominator Game for Progress on a paired Map in a Soul Link and on the preview card (the resolutions say "the Places of the Game"; the viewer's own Journey's Game is the natural reading, and the first Journey's for a Reader and the card); the Delete account confirm, Rename, and Visibility controls use the existing Drawer and AlertDialog patterns and are not drawn; capital letters in UI copy follow the design system's sentence case and were to be confirmed in the build; sprite rendering details.
+Small decisions the map left to the build, listed so no ticket invents them silently: whether the lifecycle and metadata actions join `run.v1` or stay separate server actions; the Refusal kind for "wrong state" (reuse `gone` or add one); the denominator Game for Progress on a paired Map in a Soul Link and on the preview card (the resolutions say "the Places of the Game"; the viewer's own Journey's Game is the natural reading, and the first Journey's for a Reader and the card); the Delete account confirm, Rename, and Visibility controls use the existing Drawer and AlertDialog patterns and are not drawn; capital letters in UI copy follow the design system's sentence case and were to be confirmed in the build. (Sprite rendering details were decided in NUZ-47; see the Sprites bullet of the technical design.)
 
 ## Build order
 

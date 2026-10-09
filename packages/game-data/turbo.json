@@ -8,6 +8,9 @@
     },
     "typecheck": {
       "dependsOn": ["^typecheck", "build"]
+    },
+    "test": {
+      "dependsOn": ["$TURBO_EXTENDS$", "build"]
     }
   }
 }

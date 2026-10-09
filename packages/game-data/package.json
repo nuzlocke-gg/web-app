@@ -14,7 +14,8 @@
     "test": "vitest run"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./sprites-dir": "./src/sprites-dir.ts"
   },
   "dependencies": {
     "serializable-result": "^0.1.0",

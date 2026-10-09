@@ -31,6 +31,7 @@ function registryOf(maps: CompiledMap[]): MapRegistry {
   return {
     catalog: maps.map(toSummary),
     load: Object.fromEntries(maps.map((m) => [m.id, async () => m])),
+    spriteVersion: "v1",
   }
 }
 
@@ -283,6 +284,15 @@ describe("Forms and types", () => {
   })
 })
 
+describe("sprites", () => {
+  it("gives every Form a sprite URL under the registry's sprite version", () => {
+    expect(reader.spriteUrl(map, "unown", "b")).toBe("/sprites/v1/unown/b.png")
+    expect(reader.spriteUrl(map, "bulbasaur", "base")).toBe(
+      "/sprites/v1/bulbasaur/base.png"
+    )
+  })
+})
+
 describe("Evolution Lines", () => {
   it("names a line by its earliest Species", () => {
     expect(evolutionLineOf(map, "raichu")).toBe("pichu")
@@ -338,6 +348,7 @@ describe("unknown identifiers read as unknown", () => {
     expect(evolutionLineOf(map, "missingno")).toBeUndefined()
     expect(dexNumber(map, "missingno")).toBeUndefined()
     expect(primaryType(map, "missingno", "base")).toBeUndefined()
+    expect(reader.spriteUrl(map, "missingno", "base")).toBeUndefined()
   })
 
   it("for a Form", () => {
@@ -345,5 +356,6 @@ describe("unknown identifiers read as unknown", () => {
     expect(formTypes(map, "burmy", "missing")).toBeUndefined()
     expect(primaryType(map, "burmy", "missing")).toBeUndefined()
     expect(nextInLine(map, "burmy", "missing")).toEqual([])
+    expect(reader.spriteUrl(map, "burmy", "missing")).toBeUndefined()
   })
 })

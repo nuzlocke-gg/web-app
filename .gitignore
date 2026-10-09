@@ -21,6 +21,9 @@ out/
 build
 dist
 
+# copied from @workspace/game-data by the web build
+apps/web/public/sprites
+
 # turbo
 .turbo
 
