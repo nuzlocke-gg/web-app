@@ -9,6 +9,7 @@ import {
 } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { ok } from "serializable-result"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import { buildMaps, type BuildOptions } from "../src/build.ts"
@@ -40,6 +41,13 @@ afterEach(async () => {
   await rm(root, { recursive: true, force: true })
 })
 
+/** The problems that stopped the build; empty when it succeeded. */
+async function problemsOf(build: BuildOptions) {
+  const built = await buildMaps(build)
+
+  return built.ok ? [] : built.error
+}
+
 const lockPath = (map: string) => join(options.releasedDir, `${map}.lock.json`)
 const readLockFile = async (map: string) =>
   JSON.parse(await readFile(lockPath(map), "utf8"))
@@ -47,7 +55,7 @@ const outFiles = () => readdir(options.outDir).catch(() => [])
 
 describe("the build", () => {
   it("writes each compiled Map and a registry the reader loads", async () => {
-    expect(await buildMaps(options)).toEqual([])
+    expect(await buildMaps(options)).toEqual(ok(undefined))
     expect((await outFiles()).sort()).toEqual([
       "fixture-later.json",
       "fixture.json",
@@ -92,11 +100,22 @@ describe("the build", () => {
       yaml.replace("  - id: trade-house\n", "  - ids: trade-house\n")
     )
 
-    expect(await buildMaps(options)).toEqual(
+    expect(await problemsOf(options)).toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^maps\/fixture\/map\.yaml: places\[4\]/),
       ])
     )
+  })
+
+  it("names the file of a source that is not valid YAML", async () => {
+    await writeFile(
+      join(options.sourcesDir, "maps/fixture/one-time.yaml"),
+      "- place: [starter\n"
+    )
+
+    expect(await problemsOf(options)).toEqual([
+      expect.stringMatching(/^maps\/fixture\/one-time\.yaml: /),
+    ])
   })
 
   it("names the Map of a compile problem and writes nothing", async () => {
@@ -105,7 +124,7 @@ describe("the build", () => {
 
     await writeFile(file, yaml.replace("kind: event", "kind: starter"))
 
-    expect(await buildMaps(options)).toContainEqual(
+    expect(await problemsOf(options)).toContainEqual(
       "fixture: The Map needs exactly one Starter Place; it has 2"
     )
     expect(await outFiles()).toEqual([])
@@ -114,17 +133,17 @@ describe("the build", () => {
 
 describe("the release lock", () => {
   it("is never written by a frozen build", async () => {
-    expect(await buildMaps(options)).toEqual([])
+    expect(await buildMaps(options)).toEqual(ok(undefined))
     expect(await readdir(options.releasedDir).catch(() => [])).toEqual([])
   })
 
   it("is created for a named Map and then kept up to date", async () => {
     expect(
       await buildMaps({ ...options, mode: "lock", maps: ["fixture"] })
-    ).toEqual([])
+    ).toEqual(ok(undefined))
     expect((await readLockFile("fixture")).places).toContain("hatch-town")
     await expect(readFile(lockPath("fixture-later"))).rejects.toThrow()
-    expect(await buildMaps(options)).toEqual([])
+    expect(await buildMaps(options)).toEqual(ok(undefined))
 
     const file = join(options.sourcesDir, "maps/fixture/map.yaml")
     const yaml = await readFile(file, "utf8")
@@ -137,19 +156,19 @@ describe("the release lock", () => {
       )
     )
 
-    expect(await buildMaps(options)).toEqual([
+    expect(await problemsOf(options)).toEqual([
       expect.stringContaining('Place "route-3" not locked'),
     ])
     expect((await readLockFile("fixture")).places).not.toContain("route-3")
 
-    expect(await buildMaps({ ...options, mode: "lock" })).toEqual([])
+    expect(await buildMaps({ ...options, mode: "lock" })).toEqual(ok(undefined))
     expect((await readLockFile("fixture")).places).toContain("route-3")
-    expect(await buildMaps(options)).toEqual([])
+    expect(await buildMaps(options)).toEqual(ok(undefined))
   })
 
   it("refuses to lock an unknown Map", async () => {
     expect(
-      await buildMaps({ ...options, mode: "lock", maps: ["nowhere"] })
+      await problemsOf({ ...options, mode: "lock", maps: ["nowhere"] })
     ).toEqual(['No Map "nowhere" to lock'])
   })
 })
@@ -158,7 +177,7 @@ describe.each(["frozen", "lock"] as const)("Map identity (%s)", (mode) => {
   beforeEach(async () => {
     expect(
       await buildMaps({ ...options, mode: "lock", maps: ["fixture"] })
-    ).toEqual([])
+    ).toEqual(ok(undefined))
 
     options = { ...options, mode }
   })
@@ -169,7 +188,7 @@ describe.each(["frozen", "lock"] as const)("Map identity (%s)", (mode) => {
       join(options.sourcesDir, "maps/other")
     )
 
-    expect(await buildMaps(options)).toEqual([
+    expect(await problemsOf(options)).toEqual([
       'maps/other/map.yaml: the Map id "fixture-later" must match its directory "other"',
     ])
   })
@@ -182,7 +201,7 @@ describe.each(["frozen", "lock"] as const)("Map identity (%s)", (mode) => {
       JSON.stringify({ ...lock, map: "other" })
     )
 
-    expect(await buildMaps(options)).toEqual([
+    expect(await problemsOf(options)).toEqual([
       'The lock is for Map "other", not "fixture"',
     ])
   })
@@ -190,7 +209,7 @@ describe.each(["frozen", "lock"] as const)("Map identity (%s)", (mode) => {
   it("stops when a released Map has no sources", async () => {
     await rm(join(options.sourcesDir, "maps/fixture"), { recursive: true })
 
-    expect(await buildMaps(options)).toEqual([
+    expect(await problemsOf(options)).toEqual([
       'Released Map "fixture" has no sources. A released Map is permanent: restore maps/fixture/.',
     ])
   })
@@ -210,7 +229,7 @@ describe.each(["frozen", "lock"] as const)("Map identity (%s)", (mode) => {
       yaml.replace("id: fixture\n", "id: fixture-renamed\n")
     )
 
-    expect(await buildMaps(options)).toEqual([
+    expect(await problemsOf(options)).toEqual([
       'Released Map "fixture" has no sources. A released Map is permanent: restore maps/fixture/.',
     ])
   })

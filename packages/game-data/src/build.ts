@@ -1,6 +1,7 @@
 import { mkdir, readdir, rm, writeFile } from "node:fs/promises"
 import { join, relative, sep } from "node:path"
 import { fileURLToPath } from "node:url"
+import { err, ok, type Result } from "serializable-result"
 
 import { compileMap } from "./compile.ts"
 import type { CompiledMap, MapId, ReleaseLock } from "./format.ts"
@@ -34,10 +35,12 @@ export interface BuildOptions {
 
 /**
  * Compiles every Map under `sourcesDir`, runs the permanence check, and
- * writes the output. Returns the problems that stopped it; when there are
- * any, nothing is written.
+ * writes the output. A failure carries every problem that stopped it, and
+ * then nothing is written.
  */
-export async function buildMaps(options: BuildOptions): Promise<string[]> {
+export async function buildMaps(
+  options: BuildOptions
+): Promise<Result<undefined, string[]>> {
   const { sourcesDir, releasedDir, mode } = options
   const problems: string[] = []
   const compiled: CompiledMap[] = []
@@ -48,7 +51,7 @@ export async function buildMaps(options: BuildOptions): Promise<string[]> {
     const sources = await readMapSources(sourcesDir, dir)
 
     if (!sources.ok) {
-      problems.push(...sources.problems)
+      problems.push(...sources.error)
       continue
     }
 
@@ -62,21 +65,23 @@ export async function buildMaps(options: BuildOptions): Promise<string[]> {
     const result = compileMap(sources.value)
 
     if (!result.ok) {
-      problems.push(...result.problems.map((p) => `${dir}: ${p}`))
+      problems.push(...result.error.map((p) => `${dir}: ${p}`))
       continue
     }
 
     const lock = await readLock(releasedDir, dir)
 
     if (!lock.ok) {
-      problems.push(...lock.problems)
+      problems.push(...lock.error)
       continue
     }
 
     problems.push(
-      ...checkPermanence(result.map, lock.value, { frozen: mode === "frozen" })
+      ...checkPermanence(result.value, lock.value, {
+        frozen: mode === "frozen",
+      })
     )
-    compiled.push(result.map)
+    compiled.push(result.value)
     locks.set(dir, lock.value)
   }
 
@@ -92,7 +97,7 @@ export async function buildMaps(options: BuildOptions): Promise<string[]> {
     if (!sourceMaps.includes(map)) problems.push(`No Map "${map}" to lock`)
   }
 
-  if (problems.length > 0) return problems
+  if (problems.length > 0) return err(problems)
 
   await writeOutput(options.outDir, compiled)
 
@@ -103,7 +108,7 @@ export async function buildMaps(options: BuildOptions): Promise<string[]> {
     )
   }
 
-  return []
+  return ok(undefined)
 }
 
 async function writeOutput(outDir: string, maps: CompiledMap[]) {

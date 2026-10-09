@@ -12,7 +12,7 @@ async function problemsAfter(change: (sources: MapSources) => void) {
 
   const result = compileMap(sources)
 
-  return result.ok ? [] : result.problems
+  return result.ok ? [] : result.error
 }
 
 const wild = (s: MapSources) => s.generatedWild[0]!.areas

@@ -13,7 +13,7 @@ export const fixtureSourcesDir = fileURLToPath(
 export async function fixtureSources(map = "fixture"): Promise<MapSources> {
   const parsed = await readMapSources(fixtureSourcesDir, map)
 
-  if (!parsed.ok) throw new Error(parsed.problems.join("\n"))
+  if (!parsed.ok) throw new Error(parsed.error.join("\n"))
 
   return parsed.value
 }
@@ -22,7 +22,7 @@ export async function fixtureSources(map = "fixture"): Promise<MapSources> {
 export async function compiledFixture(map = "fixture"): Promise<CompiledMap> {
   const result = compileMap(await fixtureSources(map))
 
-  if (!result.ok) throw new Error(result.problems.join("\n"))
+  if (!result.ok) throw new Error(result.error.join("\n"))
 
-  return result.map
+  return result.value
 }

@@ -16,7 +16,7 @@ if (flag !== "--frozen" && flag !== "--lock") {
 const packageDir = (path: string) =>
   fileURLToPath(new URL(`../${path}`, import.meta.url))
 
-const problems = await buildMaps({
+const built = await buildMaps({
   sourcesDir: packageDir("sources"),
   outDir: packageDir("dist"),
   releasedDir: packageDir("released"),
@@ -24,7 +24,7 @@ const problems = await buildMaps({
   maps,
 })
 
-if (problems.length > 0) {
-  console.error(`The game data compile stopped:\n  ${problems.join("\n  ")}`)
+if (!built.ok) {
+  console.error(`The game data compile stopped:\n  ${built.error.join("\n  ")}`)
   process.exit(1)
 }

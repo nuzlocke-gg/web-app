@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises"
 import { join } from "node:path"
-import { parse as parseYaml } from "yaml"
+import { err, fromThrowable, ok, type Result } from "serializable-result"
+import { parse as parseYaml, YAMLError } from "yaml"
 import { z } from "zod"
 
 import {
@@ -156,31 +157,36 @@ const releaseLock: z.ZodType<ReleaseLock> = z.strictObject({
 })
 
 /** A parsed value, or the problems that name the file and the path. */
-export type Parsed<T> =
-  { ok: true; value: T } | { ok: false; problems: string[] }
+export type Parsed<T> = Result<T, string[]>
 
 function parseText<T>(
   schema: z.ZodType<T>,
   text: string,
   file: string
 ): Parsed<T> {
-  let raw: unknown
+  const raw = fromThrowable(
+    () => (file.endsWith(".json") ? JSON.parse(text) : parseYaml(text)),
+    (error) => {
+      if (error instanceof SyntaxError || error instanceof YAMLError) {
+        return [`${file}: ${error.message}`]
+      }
 
-  try {
-    raw = file.endsWith(".json") ? JSON.parse(text) : parseYaml(text)
-  } catch (error) {
-    return { ok: false, problems: [`${file}: ${(error as Error).message}`] }
-  }
+      throw error
+    }
+  )
 
-  const result = schema.safeParse(raw)
+  if (!raw.ok) return raw
 
-  if (result.success) return { ok: true, value: result.data }
+  const result = schema.safeParse(raw.value)
 
-  const problems = result.error.issues.map((issue) => {
-    return `${file}: ${formatPath(issue.path) || "(root)"}: ${issue.message}`
-  })
+  if (result.success) return ok(result.data)
 
-  return { ok: false, problems }
+  return err(
+    result.error.issues.map(
+      (issue) =>
+        `${file}: ${formatPath(issue.path) || "(root)"}: ${issue.message}`
+    )
+  )
 }
 
 /** `places[3].id` */
@@ -249,7 +255,7 @@ export async function readMapSources(
 
     if (parsed.ok) return parsed.value
 
-    problems.push(...parsed.problems)
+    problems.push(...parsed.error)
 
     return undefined
   }
@@ -280,19 +286,16 @@ export async function readMapSources(
     speciesFiles.map((f) => read(generatedSpecies, join(generatedDir, f)))
   )
 
-  if (problems.length > 0) return { ok: false, problems }
+  if (problems.length > 0) return err(problems)
 
-  return {
-    ok: true,
-    value: {
-      methods: methods!,
-      map: map!,
-      oneTime: oneTime!,
-      corrections: mapCorrections!,
-      generatedWild: wild as GeneratedWild[],
-      generatedSpecies: species as GeneratedSpecies[],
-    },
-  }
+  return ok({
+    methods: methods!,
+    map: map!,
+    oneTime: oneTime!,
+    corrections: mapCorrections!,
+    generatedWild: wild as GeneratedWild[],
+    generatedSpecies: species as GeneratedSpecies[],
+  })
 }
 
 /** The file name of a Map's release lock. */
@@ -306,7 +309,7 @@ export async function readLock(
   const file = lockFileName(map)
   const text = await readOptional(join(releasedDir, file))
 
-  if (text === undefined) return { ok: true, value: undefined }
+  if (text === undefined) return ok(undefined)
 
   return parseText(releaseLock, text, file)
 }

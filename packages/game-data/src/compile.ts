@@ -1,3 +1,5 @@
+import { err, ok, type Result } from "serializable-result"
+
 import {
   ID_PATTERN,
   SPECIES_ID_PATTERN,
@@ -21,8 +23,7 @@ import {
 } from "./format.ts"
 
 /** A compiled Map, or every problem that stops the compile. */
-export type CompileResult =
-  { ok: true; map: CompiledMap } | { ok: false; problems: string[] }
+export type CompileResult = Result<CompiledMap, string[]>
 
 type Report = (problem: string) => void
 
@@ -53,32 +54,29 @@ export function compileMap(sources: MapSources): CompileResult {
 
   checkPlayOrder(places, report)
 
-  if (problems.length > 0) return { ok: false, problems }
+  if (problems.length > 0) return err(problems)
 
   const usedMethods = usedMethodIds(places)
 
-  return {
-    ok: true,
-    map: {
-      id: sources.map.id,
-      name: sources.map.name,
-      region: sources.map.region,
-      generation: sources.map.generation,
-      releaseOrder: sources.map.releaseOrder,
-      games: sources.map.games,
-      methods: sources.methods
-        .filter((method) => usedMethods.has(method.id))
-        .map(({ id, name, origin }): Method => ({ id, name, origin })),
-      places,
-      species: [...species.values()]
-        .sort((a, b) => a.dex - b.dex || byText(a.id, b.id))
-        .map((s) => ({
-          ...s,
-          evolvesTo: lines.evolvesTo.get(s.id) ?? [],
-          evolutionLine: lines.lineOf.get(s.id) ?? s.id,
-        })),
-    },
-  }
+  return ok({
+    id: sources.map.id,
+    name: sources.map.name,
+    region: sources.map.region,
+    generation: sources.map.generation,
+    releaseOrder: sources.map.releaseOrder,
+    games: sources.map.games,
+    methods: sources.methods
+      .filter((method) => usedMethods.has(method.id))
+      .map(({ id, name, origin }): Method => ({ id, name, origin })),
+    places,
+    species: [...species.values()]
+      .sort((a, b) => a.dex - b.dex || byText(a.id, b.id))
+      .map((s) => ({
+        ...s,
+        evolvesTo: lines.evolvesTo.get(s.id) ?? [],
+        evolutionLine: lines.lineOf.get(s.id) ?? s.id,
+      })),
+  })
 }
 
 function usedMethodIds(places: Place[]): Set<MethodId> {

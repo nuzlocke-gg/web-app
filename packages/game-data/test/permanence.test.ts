@@ -19,9 +19,9 @@ async function compiledAfter(change: (sources: MapSources) => void) {
 
   const result = compileMap(sources)
 
-  if (!result.ok) throw new Error(result.problems.join("\n"))
+  if (!result.ok) throw new Error(result.error.join("\n"))
 
-  return result.map
+  return result.value
 }
 
 const check = (map: CompiledMap, frozen = true) =>
