@@ -1,19 +1,10 @@
 import {
-  CaretRightIcon,
   GearSixIcon,
   MapTrifoldIcon,
   PlusIcon,
 } from "@phosphor-icons/react/ssr"
-import { listMaps } from "@workspace/game-data"
+import { listMaps, type MapSummary } from "@workspace/game-data"
 import { buttonVariants } from "@workspace/ui/components/button"
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemMedia,
-  ItemTitle,
-} from "@workspace/ui/components/item"
 import { cn } from "@workspace/ui/lib/utils"
 import Link from "next/link"
 
@@ -21,10 +12,12 @@ import { requireActor } from "@/lib/actor"
 import { listRunsOf, type RunListRow } from "@/lib/runs/list"
 
 import { RefreshOnFocus } from "./refresh-on-focus"
+import { RunRow } from "./run-row"
 
 export default async function HomePage() {
   const playerId = await requireActor()
   const runs = await listRunsOf(playerId)
+  const maps = listMaps()
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col">
@@ -45,7 +38,7 @@ export default async function HomePage() {
 
       <main className="flex flex-col gap-4 px-4 pt-3 pb-10">
         <h1 className="pl-1 text-2xl font-medium">Your runs</h1>
-        {runs.length === 0 ? <NoRuns /> : <RunList runs={runs} />}
+        {runs.length === 0 ? <NoRuns /> : <RunList runs={runs} maps={maps} />}
       </main>
     </div>
   )
@@ -63,54 +56,18 @@ function NewRunLink({ className }: { className?: string }) {
   )
 }
 
-function RunList({ runs }: { runs: RunListRow[] }) {
+function RunList({ runs, maps }: { runs: RunListRow[]; maps: MapSummary[] }) {
   return (
     <>
       <NewRunLink />
       <ul className="flex flex-col gap-2">
         {runs.map((run) => (
           <li key={run.id}>
-            <RunRow run={run} />
+            <RunRow run={run} maps={maps} />
           </li>
         ))}
       </ul>
     </>
-  )
-}
-
-function RunRow({ run }: { run: RunListRow }) {
-  const game = listMaps()
-    .find((map) => map.id === run.mapId)
-    ?.games.find((candidate) => candidate.id === run.gameId)
-  const gameName = game?.name ?? "Unknown game"
-
-  return (
-    <Item
-      variant="muted"
-      size="sm"
-      render={
-        <Link
-          href={`/runs/${run.id}`}
-          aria-label={`${run.name}, ${gameName}`}
-        />
-      }
-    >
-      {/* The starter's sprite replaces the Game monogram with the full rows. */}
-      <ItemMedia
-        variant="image"
-        aria-hidden
-        className="bg-background text-xs font-medium text-muted-foreground"
-      >
-        {game?.monogram ?? "?"}
-      </ItemMedia>
-      <ItemContent>
-        <ItemTitle>{run.name}</ItemTitle>
-        <ItemDescription>{gameName}</ItemDescription>
-      </ItemContent>
-      <ItemActions>
-        <CaretRightIcon aria-hidden className="text-muted-foreground" />
-      </ItemActions>
-    </Item>
   )
 }
 
