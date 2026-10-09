@@ -125,8 +125,8 @@ describe("the Emerald Map: Places", () => {
   })
 
   it("has every walkable location, and counts all but the Event Places", () => {
-    expect(placesOf(map, GAME)).toHaveLength(87)
-    expect(progressTotal(map)).toBe(83)
+    expect(placesOf(map, GAME)).toHaveLength(89)
+    expect(progressTotal(map)).toBe(85)
   })
 
   it("keeps a location with no Pokémon, where an egg can still hatch", () => {

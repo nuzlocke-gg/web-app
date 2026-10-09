@@ -90,7 +90,9 @@
     "southern-island",
     "faraway-island",
     "birth-island",
-    "navel-rock"
+    "navel-rock",
+    "secret-base",
+    "ferry"
   ],
   "species": {
     "bulbasaur": 1,

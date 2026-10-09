@@ -1,7 +1,9 @@
 # Emerald. Place names are the names the game records (pokeemerald's map
 # sections). A Place's areas are PokeAPI's location areas; see generated/.
 # Every location the player can walk in is a Place, because an egg can hatch
-# there; Secret Base (player-built) and Inside of Truck (a cutscene) are not.
+# there; Inside of Truck (the opening cutscene) is not. The S.S. Tidal has no
+# map section of its own: a hatch there records MAPSEC_DYNAMIC, which the game
+# names "FERRY" (GetMapNameGeneric in src/region_map.c).
 id: emerald
 name: Emerald
 region: Hoenn
@@ -71,6 +73,8 @@ places:
   - id: route-111
     name: Route 111
     areas: [hoenn-route-111-area]
+  - id: secret-base
+    name: Secret Base
   - id: route-112
     name: Route 112
     areas: [hoenn-route-112-area]
@@ -220,6 +224,8 @@ places:
   # Post-game.
   - id: battle-frontier
     name: Battle Frontier
+  - id: ferry
+    name: Ferry
   - id: artisan-cave
     name: Artisan Cave
     areas: [artisan-cave-area]
