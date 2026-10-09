@@ -8,6 +8,20 @@
       "when": 1791520456946,
       "tag": "0000_users_and_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791587248844,
+      "tag": "0001_runs_and_journeys",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791587249173,
+      "tag": "0002_run_deadlines",
+      "breakpoints": true
     }
   ]
 }

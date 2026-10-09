@@ -1,24 +1,16 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
-import { Pool } from "@neondatabase/serverless"
 import type { BrowserContext } from "@playwright/test"
 import { eq } from "drizzle-orm"
-import { drizzle } from "drizzle-orm/neon-serverless"
 import { randomBytes, randomUUID } from "node:crypto"
 
-import { configureNeon } from "../lib/db/neon-config.ts"
 import { accounts, sessions, users } from "../lib/db/schema.ts"
-import { testDatabaseEnv } from "../test/database.ts"
+import { testDb as db } from "./database.ts"
 import { testServerOrigin } from "./server.ts"
 
 // Stands in for Google: makes the user, the linked account, and a session
 // through the real Auth.js adapter, the way a first sign-in would. It lives
 // only in the tests, so nothing of it ships in the app.
 
-configureNeon(testDatabaseEnv.DATABASE_WS_PROXY)
-
-const db = drizzle({
-  client: new Pool({ connectionString: testDatabaseEnv.DATABASE_URL }),
-})
 const adapter = DrizzleAdapter(db, {
   usersTable: users,
   accountsTable: accounts,
