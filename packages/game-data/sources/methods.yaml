@@ -1,0 +1,10 @@
+# The project-wide method groups, in record Drawer order (Roaming last).
+# A one-time group is hand-written only: an importer row in it stops the compile.
+- { id: walk, name: Walk, origin: wild, oneTime: false }
+- { id: surf, name: Surf, origin: wild, oneTime: false }
+- { id: fishing, name: Fishing, origin: wild, oneTime: false }
+- { id: rock-smash, name: Rock Smash, origin: wild, oneTime: false }
+- { id: static, name: Static, origin: wild, oneTime: true }
+- { id: gift, name: Gift, origin: gift, oneTime: true }
+- { id: trade, name: Trade, origin: trade, oneTime: true }
+- { id: roaming, name: Roaming, origin: wild, oneTime: true }

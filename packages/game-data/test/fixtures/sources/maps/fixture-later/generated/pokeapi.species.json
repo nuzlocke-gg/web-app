@@ -1,0 +1,31 @@
+{
+  "importer": "pokeapi",
+  "pin": "abc1234",
+  "species": [
+    {
+      "id": "pikachu",
+      "name": "Pikachu",
+      "dex": 25,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Pikachu",
+          "types": ["electric"]
+        }
+      ]
+    },
+    {
+      "id": "clefairy",
+      "name": "Clefairy",
+      "dex": 35,
+      "forms": [
+        {
+          "id": "base",
+          "name": "Clefairy",
+          "types": ["fairy"]
+        }
+      ]
+    }
+  ],
+  "evolutionLinks": []
+}

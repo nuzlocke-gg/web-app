@@ -1,0 +1,165 @@
+{
+  "importer": "pokeapi",
+  "pin": "abc1234",
+  "areas": {
+    "route-1-area": {
+      "fixture-red": [
+        {
+          "method": "walk",
+          "species": "pidgey",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "rattata",
+          "form": "base"
+        }
+      ],
+      "fixture-blue": [
+        {
+          "method": "walk",
+          "species": "pidgey",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "rattata",
+          "form": "base"
+        }
+      ]
+    },
+    "route-2-area": {
+      "fixture-red": [
+        {
+          "method": "walk",
+          "species": "pikachu",
+          "form": "base"
+        },
+        {
+          "method": "walk",
+          "species": "nincada",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        }
+      ],
+      "fixture-blue": [
+        {
+          "method": "walk",
+          "species": "nincada",
+          "form": "base"
+        },
+        {
+          "method": "surf",
+          "species": "tentacool",
+          "form": "base"
+        },
+        {
+          "method": "fishing",
+          "species": "magikarp",
+          "form": "base"
+        }
+      ]
+    },
+    "route-2-north-area": {
+      "fixture-red": [
+        {
+          "method": "walk",
+          "species": "pikachu",
+          "form": "base"
+        }
+      ],
+      "fixture-blue": [
+        {
+          "method": "walk",
+          "species": "pichu",
+          "form": "base"
+        }
+      ]
+    },
+    "black-city-area": {
+      "fixture-red": [
+        {
+          "method": "walk",
+          "species": "rattata-alola",
+          "form": "base"
+        }
+      ],
+      "fixture-blue": [
+        {
+          "method": "walk",
+          "species": "pichu",
+          "form": "base"
+        }
+      ]
+    },
+    "cloak-cave-area": {
+      "fixture-red": [
+        {
+          "method": "walk",
+          "species": "burmy",
+          "form": "plant"
+        },
+        {
+          "method": "walk",
+          "species": "burmy",
+          "form": "sandy"
+        },
+        {
+          "method": "walk",
+          "species": "unown",
+          "form": "a"
+        },
+        {
+          "method": "walk",
+          "species": "electrode",
+          "form": "base"
+        },
+        {
+          "method": "rock-smash",
+          "species": "voltorb",
+          "form": "base"
+        }
+      ],
+      "fixture-blue": [
+        {
+          "method": "walk",
+          "species": "burmy",
+          "form": "plant"
+        },
+        {
+          "method": "walk",
+          "species": "burmy",
+          "form": "trash"
+        },
+        {
+          "method": "walk",
+          "species": "unown",
+          "form": "a"
+        },
+        {
+          "method": "walk",
+          "species": "electrode",
+          "form": "base"
+        }
+      ]
+    },
+    "old-ruins-area": {
+      "fixture-red": [
+        {
+          "method": "walk",
+          "species": "unown",
+          "form": "a"
+        }
+      ]
+    }
+  }
+}

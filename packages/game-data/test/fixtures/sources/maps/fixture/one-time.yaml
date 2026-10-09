@@ -1,0 +1,56 @@
+- place: starter
+  games: [fixture-red, fixture-blue]
+  method: gift
+  species: bulbasaur
+  form: base
+- place: starter
+  games: [fixture-red, fixture-blue]
+  method: gift
+  species: charmander
+  form: base
+- place: starter
+  games: [fixture-red, fixture-blue]
+  method: gift
+  species: squirtle
+  form: base
+- place: route-1
+  games: [fixture-red, fixture-blue]
+  method: roaming
+  species: raikou
+  form: base
+- place: route-2
+  games: [fixture-red, fixture-blue]
+  method: roaming
+  species: raikou
+  form: base
+- place: trade-house
+  games: [fixture-red, fixture-blue]
+  method: trade
+  species: farfetchd
+  form: base
+  note: "checked: scripts/trade_house.inc"
+- place: trade-house
+  games: [fixture-red, fixture-blue]
+  method: gift
+  species: lapras
+  form: base
+- place: magma-hideout
+  games: [fixture-red]
+  method: static
+  species: snorlax
+  form: base
+- place: magma-hideout
+  games: [fixture-blue]
+  method: static
+  species: electrode
+  form: base
+- place: navel-rock
+  games: [fixture-red]
+  method: static
+  species: lugia
+  form: base
+- place: navel-rock
+  games: [fixture-blue]
+  method: static
+  species: ho-oh
+  form: base

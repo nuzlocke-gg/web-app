@@ -1,0 +1,34 @@
+{
+  "name": "@workspace/game-data",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "The game data format: sources, the compile, and the reader the app uses.",
+  "scripts": {
+    "build": "node scripts/compile.ts --frozen",
+    "lock": "node scripts/compile.ts --lock",
+    "lint": "eslint --max-warnings 0",
+    "format": "prettier --write \"**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "serializable-result": "^0.1.0",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "@workspace/eslint-config": "*",
+    "@workspace/typescript-config": "*",
+    "eslint": "^10",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.3"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,tsx,mts}": "eslint --fix --max-warnings 0"
+  }
+}
