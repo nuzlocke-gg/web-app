@@ -17,9 +17,12 @@ if (!connectionString) {
 
 configureNeon(process.env.DATABASE_WS_PROXY)
 
-// Each Neon branch has its own endpoint host, so the build log shows which
-// branch a deployment migrated. The host carries no credentials.
-console.log(`Migrating ${new URL(connectionString).host}`)
+// Each Neon branch has its own endpoint, so the build log shows which branch
+// a deployment migrated. Only the endpoint id is logged: Vercel redacts the
+// full host, because it is also the value of an environment variable.
+const endpointId = new URL(connectionString).hostname.split(".")[0]
+
+console.log(`Migrating Neon endpoint ${endpointId}`)
 
 const pool = new Pool({ connectionString })
 
