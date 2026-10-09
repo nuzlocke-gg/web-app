@@ -11,13 +11,15 @@ import {
   type FormRef,
   type GameId,
   type Group,
+  type HandMap,
+  type HandPlace,
   type MapSources,
   type Method,
   type MethodId,
+  type MethodList,
   type Place,
   type PlaceId,
   type SourceSpecies,
-  type Species,
   type SpeciesId,
   type WildRow,
 } from "./format.ts"
@@ -25,7 +27,11 @@ import {
 /** A compiled Map, or every problem that stops the compile. */
 export type CompileResult = Result<CompiledMap, string[]>
 
-type Report = (problem: string) => void
+/** A merged value and the corrections whose expectations no longer hold. */
+interface Merged<T> {
+  value: T
+  problems: string[]
+}
 
 type RowsByGame = Map<GameId, WildRow[]>
 
@@ -39,23 +45,27 @@ const byText = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0)
  * collects them all before it stops.
  */
 export function compileMap(sources: MapSources): CompileResult {
-  const problems: string[] = []
-  const report: Report = (problem) => problems.push(problem)
+  const species = mergeSpecies(sources)
+  const areas = mergeWildAreas(sources)
+  const places = buildPlaces(sources, areas.value)
 
-  checkId(`Map id "${sources.map.id}"`, sources.map.id, report)
-  checkUnique(sources.map.games, (id) => `Game id "${id}"`, report)
-  checkUnique(sources.methods, (id) => `Method id "${id}"`, report)
-
-  const merged = mergeSpecies(sources, report)
-  const species = validateSpecies(merged.species, report)
-  const lines = evolutionLines(species, merged.links, merged.ownLine)
-  const areas = mergeWildAreas(sources, report)
-  const places = buildPlaces(sources, areas, species, report)
-
-  checkPlayOrder(places, report)
+  const problems = [
+    ...checkIds(sources),
+    ...species.problems,
+    ...checkSpecies(species.value.species),
+    ...checkAddedLinks(sources.corrections, species.value.species),
+    ...areas.problems,
+    ...checkWildMethods(areas.value, sources.methods),
+    ...checkClaims(sources.map, areas.value),
+    ...checkPlaceNames(sources.map),
+    ...checkOneTimeRows(sources),
+    ...checkTableEntries(places, species.value.species),
+    ...checkPlayOrder(places),
+  ]
 
   if (problems.length > 0) return err(problems)
 
+  const lines = evolutionLines(species.value)
   const usedMethods = usedMethodIds(places)
 
   return ok({
@@ -69,10 +79,12 @@ export function compileMap(sources: MapSources): CompileResult {
       .filter((method) => usedMethods.has(method.id))
       .map(({ id, name, origin }): Method => ({ id, name, origin })),
     places,
-    species: [...species.values()]
+    species: [...species.value.species.values()]
       .sort((a, b) => a.dex - b.dex || byText(a.id, b.id))
       .map((s) => ({
         ...s,
+        // checkSpecies has stopped the compile unless each Form has one or two types.
+        forms: s.forms as Form[],
         evolvesTo: lines.evolvesTo.get(s.id) ?? [],
         evolutionLine: lines.lineOf.get(s.id) ?? s.id,
       })),
@@ -91,104 +103,106 @@ function usedMethodIds(places: Place[]): Set<MethodId> {
   return used
 }
 
-function checkId(
-  label: string,
-  id: string,
-  report: Report,
-  pattern = ID_PATTERN
-) {
-  if (!pattern.test(id)) report(`${label} is not a readable id`)
+// ---------------------------------------------------------------------------
+// Identifiers
+// ---------------------------------------------------------------------------
+
+function checkId(label: string, id: string, pattern = ID_PATTERN): string[] {
+  return pattern.test(id) ? [] : [`${label} is not a readable id`]
 }
 
-/** Checks that each id is readable and used once. `label` names an entry in a problem. */
+/** Each id is readable and used once. `label` names an entry in a problem. */
 function checkUnique(
   entries: Array<{ id: string }>,
   label: (id: string) => string,
-  report: Report
-) {
+  pattern = ID_PATTERN
+): string[] {
+  const problems: string[] = []
   const seen = new Set<string>()
 
   for (const { id } of entries) {
-    checkId(label(id), id, report)
+    problems.push(...checkId(label(id), id, pattern))
 
-    if (seen.has(id)) report(`${label(id)} is used twice`)
+    if (seen.has(id)) problems.push(`${label(id)} is used twice`)
 
     seen.add(id)
   }
+
+  return problems
+}
+
+function checkIds(sources: MapSources): string[] {
+  return [
+    ...checkId(`Map id "${sources.map.id}"`, sources.map.id),
+    ...checkUnique(sources.map.games, (id) => `Game id "${id}"`),
+    ...checkUnique(sources.methods, (id) => `Method id "${id}"`),
+    ...checkUnique(sources.map.places, (id) => `Place id "${id}"`),
+  ]
 }
 
 // ---------------------------------------------------------------------------
 // Species
 // ---------------------------------------------------------------------------
 
-interface MergedSpecies {
+interface SpeciesDraft {
   species: Map<SpeciesId, SourceSpecies>
-  links: EvolutionLink[]
+  links: Map<string, EvolutionLink>
   ownLine: Set<SpeciesId>
 }
 
 /** Generated Species facts, then the corrections, in file order. */
-function mergeSpecies(sources: MapSources, report: Report): MergedSpecies {
-  const species = new Map<SpeciesId, SourceSpecies>()
-  const links = new Map<string, EvolutionLink>()
-  const ownLine = new Set<SpeciesId>()
+function mergeSpecies(sources: MapSources): Merged<SpeciesDraft> {
+  const problems: string[] = []
+  const draft: SpeciesDraft = {
+    species: new Map(),
+    links: new Map(),
+    ownLine: new Set(),
+  }
 
   for (const file of sources.generatedSpecies) {
     for (const s of file.species) {
-      if (species.has(s.id)) report(`Species id "${s.id}" is used twice`)
-      else species.set(s.id, structuredClone(s))
-    }
-
-    for (const link of file.evolutionLinks) links.set(linkKey(link), link)
-  }
-
-  for (const correction of sources.corrections) {
-    applySpeciesCorrection(correction, { species, links, ownLine }, report)
-  }
-
-  // Generated links are filtered to the Species of the Map later; a link
-  // a person added must name Species that exist.
-  for (const correction of sources.corrections) {
-    if (correction.op !== "add-evolution-link") continue
-
-    const { from, to } = correction.evolutionLink
-
-    for (const id of [from, to]) {
-      if (!species.has(id)) {
-        report(
-          `Correction add-evolution-link ${from}>${to}: no Species "${id}"`
-        )
+      if (draft.species.has(s.id)) {
+        problems.push(`Species id "${s.id}" is used twice`)
+      } else {
+        draft.species.set(s.id, structuredClone(s))
       }
     }
+
+    for (const link of file.evolutionLinks) {
+      draft.links.set(linkKey(link), link)
+    }
   }
 
-  return { species, links: [...links.values()], ownLine }
+  for (const correction of sources.corrections) {
+    const problem = applySpeciesCorrection(correction, draft)
+
+    if (problem) problems.push(problem)
+  }
+
+  return { value: draft, problems }
 }
 
+/**
+ * Applies one correction to `draft` in place. Returns the problem when the
+ * correction's expectation no longer holds; then `draft` is unchanged.
+ */
 function applySpeciesCorrection(
   correction: Correction,
-  merged: {
-    species: Map<SpeciesId, SourceSpecies>
-    links: Map<string, EvolutionLink>
-    ownLine: Set<SpeciesId>
-  },
-  report: Report
-) {
-  const { species, links, ownLine } = merged
+  draft: SpeciesDraft
+): string | undefined {
+  const { species, links, ownLine } = draft
 
   switch (correction.op) {
     case "add-species": {
       const { id } = correction.species
 
       if (species.has(id)) {
-        report(
-          `Correction add-species "${id}": the import now has it. Remove the correction.`
-        )
-      } else {
-        species.set(id, structuredClone(correction.species))
+        return `Correction add-species "${id}": the import now has it. Remove the correction.`
       }
 
-      return
+      species.set(id, structuredClone(correction.species))
+
+      return undefined
     }
 
     case "add-form": {
@@ -196,24 +210,16 @@ function applySpeciesCorrection(
       const ref = `${correction.species}/${correction.form.id}`
 
       if (!target) {
-        report(
-          `Correction add-form "${ref}": no Species "${correction.species}"`
-        )
-
-        return
+        return `Correction add-form "${ref}": no Species "${correction.species}"`
       }
 
       if (target.forms.some((f) => f.id === correction.form.id)) {
-        report(
-          `Correction add-form "${ref}": the import now has it. Remove the correction.`
-        )
-
-        return
+        return `Correction add-form "${ref}": the import now has it. Remove the correction.`
       }
 
       target.forms.push(structuredClone(correction.form))
 
-      return
+      return undefined
     }
 
     case "set-types": {
@@ -223,102 +229,105 @@ function applySpeciesCorrection(
         ?.forms.find((f) => f.id === correction.form)
       const expected = correction.expect.join("/")
 
-      if (!form) {
-        report(`Correction set-types "${ref}": no Form "${ref}"`)
-
-        return
-      }
+      if (!form) return `Correction set-types "${ref}": no Form "${ref}"`
 
       if (form.types.join("/") !== expected) {
-        report(
-          `Correction set-types "${ref}" expects ${expected}, but the import now says ${form.types.join("/")}. Review it.`
-        )
-
-        return
+        return `Correction set-types "${ref}" expects ${expected}, but the import now says ${form.types.join("/")}. Review it.`
       }
 
       form.types = [...correction.types]
 
-      return
+      return undefined
     }
 
     case "add-evolution-link": {
       const key = linkKey(correction.evolutionLink)
 
       if (links.has(key)) {
-        report(
-          `Correction add-evolution-link ${key}: the import now has it. Remove the correction.`
-        )
-      } else {
-        links.set(key, correction.evolutionLink)
+        return `Correction add-evolution-link ${key}: the import now has it. Remove the correction.`
       }
 
-      return
+      links.set(key, correction.evolutionLink)
+
+      return undefined
     }
 
     case "remove-evolution-link": {
       const key = linkKey(correction.evolutionLink)
 
-      if (!links.delete(key)) {
-        report(
-          `Correction remove-evolution-link ${key}: the import no longer has it. Review it.`
-        )
+      if (!links.has(key)) {
+        return `Correction remove-evolution-link ${key}: the import no longer has it. Review it.`
       }
 
-      return
+      links.delete(key)
+
+      return undefined
     }
 
     case "own-evolution-line":
       if (!species.has(correction.species)) {
-        report(
-          `Correction own-evolution-line: no Species "${correction.species}"`
-        )
+        return `Correction own-evolution-line: no Species "${correction.species}"`
       }
 
       ownLine.add(correction.species)
 
-      return
+      return undefined
 
     default:
-      return
+      return undefined
   }
 }
 
-/** Checks ids, Forms, and types, and narrows each Form to one or two types. */
-function validateSpecies(
-  merged: Map<SpeciesId, SourceSpecies>,
-  report: Report
-): Map<SpeciesId, Omit<Species, "evolvesTo" | "evolutionLine">> {
-  const species = new Map<
-    SpeciesId,
-    Omit<Species, "evolvesTo" | "evolutionLine">
-  >()
+/** Ids, Forms, and types of every Species. */
+function checkSpecies(species: Map<SpeciesId, SourceSpecies>): string[] {
+  const problems: string[] = []
 
-  for (const s of merged.values()) {
-    checkId(`Species id "${s.id}"`, s.id, report, SPECIES_ID_PATTERN)
+  for (const s of species.values()) {
+    problems.push(
+      ...checkId(`Species id "${s.id}"`, s.id, SPECIES_ID_PATTERN),
+      ...checkUnique(s.forms, (id) => `Form id "${s.id}/${id}"`)
+    )
 
-    if (s.forms.length === 0) report(`Species "${s.id}" has no Form`)
+    if (s.forms.length === 0) problems.push(`Species "${s.id}" has no Form`)
 
     if (s.forms.length === 1 && s.forms[0]!.id !== "base") {
-      report(
+      problems.push(
         `Species "${s.id}" has one Form, so its Form id must be "base", not "${s.forms[0]!.id}"`
       )
     }
 
-    checkUnique(s.forms, (id) => `Form id "${s.id}/${id}"`, report)
-
     for (const form of s.forms) {
       if (form.types.length < 1 || form.types.length > 2) {
-        report(
+        problems.push(
           `Form "${s.id}/${form.id}" needs one or two types; it has ${form.types.length}`
         )
       }
     }
-
-    species.set(s.id, { ...s, forms: s.forms as Form[] })
   }
 
-  return species
+  return problems
+}
+
+/**
+ * Generated links are filtered to the Species of the Map; a link a person
+ * added must name Species that exist.
+ */
+function checkAddedLinks(
+  corrections: Correction[],
+  species: Map<SpeciesId, SourceSpecies>
+): string[] {
+  return corrections.flatMap((correction) => {
+    if (correction.op !== "add-evolution-link") return []
+
+    const { from, to } = correction.evolutionLink
+
+    return [from, to]
+      .filter((id) => !species.has(id))
+      .map(
+        (id) =>
+          `Correction add-evolution-link ${from}>${to}: no Species "${id}"`
+      )
+  })
 }
 
 interface EvolutionLines {
@@ -332,12 +341,14 @@ interface EvolutionLines {
  * out of the line. A line's id is its earliest Species: the member that
  * no link of the line evolves into, by dex number and then id.
  */
-function evolutionLines(
-  species: Map<SpeciesId, { id: SpeciesId; dex: number }>,
-  links: EvolutionLink[],
-  ownLine: Set<SpeciesId>
-): EvolutionLines {
-  const mapLinks = links.filter((l) => species.has(l.from) && species.has(l.to))
+function evolutionLines({
+  species,
+  links,
+  ownLine,
+}: SpeciesDraft): EvolutionLines {
+  const mapLinks = [...links.values()].filter(
+    (l) => species.has(l.from) && species.has(l.to)
+  )
   const lineLinks = mapLinks.filter(
     (l) => !ownLine.has(l.from) && !ownLine.has(l.to)
   )
@@ -401,15 +412,17 @@ interface WildAreas {
 }
 
 /** Generated wild areas, then the corrections, in file order. */
-function mergeWildAreas(sources: MapSources, report: Report): WildAreas {
-  const rows = new Map<string, RowsByGame>()
-  const ignored = new Set<string>()
+function mergeWildAreas(sources: MapSources): Merged<WildAreas> {
+  const problems: string[] = []
+  const draft: WildAreas = { rows: new Map(), ignored: new Set() }
 
   for (const file of sources.generatedWild) {
     for (const [area, byGame] of Object.entries(file.areas)) {
-      if (rows.has(area)) report(`Area "${area}" comes from two importers`)
+      if (draft.rows.has(area)) {
+        problems.push(`Area "${area}" comes from two importers`)
+      }
 
-      rows.set(
+      draft.rows.set(
         area,
         new Map(Object.entries(byGame).map(([g, r]) => [g, [...(r ?? [])]]))
       )
@@ -417,44 +430,33 @@ function mergeWildAreas(sources: MapSources, report: Report): WildAreas {
   }
 
   for (const correction of sources.corrections) {
-    applyWildCorrection(correction, { rows, ignored }, report)
+    const problem = applyWildCorrection(correction, draft)
+
+    if (problem) problems.push(problem)
   }
 
-  const methods = new Map(sources.methods.map((m) => [m.id, m]))
-
-  for (const [area, byGame] of rows) {
-    for (const row of [...byGame.values()].flat()) {
-      const method = methods.get(row.method)
-
-      if (!method) {
-        report(`Area "${area}" uses unknown method "${row.method}"`)
-      } else if (method.oneTime) {
-        report(
-          `Area "${area}" has a ${method.name} row (${row.species}). One-time rows are hand-written only.`
-        )
-      }
-    }
-  }
-
-  return { rows, ignored }
+  return { value: draft, problems }
 }
 
+/**
+ * Applies one correction to `draft` in place. Returns the problem when the
+ * correction's expectation no longer holds; then `draft` is unchanged.
+ */
 function applyWildCorrection(
   correction: Correction,
-  { rows, ignored }: WildAreas,
-  report: Report
-) {
+  draft: WildAreas
+): string | undefined {
+  const { rows, ignored } = draft
+
   switch (correction.op) {
     case "ignore-area":
       if (!rows.has(correction.area)) {
-        report(
-          `Correction ignore-area "${correction.area}": the import no longer has that area.`
-        )
+        return `Correction ignore-area "${correction.area}": the import no longer has that area.`
       }
 
       ignored.add(correction.area)
 
-      return
+      return undefined
 
     case "remove-wild": {
       const { area, game, row } = correction
@@ -462,16 +464,12 @@ function applyWildCorrection(
       const index = gameRows.findIndex((r) => rowKey(r) === rowKey(row))
 
       if (index < 0) {
-        report(
-          `Correction remove-wild ${area} ${game} ${rowKey(row)}: the import no longer has that row. Review it.`
-        )
-
-        return
+        return `Correction remove-wild ${area} ${game} ${rowKey(row)}: the import no longer has that row. Review it.`
       }
 
       gameRows.splice(index, 1)
 
-      return
+      return undefined
     }
 
     case "add-wild": {
@@ -480,186 +478,159 @@ function applyWildCorrection(
       const gameRows = areaRows.get(game) ?? []
 
       if (gameRows.some((r) => rowKey(r) === rowKey(row))) {
-        report(
-          `Correction add-wild ${area} ${game} ${rowKey(row)}: the import now has that row. Remove the correction.`
-        )
-
-        return
+        return `Correction add-wild ${area} ${game} ${rowKey(row)}: the import now has that row. Remove the correction.`
       }
 
       areaRows.set(game, [...gameRows, row])
       rows.set(area, areaRows)
 
-      return
+      return undefined
     }
 
     default:
-      return
+      return undefined
   }
+}
+
+/** Generated rows may use only known, repeatable methods. */
+function checkWildMethods(areas: WildAreas, methods: MethodList): string[] {
+  const byId = new Map(methods.map((m) => [m.id, m]))
+  const problems: string[] = []
+
+  for (const [area, byGame] of areas.rows) {
+    for (const row of [...byGame.values()].flat()) {
+      const method = byId.get(row.method)
+
+      if (!method) {
+        problems.push(`Area "${area}" uses unknown method "${row.method}"`)
+      } else if (method.oneTime) {
+        problems.push(
+          `Area "${area}" has a ${method.name} row (${row.species}). One-time rows are hand-written only.`
+        )
+      }
+    }
+  }
+
+  return problems
+}
+
+/** Every area belongs to exactly one Place or is ignored, and only for Games of the Map. */
+function checkClaims(map: HandMap, areas: WildAreas): string[] {
+  const gameIds = new Set(map.games.map((g) => g.id))
+  const claimedBy = new Map<string, PlaceId>()
+  const problems: string[] = []
+
+  for (const place of map.places) {
+    for (const area of place.areas ?? []) {
+      const owner = claimedBy.get(area)
+      const areaRows = areas.rows.get(area)
+
+      claimedBy.set(area, place.id)
+
+      if (owner) {
+        problems.push(
+          `Area "${area}" is claimed by "${owner}" and "${place.id}"`
+        )
+      }
+
+      if (areas.ignored.has(area)) {
+        problems.push(
+          `Area "${area}" is claimed by "${place.id}" and also ignored`
+        )
+      }
+
+      if (!areaRows) {
+        problems.push(
+          `Place "${place.id}" claims area "${area}", which the import does not have`
+        )
+        continue
+      }
+
+      for (const game of areaRows.keys()) {
+        if (!gameIds.has(game)) {
+          problems.push(`Area "${area}" has rows for unknown Game "${game}"`)
+        }
+      }
+    }
+  }
+
+  for (const area of areas.rows.keys()) {
+    if (!claimedBy.has(area) && !areas.ignored.has(area)) {
+      problems.push(
+        `Area "${area}" from the import belongs to no Place. Claim it in map.yaml or ignore it in corrections.yaml.`
+      )
+    }
+  }
+
+  return problems
 }
 
 // ---------------------------------------------------------------------------
 // Places
 // ---------------------------------------------------------------------------
 
-/** The Places in play order, with names per Game and their tables. */
-function buildPlaces(
-  sources: MapSources,
-  areas: WildAreas,
-  species: Map<SpeciesId, { forms: Array<{ id: string }> }>,
-  report: Report
-): Place[] {
+/**
+ * The Places in play order, with a name per Game and their tables. Entries
+ * that the checks refuse are left out or left empty, so this never fails.
+ */
+function buildPlaces(sources: MapSources, areas: WildAreas): Place[] {
   const gameIds = sources.map.games.map((g) => g.id)
-  const rowsByPlace = new Map<PlaceId, RowsByGame>()
-  const claimedBy = new Map<string, PlaceId>()
-  const places: Place[] = []
+  const oneTimeRows = oneTimeRowsByPlace(sources)
 
-  checkUnique(sources.map.places, (id) => `Place id "${id}"`, report)
-
-  for (const hand of sources.map.places) {
-    const names = resolveNames(hand.id, hand.name, gameIds, report)
-    const rows: RowsByGame = new Map()
+  return sources.map.places.map((hand) => {
+    const rows = new Map<GameId, WildRow[]>()
+    const add = (game: GameId, added: WildRow[]) =>
+      rows.set(game, [...(rows.get(game) ?? []), ...added])
 
     for (const area of hand.areas ?? []) {
-      const owner = claimedBy.get(area)
-      const areaRows = areas.rows.get(area)
-
-      if (owner)
-        report(`Area "${area}" is claimed by "${owner}" and "${hand.id}"`)
-      if (areas.ignored.has(area)) {
-        report(`Area "${area}" is claimed by "${hand.id}" and also ignored`)
-      }
-
-      claimedBy.set(area, hand.id)
-
-      if (!areaRows) {
-        report(
-          `Place "${hand.id}" claims area "${area}", which the import does not have`
-        )
-        continue
-      }
-
-      for (const [game, gameRows] of areaRows) {
-        if (!gameIds.includes(game)) {
-          report(`Area "${area}" has rows for unknown Game "${game}"`)
-          continue
-        }
-
-        rows.set(game, [...(rows.get(game) ?? []), ...gameRows])
+      for (const [game, areaRows] of areas.rows.get(area) ?? []) {
+        if (gameIds.includes(game)) add(game, areaRows)
       }
     }
 
-    rowsByPlace.set(hand.id, rows)
-    places.push({
+    for (const [game, added] of oneTimeRows.get(hand.id) ?? []) {
+      if (gameIds.includes(game)) add(game, added)
+    }
+
+    const tables: Place["tables"] = {}
+
+    for (const [game, gameRows] of rows) {
+      tables[game] = groupRows(gameRows, sources.methods)
+    }
+
+    return {
       id: hand.id,
       kind: hand.kind ?? "standard",
-      names,
-      tables: {},
-    })
-  }
-
-  for (const area of areas.rows.keys()) {
-    if (!claimedBy.has(area) && !areas.ignored.has(area)) {
-      report(
-        `Area "${area}" from the import belongs to no Place. Claim it in map.yaml or ignore it in corrections.yaml.`
-      )
+      names: Object.fromEntries(
+        gameIds.map((game) => [game, nameIn(hand, game) ?? ""])
+      ),
+      tables,
     }
-  }
-
-  addOneTimeRows(sources, rowsByPlace, report)
-
-  const hasForm = (ref: FormRef) =>
-    species.get(ref.species)?.forms.some((f) => f.id === ref.form) ?? false
-
-  for (const place of places) {
-    for (const [game, rows] of rowsByPlace.get(place.id) ?? []) {
-      for (const row of rows) {
-        if (!hasForm(row)) {
-          report(
-            `Place "${place.id}" (${game}) names unknown Species or Form "${row.species}/${row.form}"`
-          )
-        }
-      }
-
-      place.tables[game] = groupRows(rows, sources.methods)
-    }
-  }
-
-  return places
+  })
 }
 
-function resolveNames(
-  placeId: PlaceId,
-  name: string | Record<GameId, string>,
-  gameIds: GameId[],
-  report: Report
-): Record<GameId, string> {
-  if (typeof name === "string") {
-    return Object.fromEntries(gameIds.map((g) => [g, name]))
-  }
+/** The name of a Place in a Game, from its own entry only. */
+function nameIn(place: HandPlace, game: GameId): string | undefined {
+  if (typeof place.name === "string") return place.name
 
-  for (const game of Object.keys(name)) {
-    if (!gameIds.includes(game)) {
-      report(`Place "${placeId}" names unknown Game "${game}"`)
-    }
-  }
-
-  const nameIn = (game: GameId) =>
-    Object.hasOwn(name, game) ? name[game] : undefined
-
-  for (const game of gameIds) {
-    if (!nameIn(game)) {
-      report(
-        `Place "${placeId}" has no name for ${game}. Every Place is in every Game of its Map.`
-      )
-    }
-  }
-
-  return Object.fromEntries(gameIds.map((g) => [g, nameIn(g) ?? ""]))
+  return Object.hasOwn(place.name, game) ? place.name[game] : undefined
 }
 
-function addOneTimeRows(
-  sources: MapSources,
-  rowsByPlace: Map<PlaceId, RowsByGame>,
-  report: Report
-) {
-  const methods = new Map(sources.methods.map((m) => [m.id, m]))
-  const gameIds = new Set(sources.map.games.map((g) => g.id))
+function oneTimeRowsByPlace(sources: MapSources): Map<PlaceId, RowsByGame> {
+  const byPlace = new Map<PlaceId, RowsByGame>()
 
   for (const row of sources.oneTime) {
-    const label = `One-time row ${row.species}/${row.form} at "${row.place}"`
-    const placeRows = rowsByPlace.get(row.place)
-    const method = methods.get(row.method)
-
-    if (!placeRows) {
-      report(`${label}: no Place "${row.place}"`)
-      continue
-    }
-
-    if (!method) {
-      report(`${label}: unknown method "${row.method}"`)
-      continue
-    }
-
-    if (!method.oneTime) {
-      report(`${label}: ${method.name} is not a one-time method`)
-    }
+    const rows = byPlace.get(row.place) ?? new Map<GameId, WildRow[]>()
+    const wildRow = { method: row.method, species: row.species, form: row.form }
 
     for (const game of row.games) {
-      if (!gameIds.has(game)) {
-        report(`${label}: unknown Game "${game}"`)
-        continue
-      }
-
-      const wildRow = {
-        method: row.method,
-        species: row.species,
-        form: row.form,
-      }
-
-      placeRows.set(game, [...(placeRows.get(game) ?? []), wildRow])
+      rows.set(game, [...(rows.get(game) ?? []), wildRow])
     }
+
+    byPlace.set(row.place, rows)
   }
+
+  return byPlace
 }
 
 /** Method groups in the project's method order, entries deduplicated in source order. */
@@ -681,26 +652,97 @@ function groupRows(rows: WildRow[], methods: Array<{ id: MethodId }>): Group[] {
   })
 }
 
-function checkPlayOrder(places: Place[], report: Report) {
+/** A name for every Game, and only for Games of the Map. */
+function checkPlaceNames(map: HandMap): string[] {
+  const gameIds = map.games.map((g) => g.id)
+
+  return map.places.flatMap((place) => {
+    if (typeof place.name === "string") return []
+
+    const unknown = Object.keys(place.name)
+      .filter((game) => !gameIds.includes(game))
+      .map((game) => `Place "${place.id}" names unknown Game "${game}"`)
+    const missing = gameIds
+      .filter((game) => !nameIn(place, game))
+      .map(
+        (game) =>
+          `Place "${place.id}" has no name for ${game}. Every Place is in every Game of its Map.`
+      )
+
+    return [...unknown, ...missing]
+  })
+}
+
+/** Each one-time row names a Place, Games of the Map, and a one-time method. */
+function checkOneTimeRows(sources: MapSources): string[] {
+  const methods = new Map(sources.methods.map((m) => [m.id, m]))
+  const placeIds = new Set(sources.map.places.map((p) => p.id))
+  const gameIds = new Set(sources.map.games.map((g) => g.id))
+
+  return sources.oneTime.flatMap((row) => {
+    const label = `One-time row ${row.species}/${row.form} at "${row.place}"`
+    const method = methods.get(row.method)
+
+    if (!placeIds.has(row.place)) return [`${label}: no Place "${row.place}"`]
+    if (!method) return [`${label}: unknown method "${row.method}"`]
+
+    return [
+      ...(method.oneTime
+        ? []
+        : [`${label}: ${method.name} is not a one-time method`]),
+      ...row.games
+        .filter((game) => !gameIds.has(game))
+        .map((game) => `${label}: unknown Game "${game}"`),
+    ]
+  })
+}
+
+/** Every table entry names a Species and Form of the Map. */
+function checkTableEntries(
+  places: Place[],
+  species: Map<SpeciesId, SourceSpecies>
+): string[] {
+  const hasForm = (ref: FormRef) =>
+    species.get(ref.species)?.forms.some((f) => f.id === ref.form) ?? false
+
+  return places.flatMap((place) =>
+    Object.entries(place.tables).flatMap(([game, groups]) =>
+      (groups ?? [])
+        .flatMap((group) => group.entries)
+        .filter((entry) => !hasForm(entry))
+        .map(
+          (entry) =>
+            `Place "${place.id}" (${game}) names unknown Species or Form "${entry.species}/${entry.form}"`
+        )
+    )
+  )
+}
+
+function checkPlayOrder(places: Place[]): string[] {
+  const problems: string[] = []
   const starters = places.filter((p) => p.kind === "starter")
 
   if (starters.length !== 1) {
-    report(`The Map needs exactly one Starter Place; it has ${starters.length}`)
+    problems.push(
+      `The Map needs exactly one Starter Place; it has ${starters.length}`
+    )
   } else if (places[0] !== starters[0]) {
-    report(
+    problems.push(
       `The Starter Place "${starters[0]!.id}" must be first in the play order`
     )
   }
 
   const firstEvent = places.findIndex((p) => p.kind === "event")
-
-  if (firstEvent < 0) return
-
-  const lateStandard = places.slice(firstEvent).find((p) => p.kind !== "event")
+  const lateStandard =
+    firstEvent < 0
+      ? undefined
+      : places.slice(firstEvent).find((p) => p.kind !== "event")
 
   if (lateStandard) {
-    report(
+    problems.push(
       `Place "${lateStandard.id}" comes after an Event Place. Event Places must be last in the play order.`
     )
   }
+
+  return problems
 }

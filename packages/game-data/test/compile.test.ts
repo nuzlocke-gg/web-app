@@ -49,8 +49,8 @@ describe("compile", () => {
     })
 
     expect(problems).toEqual([
-      'Species "ivysaur" has no Form',
       'Place id "route-1" is used twice',
+      'Species "ivysaur" has no Form',
     ])
   })
 })
