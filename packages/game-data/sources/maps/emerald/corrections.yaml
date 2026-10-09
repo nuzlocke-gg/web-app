@@ -1,0 +1,4 @@
+# Nincada's Shedinja is recorded as its own Encounter, so it has its own line.
+- op: own-evolution-line
+  species: shedinja
+  why: Recorded as its own Encounter

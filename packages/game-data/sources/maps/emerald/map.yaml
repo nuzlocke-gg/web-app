@@ -1,0 +1,256 @@
+# Emerald. Place names are the names the game records (pokeemerald's map
+# sections). A Place's areas are PokeAPI's location areas; see generated/.
+# Every location the player can walk in is a Place, because an egg can hatch
+# there; Secret Base (player-built) and Inside of Truck (a cutscene) are not.
+id: emerald
+name: Emerald
+region: Hoenn
+generation: 3
+releaseOrder: 1
+games:
+  - { id: emerald, name: Emerald, monogram: E }
+places:
+  - id: starter
+    kind: starter
+    name: Starter
+  - id: littleroot-town
+    name: Littleroot Town
+  - id: route-101
+    name: Route 101
+    areas: [hoenn-route-101-area]
+  - id: oldale-town
+    name: Oldale Town
+  - id: route-103
+    name: Route 103
+    areas: [hoenn-route-103-area]
+  - id: route-102
+    name: Route 102
+    areas: [hoenn-route-102-area]
+  - id: petalburg-city
+    name: Petalburg City
+    areas: [petalburg-city-area]
+  - id: route-104
+    name: Route 104
+    areas: [hoenn-route-104-area]
+  - id: petalburg-woods
+    name: Petalburg Woods
+    areas: [petalburg-woods-area]
+  - id: rustboro-city
+    name: Rustboro City
+  - id: route-116
+    name: Route 116
+    areas: [hoenn-route-116-area]
+  - id: rusturf-tunnel
+    name: Rusturf Tunnel
+    areas: [rusturf-tunnel-area]
+  - id: dewford-town
+    name: Dewford Town
+    areas: [dewford-town-area]
+  - id: route-106
+    name: Route 106
+    areas: [hoenn-route-106-area]
+  - id: granite-cave
+    name: Granite Cave
+    areas: [granite-cave-1f, granite-cave-1fsmall-room, granite-cave-b1f, granite-cave-b2f]
+  - id: route-109
+    name: Route 109
+    areas: [hoenn-route-109-area]
+  - id: slateport-city
+    name: Slateport City
+    areas: [slateport-city-area]
+  - id: route-110
+    name: Route 110
+    areas: [hoenn-route-110-area]
+  - id: mauville-city
+    name: Mauville City
+  - id: route-117
+    name: Route 117
+    areas: [hoenn-route-117-area]
+  - id: verdanturf-town
+    name: Verdanturf Town
+  - id: route-111
+    name: Route 111
+    areas: [hoenn-route-111-area]
+  - id: route-112
+    name: Route 112
+    areas: [hoenn-route-112-area]
+  - id: fiery-path
+    name: Fiery Path
+    areas: [fiery-path-area]
+  - id: route-113
+    name: Route 113
+    areas: [hoenn-route-113-area]
+  - id: fallarbor-town
+    name: Fallarbor Town
+  - id: route-114
+    name: Route 114
+    areas: [hoenn-route-114-area]
+  - id: meteor-falls
+    name: Meteor Falls
+    areas: [meteor-falls-area, meteor-falls-b1f, meteor-falls-back, meteor-falls-backsmall-room]
+  - id: route-115
+    name: Route 115
+    areas: [hoenn-route-115-area]
+  - id: mt-chimney
+    name: Mt. Chimney
+  - id: jagged-pass
+    name: Jagged Pass
+    areas: [jagged-pass-area]
+  - id: lavaridge-town
+    name: Lavaridge Town
+  - id: mirage-tower
+    name: Mirage Tower
+    areas: [mirage-tower-area]
+  - id: route-105
+    name: Route 105
+    areas: [hoenn-route-105-area]
+  - id: route-107
+    name: Route 107
+    areas: [hoenn-route-107-area]
+  - id: route-108
+    name: Route 108
+    areas: [hoenn-route-108-area]
+  - id: abandoned-ship
+    name: Abandoned Ship
+    areas: [abandoned-ship-area]
+  - id: new-mauville
+    name: New Mauville
+    areas: [new-mauville-area, new-mauville-entrance]
+  - id: route-118
+    name: Route 118
+    areas: [hoenn-route-118-area]
+  - id: route-119
+    name: Route 119
+    areas: [hoenn-route-119-area]
+  - id: fortree-city
+    name: Fortree City
+  - id: route-120
+    name: Route 120
+    areas: [hoenn-route-120-area]
+  - id: scorched-slab
+    name: Scorched Slab
+  - id: route-121
+    name: Route 121
+    areas: [hoenn-route-121-area]
+  - id: safari-zone
+    name: Safari Zone
+    areas: [hoenn-safari-zone-sw, hoenn-safari-zone-se, hoenn-safari-zone-nwmach-bike-area, hoenn-safari-zone-neacro-bike-area, hoenn-safari-zone-expansion-north, hoenn-safari-zone-expansion-south]
+  - id: lilycove-city
+    name: Lilycove City
+    areas: [lilycove-city-area]
+  - id: route-122
+    name: Route 122
+    areas: [hoenn-route-122-area]
+  - id: mt-pyre
+    name: Mt. Pyre
+    areas: [mt-pyre-1f, mt-pyre-2f, mt-pyre-3f, mt-pyre-4f, mt-pyre-5f, mt-pyre-6f, mt-pyre-outside, mt-pyre-summit]
+  - id: route-123
+    name: Route 123
+    areas: [hoenn-route-123-area]
+  - id: magma-hideout
+    name: Magma Hideout
+    areas: [magma-hideout-area]
+  - id: aqua-hideout
+    name: Aqua Hideout
+  - id: route-124
+    name: Route 124
+    areas: [hoenn-route-124-area]
+  - id: underwater
+    name: Underwater
+    areas: [hoenn-route-124-underwater, hoenn-route-126-underwater]
+  - id: mossdeep-city
+    name: Mossdeep City
+    areas: [mossdeep-city-area]
+  - id: route-125
+    name: Route 125
+    areas: [hoenn-route-125-area]
+  - id: shoal-cave
+    name: Shoal Cave
+    areas: [shoal-cave-low-tide, shoal-cave-high-tide, shoal-cave-b1f, shoal-cave-b2f, shoal-cave-b3f]
+  - id: route-127
+    name: Route 127
+    areas: [hoenn-route-127-area]
+  - id: route-128
+    name: Route 128
+    areas: [hoenn-route-128-area]
+  - id: seafloor-cavern
+    name: Seafloor Cavern
+    areas: [seafloor-cavern-area]
+  - id: route-126
+    name: Route 126
+    areas: [hoenn-route-126-area]
+  - id: sootopolis-city
+    name: Sootopolis City
+    areas: [sootopolis-city-area]
+  - id: cave-of-origin
+    name: Cave of Origin
+    areas: [cave-of-origin-entrance, cave-of-origin-1f, cave-of-origin-b1f, cave-of-origin-b2f, cave-of-origin-b3f]
+  - id: route-129
+    name: Route 129
+    areas: [hoenn-route-129-area]
+  - id: route-130
+    name: Route 130
+    areas: [hoenn-route-130-area, mirage-island-area]
+  - id: route-131
+    name: Route 131
+    areas: [hoenn-route-131-area]
+  - id: pacifidlog-town
+    name: Pacifidlog Town
+    areas: [pacifidlog-town-area]
+  - id: route-132
+    name: Route 132
+    areas: [hoenn-route-132-area]
+  - id: route-133
+    name: Route 133
+    areas: [hoenn-route-133-area]
+  - id: route-134
+    name: Route 134
+    areas: [hoenn-route-134-area]
+  - id: sealed-chamber
+    name: Sealed Chamber
+  - id: sky-pillar
+    name: Sky Pillar
+    areas: [sky-pillar-1f, sky-pillar-3f, sky-pillar-5f]
+  - id: ever-grande-city
+    name: Ever Grande City
+    areas: [ever-grande-city-area]
+  - id: victory-road
+    name: Victory Road
+    areas: [hoenn-victory-road-1f, hoenn-victory-road-b1f, hoenn-victory-road-b2f]
+  # Post-game.
+  - id: battle-frontier
+    name: Battle Frontier
+  - id: artisan-cave
+    name: Artisan Cave
+    areas: [artisan-cave-area]
+  - id: desert-underpass
+    name: Desert Underpass
+    areas: [desert-underpass-area]
+  - id: altering-cave
+    name: Altering Cave
+    areas: [hoenn-altering-cave-area]
+  - id: island-cave
+    name: Island Cave
+  - id: desert-ruins
+    name: Desert Ruins
+  - id: ancient-tomb
+    name: Ancient Tomb
+  - id: marine-cave
+    name: Marine Cave
+  - id: terra-cave
+    name: Terra Cave
+  - id: trainer-hill
+    name: Trainer Hill
+  # Reached only with an event ticket.
+  - id: southern-island
+    kind: event
+    name: Southern Island
+  - id: faraway-island
+    kind: event
+    name: Faraway Island
+  - id: birth-island
+    kind: event
+    name: Birth Island
+  - id: navel-rock
+    kind: event
+    name: Navel Rock
