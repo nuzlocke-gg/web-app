@@ -80,8 +80,8 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
   const [nameRefusal, setNameRefusal] = useState<RunNameRefusal | null>(null)
 
   // While a submission is held (sending, or restored after a reload and not
-  // yet confirmed), the form shows what was submitted and is locked: Try
-  // again sends exactly that, and Start over unlocks the draft.
+  // yet confirmed), the form shows what was submitted and is locked until the
+  // server answers: Try again sends exactly that.
   const held = createRun.pending?.args
   const mapId = held?.mapId ?? draftMapId
   const name = held?.name ?? draftName
@@ -119,11 +119,6 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
     const outcome = await createRun.retry()
 
     if (!outcome.ok) setFailure(outcome.error)
-  }
-
-  function startOver() {
-    createRun.discard()
-    setFailure(null)
   }
 
   return (
@@ -190,24 +185,17 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
             className="flex flex-col gap-2 rounded-[18px] bg-muted/60 p-3"
           >
             <p>Not saved yet. Your run is kept here.</p>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                className="h-11 flex-1"
-                onClick={retry}
-              >
-                Try again
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className="h-11 flex-1"
-                onClick={startOver}
-              >
-                Start over
-              </Button>
-            </div>
+            {/* No "Start over": the held submission may have committed, and a
+                new one would make a second Run. Try again resends the same
+                envelope, so it returns that Run or makes it now. */}
+            <Button
+              type="button"
+              variant="secondary"
+              className="h-11"
+              onClick={retry}
+            >
+              Try again
+            </Button>
           </div>
         )}
         <p role="alert" className="text-sm text-destructive empty:hidden">
