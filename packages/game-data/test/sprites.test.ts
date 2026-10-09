@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
 import type { CompiledMap } from "../src/format.ts"
-import { spritePath } from "../src/reader.ts"
+import { spritePath, UNKNOWN_SPRITE_PATH } from "../src/reader.ts"
 
 // The real build output: run `npm run build` first (Turbo does).
 
@@ -18,12 +18,18 @@ function pngSize(bytes: Buffer) {
 }
 
 describe("the built sprites", () => {
-  it("are a 96 × 96 PNG for every Species and Form of every compiled Map", async () => {
+  it("are a 96 × 96 PNG for every Species and Form of every compiled Map, and for an unknown one", async () => {
     const versions = await readdir(join(distDir, "sprites"))
     const mapFiles = (await readdir(distDir)).filter((f) => f.endsWith(".json"))
 
     expect(versions).toHaveLength(1)
     expect(mapFiles).not.toEqual([])
+
+    const unknown = await readFile(
+      join(distDir, "sprites", versions[0]!, UNKNOWN_SPRITE_PATH)
+    )
+
+    expect(pngSize(unknown)).toEqual({ width: 96, height: 96 })
 
     for (const file of mapFiles) {
       const map = JSON.parse(

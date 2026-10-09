@@ -291,6 +291,10 @@ describe("sprites", () => {
       "/sprites/v1/bulbasaur/base.png"
     )
   })
+
+  it("gives the unknown sprite a URL under the same version", () => {
+    expect(reader.unknownSpriteUrl).toBe("/sprites/v1/unknown.png")
+  })
 })
 
 describe("Evolution Lines", () => {

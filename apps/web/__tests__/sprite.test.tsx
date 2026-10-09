@@ -1,7 +1,12 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeAll, describe, expect, it } from "vitest"
 
-import { loadMap, spriteUrl, type LoadedMap } from "@workspace/game-data"
+import {
+  loadMap,
+  spriteUrl,
+  unknownSpriteUrl,
+  type LoadedMap,
+} from "@workspace/game-data"
 
 import { Sprite, type SpriteSize } from "../components/sprite"
 
@@ -13,29 +18,21 @@ beforeAll(async () => {
 
 afterEach(cleanup)
 
+/** The sprite's box, found by its label, and its image. */
+function spriteNamed(name: string) {
+  const box = screen.getByRole("img", { name })
+
+  return { box, image: box.querySelector("img")! }
+}
+
 describe("Sprite", () => {
   it("shows the Form's sprite, labelled with the Species name", () => {
     render(<Sprite map={map} species="treecko" form="base" size={36} />)
 
-    const circle = screen.getByRole("img", { name: "Treecko" })
-    const image = circle.querySelector("img")!
+    const { image } = spriteNamed("Treecko")
 
     expect(image.getAttribute("src")).toBe(spriteUrl(map, "treecko", "base"))
     expect(image.getAttribute("alt")).toBe("")
-  })
-
-  it("hides a sprite that fails to load, leaving the labelled empty circle", () => {
-    const { container } = render(
-      <Sprite map={map} species="treecko" form="base" size={36} />
-    )
-    const image = container.querySelector("img")!
-
-    fireEvent.error(image)
-
-    expect(image.hasAttribute("data-error")).toBe(true)
-    expect(image.className).toContain("data-error:hidden")
-    expect(screen.getByRole("img", { name: "Treecko" })).toBeDefined()
-    expect(container.textContent).toBe("")
   })
 
   it.each([
@@ -46,22 +43,21 @@ describe("Sprite", () => {
     [48, 64, true],
     [64, 85, true],
   ] as const)(
-    "draws a %i px circle with a %i px image (pixelated: %s)",
+    "draws a %i px box with a %i px image (pixelated: %s)",
     (size: SpriteSize, drawn, pixelated) => {
       render(<Sprite map={map} species="wailord" form="base" size={size} />)
 
-      const circle = screen.getByRole("img", { name: "Wailord" })
-      const image = circle.querySelector("img")!
+      const { box, image } = spriteNamed("Wailord")
 
-      expect(circle.style.width).toBe(`${size}px`)
-      expect(circle.style.height).toBe(`${size}px`)
+      expect(box.style.width).toBe(`${size}px`)
+      expect(box.style.height).toBe(`${size}px`)
       expect(image.style.width).toBe(`${drawn}px`)
       expect(image.style.height).toBe(`${drawn}px`)
       expect(image.className.includes("pixelated")).toBe(pixelated)
     }
   )
 
-  it("shows an empty circle, never letters, for an unknown Species or Form", () => {
+  it("shows the unknown sprite, never letters, for an unknown Species or Form", () => {
     const { container } = render(
       <>
         <Sprite map={map} species="missingno" form="base" size={36} />
@@ -73,6 +69,37 @@ describe("Sprite", () => {
 
     expect(unknown).toHaveLength(2)
     expect(container.textContent).toBe("")
-    expect(container.querySelector("img")).toBeNull()
+
+    for (const box of unknown) {
+      expect(box.querySelector("img")!.getAttribute("src")).toBe(
+        unknownSpriteUrl
+      )
+    }
+  })
+
+  it("shows the unknown sprite, keeping the label, when a sprite fails to load", () => {
+    const { container } = render(
+      <Sprite map={map} species="treecko" form="base" size={36} />
+    )
+
+    fireEvent.error(spriteNamed("Treecko").image)
+
+    expect(spriteNamed("Treecko").image.getAttribute("src")).toBe(
+      unknownSpriteUrl
+    )
+    expect(container.textContent).toBe("")
+  })
+
+  it("hides the image when the unknown sprite fails to load too", () => {
+    render(<Sprite map={map} species="treecko" form="base" size={36} />)
+
+    fireEvent.error(spriteNamed("Treecko").image)
+    fireEvent.error(spriteNamed("Treecko").image)
+
+    const { image } = spriteNamed("Treecko")
+
+    expect(image.getAttribute("src")).toBe(unknownSpriteUrl)
+    expect(image.hasAttribute("data-error")).toBe(true)
+    expect(image.className).toContain("data-error:invisible")
   })
 })

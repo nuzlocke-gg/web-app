@@ -194,6 +194,28 @@ describe("sprites", () => {
     expect(await outFiles()).toEqual([])
   })
 
+  it("writes the unknown sprite, and stops without it", async () => {
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+
+    const [version] = await spriteVersions()
+
+    expect(
+      await readFile(
+        join(options.outDir, "sprites", version!, "unknown.png"),
+        "utf8"
+      )
+    ).toBe("0")
+
+    const sprites = fakeSprites()
+
+    expect(
+      await problemsOf({
+        ...options,
+        sprites: async (file) => (file === "0" ? undefined : sprites(file)),
+      })
+    ).toEqual(["no unknown sprite 0.png at the pinned commit"])
+  })
+
   it("changes the version, and replaces the old sprites, when a sprite changes", async () => {
     expect(await buildMaps(options)).toEqual(ok(undefined))
 

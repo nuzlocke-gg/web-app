@@ -21,6 +21,9 @@ export const loadMap = reader.loadMap
  */
 export const spriteUrl = reader.spriteUrl
 
+/** The URL of the sprite for an unknown Pokémon, or for a sprite that cannot load. */
+export const unknownSpriteUrl = reader.unknownSpriteUrl
+
 export {
   dexNumber,
   evolutionLineOf,

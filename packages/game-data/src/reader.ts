@@ -51,6 +51,9 @@ export function spritePath(ref: FormRef): string {
   return `${ref.species}/${ref.form}.png`
 }
 
+/** Where the sprite for an unknown Pokémon is, under the sprite version's directory. */
+export const UNKNOWN_SPRITE_PATH = "unknown.png"
+
 /**
  * A loaded Map with lookup indexes. Every reader function takes it first.
  * It is shared by every caller: treat it, and everything a reader function
@@ -94,6 +97,8 @@ export interface Reader {
     species: SpeciesId,
     form: FormId
   ): string | undefined
+  /** The URL of the sprite to show for an unknown Pokémon, or when a sprite cannot load. */
+  unknownSpriteUrl: string
 }
 
 /** Binds the reader to a registry. The app uses the one bound to the compiled Maps. */
@@ -131,6 +136,8 @@ export function createReader(registry: MapRegistry): Reader {
 
       return `/sprites/${registry.spriteVersion}/${spritePath({ species, form })}`
     },
+
+    unknownSpriteUrl: `/sprites/${registry.spriteVersion}/${UNKNOWN_SPRITE_PATH}`,
   }
 }
 

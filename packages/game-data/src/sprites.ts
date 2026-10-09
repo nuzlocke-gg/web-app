@@ -5,7 +5,7 @@ import { createHash } from "node:crypto"
 import { err, ok, type Result } from "serializable-result"
 
 import type { CompiledMap, Species } from "./format.ts"
-import { spritePath } from "./reader.ts"
+import { spritePath, UNKNOWN_SPRITE_PATH } from "./reader.ts"
 
 /**
  * Gives one file of PokeAPI's `sprites/pokemon/` by its name without `.png`
@@ -22,6 +22,9 @@ export interface SpriteSet {
   files: Map<string, Uint8Array>
 }
 
+/** PokeAPI's placeholder: a grey question mark, in the style of the sprites. */
+const UNKNOWN_SPRITE_FILE = "0"
+
 /** What the source gave for one Species. */
 interface SpeciesFiles {
   species: Species
@@ -32,19 +35,20 @@ interface SpeciesFiles {
 }
 
 /**
- * The sprites of every Species and Form of `maps`. The first Form has the
- * Species' default sprite. Another Form has its own sprite when the source
- * has one, else the first Form's.
+ * The sprites of every Species and Form of `maps`, and the sprite for an
+ * unknown Pokémon. The first Form has the Species' default sprite. Another
+ * Form has its own sprite when the source has one, else the first Form's.
  *
- * A Species with no default sprite, or a Form that two Maps give different
- * sprites, is an error result naming it. A source that rejects makes this
- * reject.
+ * A missing unknown sprite, a Species with no default sprite, or a Form that
+ * two Maps give different sprites, is an error result naming it. A source
+ * that rejects makes this reject.
  */
 export async function resolveSprites(
   maps: CompiledMap[],
   source: SpriteSource
 ): Promise<Result<SpriteSet, string[]>> {
   const read = onceEach(source)
+  const unknownSprite = await read(UNKNOWN_SPRITE_FILE)
   const species = maps.flatMap((map) => map.species)
   const speciesFiles = await Promise.all(
     species.map(async (s): Promise<SpeciesFiles> => ({
@@ -56,14 +60,21 @@ export async function resolveSprites(
     }))
   )
 
-  return assembleSprites(speciesFiles)
+  return assembleSprites(unknownSprite, speciesFiles)
 }
 
 function assembleSprites(
+  unknownSprite: Uint8Array | undefined,
   speciesFiles: SpeciesFiles[]
 ): Result<SpriteSet, string[]> {
   const problems = new Set<string>()
   const files = new Map<string, Uint8Array>()
+
+  if (unknownSprite) files.set(UNKNOWN_SPRITE_PATH, unknownSprite)
+  else
+    problems.add(
+      `no unknown sprite ${UNKNOWN_SPRITE_FILE}.png at the pinned commit`
+    )
 
   for (const { species, defaultSprite, formSprites } of speciesFiles) {
     if (!defaultSprite) {
