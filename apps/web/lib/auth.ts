@@ -59,3 +59,12 @@ export const auth: NextAuthResult["auth"] = nextAuth.auth
  * await signIn("google", { redirectTo: "/" })
  */
 export const signIn: NextAuthResult["signIn"] = nextAuth.signIn
+
+/**
+ * Ends the session from a Server Action: deletes the session row and its
+ * cookie. Navigates by throwing a redirect, so call it outside `try`.
+ *
+ * @example
+ * await signOut({ redirectTo: "/sign-in" })
+ */
+export const signOut: NextAuthResult["signOut"] = nextAuth.signOut

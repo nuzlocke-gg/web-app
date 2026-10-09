@@ -29,6 +29,20 @@ React 19 joins all pending transition work, including Actions, `router.refresh()
 
 Drizzle wraps the driver error, so the SQLSTATE `code` is on `error.cause`, sometimes more than one level down. Examples are `23505` (unique violation, such as a second Pokémon for one Encounter) and `40001` (serialization failure). To classify a database error, follow the `cause` chain through every object, including `Error` instances. Read `code` at each level, and stop if the chain loops. Test the classifier with an error from a real Postgres, not a hand-made object.
 
+## Signing in as an agent
+
+Google sign-in needs a person, so local development has dev sign-in. It signs in as the account with the email in `DEV_AUTH_EMAIL` and makes that account on first use. It is off in a production build, without `DEV_AUTH_EMAIL`, on a host that is not localhost, and for an account that signs in with Google. Use an email that nobody signs in with, such as `dev@nuzlocke.test`.
+
+- In a browser: open `/sign-in` and select "Dev sign in". The first time, the name step follows.
+- From a script: `POST /api/dev/sign-in` sets the session cookie and returns it in the body. `POST /api/dev/sign-out` ends the session.
+- The `web-local-db` launch configuration sets `DEV_AUTH_EMAIL` and uses the test database of `compose.test.yaml`. Start that database with `docker compose -f apps/web/compose.test.yaml up -d`.
+
+Playwright does not use dev sign-in: `e2e/players.ts` makes each session in the database.
+
+## Testing on a phone
+
+`tailscale serve --bg 3000` serves the dev server over HTTPS on the machine's MagicDNS name. Google sign-in works there and on `localhost` at the same time when the Google client lists both callbacks (`https://<machine>.<tailnet>.ts.net/api/auth/callback/google` and `http://localhost:3000/api/auth/callback/google`). Leave `AUTH_URL` unset: outside production builds, the Auth.js route takes the forwarded host, so each request stays on the origin the browser used. Dev sign-in is off on the MagicDNS name, because the host is not localhost.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
