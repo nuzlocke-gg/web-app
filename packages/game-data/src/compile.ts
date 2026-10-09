@@ -46,7 +46,7 @@ const byText = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0)
  */
 export function compileMap(sources: MapSources): CompileResult {
   const species = mergeSpecies(sources)
-  const areas = mergeWildAreas(sources)
+  const areas = mergeSourceAreas(sources)
   const places = buildPlaces(sources, areas.value)
 
   const problems = [
@@ -55,7 +55,7 @@ export function compileMap(sources: MapSources): CompileResult {
     ...checkSpecies(species.value.species),
     ...checkAddedLinks(sources.corrections, species.value.species),
     ...areas.problems,
-    ...checkWildMethods(areas.value, sources.methods),
+    ...checkAreaMethods(areas.value, sources.methods),
     ...checkClaims(sources.map, areas.value),
     ...checkPlaceNames(sources.map),
     ...checkOneTimeRows(sources),
@@ -403,18 +403,18 @@ function collectLine(
 }
 
 // ---------------------------------------------------------------------------
-// Wild areas
+// Source areas
 // ---------------------------------------------------------------------------
 
-interface WildAreas {
+interface SourceAreas {
   rows: Map<string, RowsByGame>
   ignored: Set<string>
 }
 
-/** Generated wild areas, then the corrections, in file order. */
-function mergeWildAreas(sources: MapSources): Merged<WildAreas> {
+/** Generated source areas, then the corrections, in file order. */
+function mergeSourceAreas(sources: MapSources): Merged<SourceAreas> {
   const problems: string[] = []
-  const draft: WildAreas = { rows: new Map(), ignored: new Set() }
+  const draft: SourceAreas = { rows: new Map(), ignored: new Set() }
 
   for (const file of sources.generatedWild) {
     for (const [area, byGame] of Object.entries(file.areas)) {
@@ -430,7 +430,7 @@ function mergeWildAreas(sources: MapSources): Merged<WildAreas> {
   }
 
   for (const correction of sources.corrections) {
-    const problem = applyWildCorrection(correction, draft)
+    const problem = applyAreaCorrection(correction, draft)
 
     if (problem) problems.push(problem)
   }
@@ -442,9 +442,9 @@ function mergeWildAreas(sources: MapSources): Merged<WildAreas> {
  * Applies one correction to `draft` in place. Returns the problem when the
  * correction's expectation no longer holds; then `draft` is unchanged.
  */
-function applyWildCorrection(
+function applyAreaCorrection(
   correction: Correction,
-  draft: WildAreas
+  draft: SourceAreas
 ): string | undefined {
   const { rows, ignored } = draft
 
@@ -493,7 +493,7 @@ function applyWildCorrection(
 }
 
 /** Generated rows may use only known, repeatable methods. */
-function checkWildMethods(areas: WildAreas, methods: MethodList): string[] {
+function checkAreaMethods(areas: SourceAreas, methods: MethodList): string[] {
   const byId = new Map(methods.map((m) => [m.id, m]))
   const problems: string[] = []
 
@@ -515,7 +515,7 @@ function checkWildMethods(areas: WildAreas, methods: MethodList): string[] {
 }
 
 /** Every area belongs to exactly one Place or is ignored, and only for Games of the Map. */
-function checkClaims(map: HandMap, areas: WildAreas): string[] {
+function checkClaims(map: HandMap, areas: SourceAreas): string[] {
   const gameIds = new Set(map.games.map((g) => g.id))
   const claimedBy = new Map<string, PlaceId>()
   const problems: string[] = []
@@ -573,7 +573,7 @@ function checkClaims(map: HandMap, areas: WildAreas): string[] {
  * The Places in play order, with a name per Game and their tables. Entries
  * that the checks refuse are left out or left empty, so this never fails.
  */
-function buildPlaces(sources: MapSources, areas: WildAreas): Place[] {
+function buildPlaces(sources: MapSources, areas: SourceAreas): Place[] {
   const gameIds = sources.map.games.map((g) => g.id)
   const oneTimeRows = oneTimeRowsByPlace(sources)
 
