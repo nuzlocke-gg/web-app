@@ -39,6 +39,10 @@ Google sign-in needs a person, so local development has dev sign-in. It signs in
 
 Playwright does not use dev sign-in: `e2e/players.ts` makes each session in the database.
 
+## Testing on a phone
+
+`tailscale serve --bg 3000` serves the dev server over HTTPS on the machine's MagicDNS name. Google sign-in works there and on `localhost` at the same time when the Google client lists both callbacks (`https://<machine>.<tailnet>.ts.net/api/auth/callback/google` and `http://localhost:3000/api/auth/callback/google`). Leave `AUTH_URL` unset: outside production builds, the Auth.js route takes the forwarded host, so each request stays on the origin the browser used. Dev sign-in is off on the MagicDNS name, because the host is not localhost.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
