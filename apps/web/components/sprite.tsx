@@ -1,5 +1,3 @@
-import Image from "next/image"
-
 import {
   getSpecies,
   spriteUrl,
@@ -7,6 +5,7 @@ import {
   type LoadedMap,
   type SpeciesId,
 } from "@workspace/game-data"
+import { Avatar, AvatarImage } from "@workspace/ui/components/avatar"
 import { cn } from "@workspace/ui/lib/utils"
 
 /**
@@ -38,46 +37,45 @@ const PIXELATED_FROM = 48
 
 /**
  * A Species and Form's sprite in a circle, labelled with the Species name.
- * An unknown Species or Form shows the empty circle, labelled
- * "Unknown Pokémon".
+ * An unknown Species or Form, or a sprite that fails to load, shows the
+ * empty circle; an unknown one is labelled "Unknown Pokémon".
  *
  * @example
  * <Sprite map={map} species={pokemon.species} form={pokemon.form} size={36} />
  */
 export function Sprite({ map, species, form, size, className }: SpriteProps) {
   const src = spriteUrl(map, species, form)
-  const name = getSpecies(map, species)?.name
+  const label = src ? getSpecies(map, species)!.name : "Unknown Pokémon"
   const drawn = Math.round(size * CROP)
-  const circle = cn(
-    "grid shrink-0 place-content-center place-items-center overflow-hidden rounded-full bg-background ring-1 ring-foreground/8",
-    className
-  )
-
-  if (!src || !name) {
-    return (
-      <span
-        role="img"
-        aria-label="Unknown Pokémon"
-        className={circle}
-        style={{ width: size, height: size }}
-      />
-    )
-  }
 
   return (
-    <span className={circle} style={{ width: size, height: size }}>
-      <Image
-        src={src}
-        alt={name}
-        width={drawn}
-        height={drawn}
-        unoptimized
-        className={cn(
-          "max-w-none",
-          drawn >= PIXELATED_FROM && "[image-rendering:pixelated]"
-        )}
-        style={{ width: drawn, height: drawn }}
-      />
-    </span>
+    <Avatar
+      role="img"
+      aria-label={label}
+      className={cn(
+        "items-center justify-center overflow-hidden bg-background",
+        className
+      )}
+      style={{ width: size, height: size }}
+    >
+      {src && (
+        // `keepMounted` puts the <img> in the server HTML, so the browser
+        // fetches it before hydration. The label is on the circle, so the
+        // image has an empty alt, and a failed load hides it: never letters.
+        <AvatarImage
+          keepMounted
+          src={src}
+          alt=""
+          loading="lazy"
+          width={drawn}
+          height={drawn}
+          className={cn(
+            "max-w-none shrink-0 rounded-none data-error:hidden",
+            drawn >= PIXELATED_FROM && "[image-rendering:pixelated]"
+          )}
+          style={{ width: drawn, height: drawn }}
+        />
+      )}
+    </Avatar>
   )
 }

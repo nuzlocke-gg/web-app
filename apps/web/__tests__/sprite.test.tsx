@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react"
+import { cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeAll, describe, expect, it } from "vitest"
 
 import { loadMap, spriteUrl, type LoadedMap } from "@workspace/game-data"
@@ -17,9 +17,25 @@ describe("Sprite", () => {
   it("shows the Form's sprite, labelled with the Species name", () => {
     render(<Sprite map={map} species="treecko" form="base" size={36} />)
 
-    const image = screen.getByRole("img", { name: "Treecko" })
+    const circle = screen.getByRole("img", { name: "Treecko" })
+    const image = circle.querySelector("img")!
 
     expect(image.getAttribute("src")).toBe(spriteUrl(map, "treecko", "base"))
+    expect(image.getAttribute("alt")).toBe("")
+  })
+
+  it("hides a sprite that fails to load, leaving the labelled empty circle", () => {
+    const { container } = render(
+      <Sprite map={map} species="treecko" form="base" size={36} />
+    )
+    const image = container.querySelector("img")!
+
+    fireEvent.error(image)
+
+    expect(image.hasAttribute("data-error")).toBe(true)
+    expect(image.className).toContain("data-error:hidden")
+    expect(screen.getByRole("img", { name: "Treecko" })).toBeDefined()
+    expect(container.textContent).toBe("")
   })
 
   it.each([
@@ -34,8 +50,8 @@ describe("Sprite", () => {
     (size: SpriteSize, drawn, pixelated) => {
       render(<Sprite map={map} species="wailord" form="base" size={size} />)
 
-      const image = screen.getByRole("img", { name: "Wailord" })
-      const circle = image.parentElement!
+      const circle = screen.getByRole("img", { name: "Wailord" })
+      const image = circle.querySelector("img")!
 
       expect(circle.style.width).toBe(`${size}px`)
       expect(circle.style.height).toBe(`${size}px`)
