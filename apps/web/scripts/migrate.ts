@@ -17,6 +17,10 @@ if (!connectionString) {
 
 configureNeon(process.env.DATABASE_WS_PROXY)
 
+// Each Neon branch has its own endpoint host, so the build log shows which
+// branch a deployment migrated. The host carries no credentials.
+console.log(`Migrating ${new URL(connectionString).host}`)
+
 const pool = new Pool({ connectionString })
 
 try {
