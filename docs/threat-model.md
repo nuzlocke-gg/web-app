@@ -2,9 +2,9 @@
 
 ## 1. Overview
 
-**Status: milestone 1 implementation and remaining version 1 design, 9 October 2026.** The game-data importer, compiler, reader, sprite downloader, and web sprite components now exist. Their controls below are backed by source inspection. Account, Run, database, and live-access controls remain planned requirements. Attack stories are hypotheses for implementation review, not vulnerability findings.
+**Status: milestones 1 and 2 implemented, remaining version 1 design, 9 October 2026.** The game-data importer, compiler, reader, sprite downloader, and web sprite components exist (milestone 1). Google sign-in, database sessions, the `users`/`accounts`/`sessions` tables, the actor gate, the Display Name step, and deploy-time migrations exist (milestone 2, NUZ-48). Their controls below are backed by source inspection and tests. Run, receipt, and live-access controls remain planned requirements. Attack stories are hypotheses for implementation review, not vulnerability findings.
 
-The app entry page remains a starter screen (`apps/web/app/page.tsx:3-11`). The app now depends on `@workspace/game-data`, but its dependency list does not yet include the planned authentication, database, or headcanon integration (`apps/web/package.json:15-23`). No deployed service, dependency internals, or provider configuration was tested.
+The home page now requires a named, live Player (`apps/web/app/page.tsx:3-4`). The app depends on Auth.js, Drizzle, and the Neon driver, but not yet on headcanon or Ably (`apps/web/package.json`). Auth.js and adapter internals were inspected where cited below. The deployed Google client, the Neon project settings, and Vercel promotion were not tested.
 
 The local version 1 spec takes precedence over earlier tickets and ADRs (`docs/spec/version-1/README.md:18`). Evidence below uses these short names:
 
@@ -27,7 +27,7 @@ There are two distinct network workflows. Neither is a public request handler:
 
 The current source Map is Emerald. The compiler writes JSON and a generated TypeScript registry. Its static imports and JSON-escaped values avoid treating imported names as source code. The reader selects only an own property of that registry; a browser Map id is not an arbitrary file path (`packages/game-data/src/build.ts:136-217`, `packages/game-data/src/reader.ts:112-138`).
 
-The web copy step publishes the built sprites locally. `Sprite` supplies only a local URL, fallback URL, and label to the client image component. It does not pass an upstream URL or the Map to that component. These components exist but are not yet used by the starter page (`apps/web/scripts/copy-sprites.ts:9-25`, `apps/web/components/sprite.tsx:40-51`, `apps/web/components/sprite-image.tsx:47-76`, `apps/web/app/page.tsx:3-19`). The design's “no runtime data-source call” remains accurate; it must not be read as “builds never use the network.” T:18 now explicitly exempts sprites.
+The web copy step publishes the built sprites locally. `Sprite` supplies only a local URL, fallback URL, and label to the client image component. It does not pass an upstream URL or the Map to that component. These components exist but are not yet used by any page (`apps/web/scripts/copy-sprites.ts:9-25`, `apps/web/components/sprite.tsx:40-51`, `apps/web/components/sprite-image.tsx:47-76`). The design's “no runtime data-source call” remains accurate; it must not be read as “builds never use the network.” T:18 now explicitly exempts sprites.
 
 ```mermaid
 flowchart LR
@@ -55,6 +55,34 @@ Paths below are repository-relative. Build paths resolve from script/module loca
 | Web dev/build | Replace published sprite tree | `spritesDir` resolves package output; copy script resolves app destination | `packages/game-data/dist/sprites` → `apps/web/public/sprites` → `/sprites/<species>/<form>.png` | Build writes; public browsers read | Fixed copy roots; app `Sprite` uses reader-validated form URLs | `packages/game-data/src/sprites-dir.ts:9-11`, `apps/web/scripts/copy-sprites.ts:9-25`, `apps/web/package.json:7-8`; direct `next build` bypasses copy orchestration |
 | Browser images | Display public third-party bytes | Valid known Form URL, otherwise local unknown image | `/sprites/unknown.png` fallback; `public, max-age=604800` | Any browser; public HTTP caches | Image-element rendering; unknown Form yields no arbitrary URL | `packages/game-data/src/reader.ts:52-73`, `apps/web/components/sprite-image.tsx:61-76`, `apps/web/next.config.ts:8-17`; one week of stale sprites is intentional |
 
+### Implemented milestone: sign-in and players
+
+A visitor signs in with Google through Auth.js. The Google provider is OpenID Connect with PKCE (Auth.js defaults); Auth.js keeps a database session and sets an opaque `httpOnly`, `SameSite=Lax` session cookie, `Secure` on https, that expires after 30 idle days. The provider maps the Google profile to the given name only, with no picture, and stores no Google tokens (`apps/web/lib/auth.ts:13-46`). Sign-in, the callback, and sign-out run in Auth.js's own route handler (`apps/web/app/api/auth/[...nextauth]/route.ts`); its post-sign-in redirect accepts only same-origin URLs, and the app always passes `/`.
+
+Every page and Server Action derives its actor from the session through one gate. `readAccount` returns the session's user unless the row is missing or tombstoned; `requireAccount` redirects to `/sign-in` without one; `requireActor` also redirects to `/welcome` while the Player has no Display Name, so no screen or write skips the name step (`apps/web/lib/actor.ts:24-70`). Only the name step's action uses `requireAccount`. The sign-in page sends only a live account home, so a tombstone with a surviving session does not loop (`apps/web/app/sign-in/page.tsx:20`).
+
+The Display Name is trimmed and limited to 1 to 30 code points on the screen, again in the Server Action, and by a database CHECK (`apps/web/lib/display-name.ts:22-31`, `apps/web/app/welcome/actions.ts:17-27`, `apps/web/lib/db/schema.ts:40-47`). The update names only the actor's own live row (`apps/web/lib/players.ts:11-19`). React renders the name as text.
+
+```mermaid
+flowchart LR
+  B["Browser"] -->|"Sign in with Google (Server Action)"| A["Auth.js route: OIDC + PKCE"]
+  A --> G["Google"]
+  G -->|"callback"| A
+  A -->|"user, account, session rows"| D[("Neon: users, accounts, sessions")]
+  A -->|"opaque session cookie"| B
+  B -->|"page or action"| R["readAccount / requireAccount / requireActor"]
+  R --> D
+  R -->|"no live account"| S["/sign-in"]
+  R -->|"no Display Name"| W["/welcome"]
+```
+
+| Deployment or workflow | Resource or capability | Configuration and precedence | Safe effective value or location | Readers, writers, or recipients | Enforcing control | Evidence or unknowns |
+| --- | --- | --- | --- | --- | --- | --- |
+| Production and preview app | Identity rows and sessions | `DATABASE_URL` from the Neon integration; one Drizzle client over the WebSocket `Pool`, 2-second connect timeout | `users`, `accounts`, `sessions`; cascades from `users` | Server only; the browser holds an opaque session token | Actor gate on every page and action; tombstone and Display Name CHECKs; partial unique email index | `apps/web/lib/db/index.ts`, `apps/web/lib/db/schema.ts:18-91`, `apps/web/drizzle/0000_users_and_sessions.sql`; database role grants not reviewed |
+| Google sign-in | Prove a Google identity | `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` on Vercel | Given name and email stored; no picture, surname, or tokens | Auth.js route handler | OIDC PKCE; same-origin redirect; Auth.js CSRF token on its POST routes | `apps/web/lib/auth.ts:13-46`; the Google client and its redirect URIs are not yet created; preview URLs cannot sign in until a redirect proxy is configured |
+| Release | Migrate before promotion | `apps/web/vercel.json` build command runs `scripts/migrate.ts`, then the Turbo build | Committed SQL in `apps/web/drizzle/`; `DATABASE_URL_UNPOOLED` preferred | Vercel build | A failed migration fails the build, so the deployment is not promoted | `apps/web/vercel.json`, `apps/web/scripts/migrate.ts:11-28`; preview branching is a Neon integration setting, not yet confirmed on |
+| Local tests | Test database | `compose.test.yaml` on localhost ports 54329 and 54330; `DATABASE_WS_PROXY` points the driver at wsproxy over plain WebSocket | Throwaway `nuzlocke_test` database | Vitest and Playwright on a developer machine or CI | Fixed local credentials only; session seeding lives in `e2e/` and never in the app | `apps/web/compose.test.yaml`, `apps/web/lib/db/neon-config.ts:12-20`, `apps/web/e2e/players.ts`; `DATABASE_WS_PROXY` must never be set on Vercel |
+
 ### Intended architecture
 
 Players sign in with Google and manually track Runs. A Run is solo or a Soul Link of two or three Players. A Reader can view a Run made readable by link without signing in. There is no public listing (P:267-274, P:304-311).
@@ -62,7 +90,7 @@ Players sign in with Google and manually track Runs. A Run is solo or a Soul Lin
 | Component | Planned role | Evidence |
 | --- | --- | --- |
 | Next.js app on Vercel | Pages, server actions, account actions, token and cron handlers | T:9-12, T:45-47, T:153 |
-| Auth.js and Google | Database sessions; server-derived Player identity | T:9, T:72-84, T:147 |
+| Auth.js and Google | Database sessions; server-derived Player identity (implemented, see above) | T:9, T:72-84, T:147 |
 | headcanon | Command admission, receipts, optimistic state and retry queues | T:140-153 |
 | Neon Postgres through Drizzle Pool | Accounts, Runs, Journeys, child records, receipts; transactional authority | T:77-128 |
 | Ably | Subscribe-only invalidations; clients refresh authoritative state | T:149 |
@@ -90,7 +118,7 @@ The following resources describe the remaining application design. The implement
 
 | Deployment or workflow | Resource or capability | Configuration and precedence | Safe effective value or location | Readers, writers, or recipients | Enforcing control | Evidence or unknowns |
 | --- | --- | --- | --- | --- | --- | --- |
-| Production app | Persistent identity and Run data | Neon WebSocket Pool, Drizzle | Neon database; tables users/accounts/sessions/runs/journeys/children/receipts | Server and migration operator; browser only through app | Session gates, Run locks, SQL constraints | T:9, T:77-128; connection secret name and database role grants unspecified |
+| Production app | Persistent Run data | Neon WebSocket Pool, Drizzle (implemented for identity) | Neon database; tables runs/journeys/children/receipts to come | Server and migration operator; browser only through app | Session gates, Run locks, SQL constraints | T:9, T:77-128; database role grants unspecified |
 | Command delivery | Retry authority | Actor from session; receipt scope user id | headcanon_mutation_receipts; 7-day delivery age, 1-hour skew tolerance | Mutation authority and cleanup handler | Membership screen also guards receipt replay; locked admission | T:147, T:153; actual receipt payload binding/storage not inspected |
 | Browser recovery | Pending command args | Root and storage key include Player and Run | sessionStorage key `run-queue:<playerId>:<runId>`; memory fallback | Same-origin browser code | Identity-keyed remount; server reauthorization | T:143, T:150; key separation is not encryption |
 | Production live | Receive invalidations | Parsed Run axes; authorize all requested axes | `run/<runId>` within production namespace; 10-minute token | Members or Readers of link-readable Runs | Subscribe-only capability, canonical server-built axes | T:140, T:149; exact namespace and key storage unspecified |
@@ -105,7 +133,7 @@ The following resources describe the remaining application design. The implement
 ### Protected assets and objectives
 
 - **Implemented data and release assets:** protect generated Map facts, permanent identifiers, sprite bytes, the build worker's resources, and published output. Generated source, local download caches, and task artifacts are separate trust surfaces. Format validity does not establish game accuracy or byte authenticity (`packages/game-data/src/sources.ts:158-215`, `packages/game-data/src/permanence.ts:41-98`, `packages/game-data/src/pokeapi-sprites.ts:70-83`).
-- **Account identity and private identity fields:** sessions, OAuth account linkage, Google id/email/name/image. Email is visible only to its own Player. Public identity is Display Name; deletion removes identifying account fields and sessions (P:298-302; T:72-84).
+- **Account identity and private identity fields:** sessions, OAuth account linkage, Google id, email, and given name. The picture, the surname, and Google's tokens are never stored (`apps/web/lib/auth.ts:13-34`). Email is visible only to its own Player. Public identity is Display Name; deletion removes identifying account fields and sessions (P:298-302; T:72-84).
 - **Run privacy:** private Runs, membership, child records, and private Attempt details must not leak through alternate routes, metadata, serialized page data, previews, receipts, or realtime access. Link-readable content is intentionally disclosed (P:306-311).
 - **Write ownership and integrity:** only a Player's own Journey can be changed by that Player. Run-wide permissions are shared by all Players. Records, revisions, receipts, and Chain transitions must remain coherent (P:269; T:61, T:127-148).
 - **Join authority:** an invite grants a new Journey and therefore shared Run powers. It must not be exposed as part of Reader data (P:268-269, P:308-309).
@@ -135,7 +163,7 @@ The following resources describe the remaining application design. The implement
 
 | Boundary | Invariant and specified controls | Review limit |
 | --- | --- | --- |
-| Browser → session/account actions | Actor comes from Auth.js, not submitted Player id; tombstoned actor denied; deletion affects only caller | T:72-73, T:147; OAuth callback, cookie and cross-origin controls still need implementation review |
+| Browser → session/account actions | Actor comes from Auth.js, not submitted Player id; tombstoned actor denied; a Player with no Display Name is not an actor; deletion affects only caller | Implemented in `apps/web/lib/actor.ts:24-70` and tested against Postgres; Server Actions rely on Next's origin check and Auth.js routes on its CSRF token; delete account is not built yet |
 | Browser → Journey writes | Check membership before receipt replay and ownership again under Run lock; resolve all supplied child IDs within that Run/Journey | T:61, T:104-127, T:147; relational constraints do not replace authorization |
 | Member → shared Run lifecycle | State transitions and all writers use Run lock; shared powers are intentional | T:43-45, T:128, T:141; outside-protocol actions need equivalent gates |
 | Server → Reader | Read visibility is separate from write membership; public data must omit identity secrets and invite token in every response | P:306-311; T:148-149; no public projection schema specified |
@@ -159,9 +187,9 @@ The following resources describe the remaining application design. The implement
 1. Define exactly which fields, row details, and summary aggregates a Reader sees for a **private earlier Attempt**. “Not a link” does not settle whether causes, dates, Progress, or Chain aggregates may disclose private data (P:294, P:309).
 2. Define authorization and cache behavior for every page data response, preview image, metadata response, and direct child URL after a visibility change. The uncached canon loader alone does not specify these other layers (T:148; P:311).
 3. Choose invite entropy, storage/log redaction, sign-in cookie lifetime/flags, safe same-origin return targets, and the signed-out join screen's permitted metadata. Do not silently add invite rotation or expiry against P:268 (T:70; S:60-62).
-4. Verify sign-in state/nonce handling, session invalidation, and cross-origin request protections for all mutations, including account deletion and outside-protocol lifecycle actions (T:9, T:45-47, T:72).
+4. Sign-in uses Auth.js's OIDC PKCE and same-origin redirect defaults (milestone 2). Still verify session invalidation on delete account, and cross-origin protection for any custom Route Handler and the outside-protocol lifecycle actions (T:9, T:45-47, T:72).
 5. Define payload/string/batch limits, per-actor/IP/Run request budgets, token axis limits, and cleanup-handler authentication/work bounds. Full-Run loading and an unpaginated Box make stored-data growth relevant (T:142, T:148, T:153; P:336).
-6. Define preview access, whether production rows may be copied, secret scope, logs/backups retention, and deletion treatment of receipts or browser queues containing old names/text. Tombstoning account columns does not remove personal text Players typed into shared records (T:72-85, T:149-153).
+6. Define preview access, whether production rows may be copied, secret scope, logs/backups retention, and deletion treatment of receipts or browser queues containing old names/text. Tombstoning account columns does not remove personal text Players typed into shared records (T:72-85, T:149-153). As provisioned on 9 October 2026, the Neon integration gives development and production the same branch, and preview branching is not yet confirmed on: until both change, a local `next dev` and every preview build (which migrates) act on the production database.
 7. Clarify the offline boundary: the product excludes offline entry, while the technical design supports retrying saves made while offline. Treat recovery of already-built changes as a supported untrusted-input path either way (P:324; T:150; V:41).
 8. Verify the published headcanon version and receipt binding/retention behavior. The spec requires a persistence queue ordering fix; it also describes a nonblocking ambiguous stale-client outcome. These are dependency requirements, not independently validated findings here (T:10, T:159-160).
 
@@ -180,6 +208,10 @@ Payments, save-file/emulator imports, arbitrary user code execution, uploads, an
 | Next | Valid-looking imported changes silently change game facts | Malicious upstream change approved in pin update, or generated diff accepted without adequate review | Wrong suggestions/types/evolution lines across consumers; future Warning changes | Strict shapes, semantic checks, correction expectations, frozen permanence locks | Review semantic source diffs and provenance; compare important facts against independent game sources | `packages/game-data/src/compile.ts:47-66`, `packages/game-data/src/permanence.ts:41-98`; ordinary wrong game facts are usually quality defects, not an authorization break |
 | Next | Data-derived identifier attempts path escape or generated-code injection | Malicious imported/source identifier reaches output construction | Conditional overwrite or build-code execution if controls regress | Identifier grammar, Map-directory match, constrained sprite filenames, JSON escaping in registry | Keep all caller paths behind compile validation; test hostile identifiers at build seam; do not turn CLI helpers into public endpoints | `packages/game-data/src/build.ts:69-76`, `packages/game-data/src/build.ts:192-217`, `packages/game-data/src/compile.ts:110-140`, `packages/game-data/src/sources.ts:160-163`; no current bypass established |
 | Next | Build failure leaves mixed/stale artifacts that are then published | Filesystem/copy failure plus promotion ignoring failure or reuse of shared output | Missing/substituted assets or mismatched registry; usually availability/integrity | Errors propagate; validation precedes writes; web script checks source exists | Promote only successful isolated build output; avoid parallel writes to the same output tree | `packages/game-data/src/build.ts:118-168`, `apps/web/scripts/copy-sprites.ts:15-25` |
+| First | A signed-in account without a Display Name, or a tombstone with a surviving session, acts through a page or a later Server Action | A page or action that reads the session directly instead of through the gate | Unnamed or deleted Player appears in shared Runs | `requireActor` redirects both; tests cover each case against Postgres | Keep every page and command on `requireActor`; only the name step uses `requireAccount` | `apps/web/lib/actor.ts:24-70`, `apps/web/lib/actor.db.test.ts` |
+| First | Preview or local development migrates or writes production identity rows | Development env and previews share the production Neon branch | Test data or a bad migration on production | Migrations are additive and committed; a failed migration stops the build | Turn on preview branching and a separate development branch in the Neon integration before shared use | `apps/web/vercel.json`, `apps/web/scripts/migrate.ts`; provisioning state as of 9 October 2026 |
+| Next | `DATABASE_WS_PROXY` set on a deployment sends database traffic over plain WebSocket to another host | Write access to Vercel environment variables | Credential and data exposure to that host | Unset on Vercel; documented as local only | Keep it out of Vercel envs; an env writer already holds `DATABASE_URL` | `apps/web/lib/db/neon-config.ts:12-20`, `apps/web/.env.example` |
+| Later | A Display Name with markup or control characters spoofs another Player in a list | Any Player; names are not unique by design | Confusion only; React escapes the text | Trim, 1 to 30 code points, plain-text rendering | Treat Display Names as untrusted text everywhere, including metadata and previews | `apps/web/lib/display-name.ts:22-31`; P:298 |
 | Later | Bad pin or stale negative cache suppresses required image | Unavailable source, cached 404, or bad approved override | Failed cold build, fallback image, or stale public sprite | Required sprites fail; optional Forms fall back; local unknown image; bounded retries | Keep source availability and cache recovery procedures; review pin/override changes; preserve intentional one-week HTTP cache policy | `packages/game-data/src/sprites.ts:119-157`, `packages/game-data/src/pokeapi-sprites.ts:57-88`, `apps/web/next.config.ts:11-16` |
 
 ### Planned application scenarios
@@ -219,9 +251,9 @@ For the implemented pipeline, a proven data-to-build-code execution path with re
 
 Do not assign Critical simply because a third-party service or build exists. Do not assign High to normal link sharing, archival, editable game history, or an authorized partner's shared-setting changes. A leaked invite's consequence is significant, but its deliberate lack of expiry/rotation is an explicit product choice. No severity is assigned to an unverified scaffold omission.
 
-**Review method:** Source inspection and an independent fresh-context architecture review covered the milestone's importer, compile, cache, reader, sprite consumers and build/CI configuration. The earlier spec-based application model is retained as planned behavior. No network fetches, imports, builds or tests were executed for this update.
+**Review method:** Source inspection and an independent fresh-context architecture review covered the milestone 1 importer, compile, cache, reader, sprite consumers and build/CI configuration. The milestone 2 update (NUZ-48) inspected the new sign-in, gate, schema, migration, and test code and the cited Auth.js internals; its seam 1 tests (Vitest against Postgres 17) and Playwright flow were run. The earlier spec-based application model is retained as planned behavior.
 
-**Provenance:** Source revision `46c31079170a5a7478e0666fefb22bbc905d1afe` (clean checkout before this document update). Scope: milestone implementation in `packages/game-data`, its web sprite consumers, root/workspace task configuration, CI, and the version 1 spec. Generated Emerald data and the release lock are inputs, not independently fact-checked game content. This is an architecture threat model, not a completed vulnerability scan.
+**Provenance:** Milestone 1 at source revision `46c31079170a5a7478e0666fefb22bbc905d1afe`; milestone 2 on branch `feature/nuz-48-sign-in-with-google-and-choose-a-display-name` from `30dbc07`. Scope: `packages/game-data`, its web sprite consumers, the web app's sign-in, gate, schema, and migrations, root/workspace task configuration, CI, and the version 1 spec. Generated Emerald data and the release lock are inputs, not independently fact-checked game content. This is an architecture threat model, not a completed vulnerability scan.
 
 Repository: sha256:ec74bfc1d4ae5e66f679d8d1e0adaa09e27f3d5684d720e1cd3d34dfa8e5cda6
 Version: 46c31079170a5a7478e0666fefb22bbc905d1afe
