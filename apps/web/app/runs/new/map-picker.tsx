@@ -11,10 +11,24 @@ import {
   DrawerTitle,
 } from "@workspace/ui/components/drawer"
 import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+  FieldTitle,
+} from "@workspace/ui/components/field"
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@workspace/ui/components/item"
+import {
   RadioGroup,
   RadioGroupItem,
 } from "@workspace/ui/components/radio-group"
-import { cn } from "@workspace/ui/lib/utils"
 import { useState } from "react"
 
 import { mapDetail, mapsByRegion } from "./map-choices"
@@ -49,23 +63,29 @@ export function MapPicker({ maps, value, disabled, onChange }: MapPickerProps) {
   return (
     <section className="flex flex-col gap-1.5">
       <h2 className="text-sm font-medium">Map</h2>
-      <button
-        type="button"
-        onClick={openDrawer}
-        disabled={disabled}
-        aria-haspopup="dialog"
-        aria-label={`Map: ${value.name}, ${value.region} · Generation ${value.generation}. Change the map`}
-        className="flex min-h-13 w-full items-center gap-3 rounded-[18px] bg-muted/60 py-2 pr-3.5 pl-2 text-left disabled:opacity-50"
+      <Item
+        variant="muted"
+        size="sm"
+        render={
+          <button
+            type="button"
+            onClick={openDrawer}
+            disabled={disabled}
+            aria-haspopup="dialog"
+            aria-label={`Map: ${value.name}, ${value.region} · Generation ${value.generation}. Change the map`}
+            className="text-left disabled:opacity-50"
+          />
+        }
       >
         <MapMonogram map={value} />
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className="font-medium">{value.name}</span>
-          <span className="text-xs text-muted-foreground">
+        <ItemContent>
+          <ItemTitle>{value.name}</ItemTitle>
+          <ItemDescription>
             {value.region} · Generation {value.generation}
-          </span>
-        </span>
-        <span className="text-xs font-medium text-primary">Change</span>
-      </button>
+          </ItemDescription>
+        </ItemContent>
+        <ItemActions className="text-primary">Change</ItemActions>
+      </Item>
 
       <Drawer open={open} onOpenChange={setOpen} showSwipeHandle>
         <DrawerContent>
@@ -89,23 +109,15 @@ export function MapPicker({ maps, value, disabled, onChange }: MapPickerProps) {
                     {region}
                   </h3>
                   {regionMaps.map((map) => (
-                    <label
-                      key={map.id}
-                      htmlFor={`map-${map.id}`}
-                      className={cn(
-                        "flex min-h-14 w-full items-center gap-3 rounded-[18px] py-2 pr-3 pl-2",
-                        map.id === choiceId && "bg-muted/60"
-                      )}
-                    >
-                      <MapMonogram map={map} />
-                      <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="font-medium">{map.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {mapDetail(map)}
-                        </span>
-                      </span>
-                      <RadioGroupItem id={`map-${map.id}`} value={map.id} />
-                    </label>
+                    <FieldLabel key={map.id} htmlFor={`map-${map.id}`}>
+                      <Field orientation="horizontal">
+                        <FieldContent>
+                          <FieldTitle>{map.name}</FieldTitle>
+                          <FieldDescription>{mapDetail(map)}</FieldDescription>
+                        </FieldContent>
+                        <RadioGroupItem id={`map-${map.id}`} value={map.id} />
+                      </Field>
+                    </FieldLabel>
                   ))}
                 </div>
               ))}
@@ -129,11 +141,12 @@ export function MapPicker({ maps, value, disabled, onChange }: MapPickerProps) {
 
 function MapMonogram({ map }: { map: MapSummary }) {
   return (
-    <span
+    <ItemMedia
+      variant="image"
       aria-hidden
-      className="grid size-9 shrink-0 place-items-center rounded-full bg-background text-xs font-medium text-muted-foreground ring-1 ring-foreground/8"
+      className="bg-background text-xs font-medium text-muted-foreground"
     >
       {map.games.map((game) => game.monogram).join("")}
-    </span>
+    </ItemMedia>
   )
 }

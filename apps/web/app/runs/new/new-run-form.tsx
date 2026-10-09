@@ -10,6 +10,13 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@workspace/ui/components/item"
 import type { OperationFailure } from "headcanon/react"
 import { sessionStoragePersistence } from "headcanon/react"
 import { useRouter } from "next/navigation"
@@ -154,23 +161,22 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
         <Field>
           <FieldLabel id="rules-label">Rules</FieldLabel>
           {/* The Rules screen opens from this row with the Rules ticket. */}
-          <div
-            aria-labelledby="rules-label"
-            className="flex min-h-13 items-center gap-3 rounded-[18px] bg-muted/60 px-3.5 py-2"
-          >
-            <SlidersHorizontalIcon
-              aria-hidden
-              className="shrink-0 text-muted-foreground"
-            />
-            <span className="flex min-w-0 flex-col">
-              <span className="font-medium">
+          <Item variant="muted" size="sm" aria-labelledby="rules-label">
+            <ItemMedia variant="icon">
+              <SlidersHorizontalIcon
+                aria-hidden
+                className="text-muted-foreground"
+              />
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle>
                 {rulesOnByDefault.length} of {shownRules.length} rules on
-              </span>
-              <span className="truncate text-xs text-muted-foreground">
+              </ItemTitle>
+              <ItemDescription>
                 {rulesOnByDefault.map((rule) => rule.name).join(", ")}
-              </span>
-            </span>
-          </div>
+              </ItemDescription>
+            </ItemContent>
+          </Item>
           <FieldDescription>
             The usual rules are on. You can change them at any time while the
             run is active.

@@ -6,6 +6,14 @@ import {
 } from "@phosphor-icons/react/ssr"
 import { listMaps } from "@workspace/game-data"
 import { buttonVariants } from "@workspace/ui/components/button"
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@workspace/ui/components/item"
 import { cn } from "@workspace/ui/lib/utils"
 import Link from "next/link"
 
@@ -77,25 +85,32 @@ function RunRow({ run }: { run: RunListRow }) {
   const gameName = game?.name ?? "Unknown game"
 
   return (
-    <Link
-      href={`/runs/${run.id}`}
-      aria-label={`${run.name}, ${gameName}`}
-      className="flex min-h-16 items-center gap-3 rounded-[18px] bg-muted/60 py-3 pr-2.5 pl-3"
+    <Item
+      variant="muted"
+      size="sm"
+      render={
+        <Link
+          href={`/runs/${run.id}`}
+          aria-label={`${run.name}, ${gameName}`}
+        />
+      }
     >
-      <span
+      {/* The starter's sprite replaces the Game monogram with the full rows. */}
+      <ItemMedia
+        variant="image"
         aria-hidden
-        className="grid size-10 shrink-0 place-items-center rounded-full bg-background text-xs font-medium text-muted-foreground ring-1 ring-foreground/8"
+        className="bg-background text-xs font-medium text-muted-foreground"
       >
         {game?.monogram ?? "?"}
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate font-medium">{run.name}</span>
-        <span className="truncate text-xs text-muted-foreground">
-          {gameName}
-        </span>
-      </span>
-      <CaretRightIcon aria-hidden className="shrink-0 text-muted-foreground" />
-    </Link>
+      </ItemMedia>
+      <ItemContent>
+        <ItemTitle>{run.name}</ItemTitle>
+        <ItemDescription>{gameName}</ItemDescription>
+      </ItemContent>
+      <ItemActions>
+        <CaretRightIcon aria-hidden className="text-muted-foreground" />
+      </ItemActions>
+    </Item>
   )
 }
 
