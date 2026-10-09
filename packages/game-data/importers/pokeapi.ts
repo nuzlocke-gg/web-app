@@ -94,6 +94,15 @@ const NATIONAL_DEX = "1"
  * the row, on PokeAPI data it has no rule for: an unknown method, a
  * condition on a repeatable row, a non-default Pokémon in a table, a type
  * newer than the generation, or a Game whose generation differs.
+ *
+ * `tables` holds every file of `POKEAPI_FILES` at `POKEAPI_PIN`, each
+ * parsed with its header row as the column names.
+ *
+ * @example
+ * const tables = Object.fromEntries(
+ *   POKEAPI_FILES.map((file) => [file, parse(csvText[file], { columns: true })])
+ * ) as PokeApiTables
+ * const { wild, species } = importPokeApi(tables, { generation: 3, games: ["emerald"] })
  */
 export function importPokeApi(
   tables: PokeApiTables,

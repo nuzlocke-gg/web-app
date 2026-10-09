@@ -227,7 +227,11 @@ export async function listSourceMaps(sourcesDir: string): Promise<string[]> {
   return entries.filter((e) => e.isDirectory()).map((e) => e.name)
 }
 
-/** Reads and parses `maps/<mapDir>/map.yaml` alone, as an importer needs it. */
+/**
+ * Reads and parses `maps/<mapDir>/map.yaml` alone, as an importer needs it.
+ * A missing or invalid file gives problems that name it; other file system
+ * errors throw.
+ */
 export async function readHandMap(
   sourcesDir: string,
   mapDir: string
