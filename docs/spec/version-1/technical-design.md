@@ -34,7 +34,7 @@ On a Journey (the actor's own only): 1 Record an Encounter; 2 Correct an Encount
 
 Details the build needs on three of them:
 
-- **2 Correct an Encounter** edits the Species and Form met and the origin, and nothing else. A change of the **Species met** also sets the current Species and Form of the Encounter's Pokémon when it still has the old met Species and no evolution line; a Pokémon that evolved stays as it is. On a Missed Encounter it can set or clear the Species, and set the Form and origin. The location, the Slot, the outcome, and the time of entry are not editable: the player removes the Encounter and records it again (in a Soul Link, "Record yours" puts it back into the right Slot).
+- **2 Correct an Encounter** edits the Species and Form met and the origin, and nothing else. A change of the **Species met** also sets the current Species and Form of the Encounter's Pokémon when it still has the old met Species and no evolution line; a Pokémon that evolved stays as it is. On a Failed Encounter it can set or clear the Species, and set the Form and origin. The location, the Slot, the outcome, and the time of entry are not editable: the player removes the Encounter and records it again (in a Soul Link, "Record yours" puts it back into the right Slot).
 - **5 Evolve a Pokémon** with "Next in its line" adds an evolution line to the history. Its "Other species" option is a **correction**: when the Pokémon has evolution lines it edits the target of the latest one, and when the chosen Species is the one that latest line started from (an accidental Treecko to Grovyle, corrected back to Treecko) it removes that line instead; when the Pokémon has no line it sets the Species and Form with no line. A wrong Species is thus fixed without a false history.
 - **7, 8, 9 Deaths** have no death identity. **Record a death** changes a living Pokémon to dead and is refused as `gone` on a Pokémon that is already dead. **Edit a death** changes the level and cause only and is refused as `gone` on a living Pokémon. **Undo a death** changes a dead Pokémon back to alive and is refused as `gone` on a living one. In a race between two of the same player's devices, a stale Undo can undo a newer death; it is visible and one tap to fix, accepted. The Graveyard box on the Pokémon screen opens Edit a death. The time of a death is not editable in version 1.
 
@@ -104,7 +104,7 @@ custom_places
 encounters
   id uuid pk (client) · run_id · journey_id, fk (run_id, journey_id) → journeys cascade
   place_id text null · custom_place_id null, fk (run_id, custom_place_id) → custom_places (no action)
-  slot_ordinal int ≥ 1 · origin enum(wild, gift, trade) · outcome enum(caught, missed)
+  slot_ordinal int ≥ 1 · origin enum(wild, gift, trade) · outcome enum(caught, failed)
   species_id null · form_id null · entered_at
   checks: exactly one of place_id / custom_place_id · caught ⇒ species_id · species_id ⇔ form_id
   UNIQUE(journey_id, id) · partial UNIQUE(journey_id, place_id, slot_ordinal) · partial UNIQUE(journey_id, custom_place_id, slot_ordinal)
@@ -131,7 +131,8 @@ evolutions
 - **Chains** delete as `DELETE FROM runs WHERE chain_id = $1`; deleting the root alone does not cascade through the Chain.
 - **History** reads Encounter rows, evolution rows, and the death columns, ordered by `entered_at` then id; the player of each line is the Journey's Player.
 - **Run state dates**: the date columns of a state change are overwritten on Reopen; there is no state log.
-- **Progress** has no stored counter: a count of distinct Place ids per Run with the denominator from the game data.
+- **Progress** has no stored counter: a count of distinct Place ids per Run with the denominator from the game data (Custom and Event Places excluded on both sides). The remaining count beside "Add a location" is the denominator minus that count.
+- **The order of the Encounters list** has no stored order either: each Place sorts by the earliest `entered_at` of its Encounters in the Run, over every Journey, so a Soul Link shares one list. A Custom Place with no Encounter sorts by the time in its UUID v7 id. The Starter Place always comes first. A Progress cell is Missing for the viewer when the Place counts through another Journey only. The play order of the game data no longer orders the tracking screen; the Add a location Drawer sorts by name.
 - **Box sort** Newest and Oldest use the Encounter's `entered_at`, then the Pokémon id (UUID v7).
 - Timestamps kept on purpose: `runs.created_at`, `runs.last_changed_at`, `journeys.joined_at`. None on users, encounters, pokemon, or evolutions.
 
