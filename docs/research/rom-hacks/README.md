@@ -80,7 +80,7 @@ What then came out, component by component:
 | Places (every map section any map uses) | yes | Emerald's curated Map: 99 sections = 89 Places + 3 rules we already apply (Ferry is the dynamic section, Inside of Truck is out, Starter is synthetic) | the same 99 sections as Emerald: no new Places |
 | Place names | yes | decomp section names | unchanged |
 | Play order | no | — | Emerald's order applies as is |
-| Wild tables | yes | — (the hack's PDF lists locations; not yet compared) | 137 headers, 67 Places; new wild tables in Littleroot, Rustboro, Fortree, and Scorched Slab; 23 hidden (DexNav) tables |
+| Wild tables | yes | the hack's documentation (below) | 137 headers, 67 Places; new wild tables in Littleroot, Rustboro, Fortree, and Scorched Slab; 23 hidden (DexNav) tables; the Scuba Safari minigame's 8 dive maps, which the game records as Pacifidlog Town |
 | Species roster | yes: the species that have names | — | 502 species ids: Gen 1–3 complete plus selected later species |
 | Species and Form identity | yes, with expansion's public `species.h` | 502 / 502 ids agree with today's `species.h` by name | Unown O, two-segment Dudunsparce, Spiky-eared Pichu, Bloodmoon Ursaluna, … |
 | Types | yes ([`facts.mts`](facts.mts)) | PokeAPI | 46 species differ from PokeAPI: deliberate retypes (Blastoise water/steel, Sceptile grass/dragon, Milotic water/fairy, …) |
@@ -91,12 +91,19 @@ What then came out, component by component:
 
 Identity and facts are what PokeAPI cannot give a hack: a Seaglass Map built from PokeAPI types would be wrong for 46 species.
 
-**The custom work Seaglass needs is review, not data entry,** about an hour:
+**Checked against the hack's own documentation.** The Seaglass documentation (v3.0 PDF) lists each species' locations. [`doc_vs_rom.py`](doc_vs_rom.py) turns its explicit claims ("Wild: 110", "Fish: 115 (GR)") into 542 (species, Place, method) triples:
 
-- **Decide the Littleroot list.** A Littleroot NPC gives one of 13 species at level 5 (Spheal, Aipom, nine starters, Applin, Tinkatink), each with every optional argument set. It is probably a random egg; if so, its Place is where the egg hatches and the rows go.
-- Confirm the roamer, Feebas, and whether the Event Places still need tickets.
-- Compare the wild tables with the hack's PDF.
-- Make the product decision on hidden (DexNav) mons, as for time of day below.
+- **541 of 542 are in the ROM.** The one miss is "Fish: 109" for Slowpoke: the ROM's Route 109 fishing table has no Slowpoke, so the line looks stale.
+- The ROM has **59 more pairs** for species the documentation describes precisely. 49 are DexNav hidden slots, which it does not list. The other 10 are mostly vanilla encounters it leaves out (Wynaut on Route 130, Zubat in Altering Cave).
+- **Scuba Safari:** the 36 species of the 8 dive maps are exactly the ones it lists for the minigame.
+- **Statics:** all match in Place and level (Celebi Lv 40, Mewtwo Lv 80, the birds and beasts Lv 50, Ho-Oh and Lugia Lv 50, Deoxys Lv 70), as does the Spiky-eared Pichu gift.
+
+**The custom work Seaglass needs is review, not data entry,** about an hour. Every item below is a fact the ROM cannot tell us:
+
+- **Drop the cheat-code gifts.** The 13 Littleroot "gifts" are cheat codes typed at the GameCube in the player's room (`ILOVSPHEAL`, `ILOVEKANTO`, …). They are real gifts at the right Place, but no Nuzlocke counts them.
+- **Event Places become ordinary Places.** A sailor in Mossdeep hands out the Eon, Mystic, and Aurora Tickets and the Old Sea Map in the story. So Southern Island, Navel Rock, Birth Island, and Faraway Island count toward Progress in Seaglass.
+- **Hand-write what is in code:** the roamer (Latias or Latios after the Elite Four), Feebas, and random gifts (the Rustboro Wishing Well, Alolan eggs from pinball prizes). The Tinkatink egg from a grunt on Route 115 needs no row: an egg's Place is where it hatches.
+- **Product decisions** shared with other hacks: hidden (DexNav) mons, and whether minigame catches (the Scuba Safari) count at their recorded Place.
 
 **How the one-time scan works.** It matches command byte patterns, with no script interpreter:
 
@@ -144,4 +151,4 @@ Everything here builds from public sources on Linux with `gcc-arm-none-eabi`, `l
 2. For CFRU and DPE on Linux: build devkitPro/grit and put it on `PATH` together with `wav2agb` and `mid2agb` from pokeemerald's `tools/`. Copy `pokefirered.gba` to `BPRE0.gba`. Run `python3 scripts/make.py` in DPE, then in CFRU on DPE's `test.gba`, with CFRU's DPE settings (`NUM_MOVE_TUTORS 128`, `EVOS_PER_MON 16`, `EXPAND_MOVESETS` off). The time-of-day test replaces the empty tables in `src/Tables/wild_encounter_tables.c` with a Night table on Route 1 (group 3, map 19) and a Morning table on Route 2 (group 3, map 20).
 3. `node gen3-extract.mts <rom.gba> > out.json` (Node 22.18 or later). It writes the wild tables, every Place, and the one-time encounters.
 4. `python3 grade.py out.json <decomp dir> [emerald|firered]` compares every table and Place name with the decomp's own `wild_encounters.json`, `map.json` files, and section names. `python3 vs_ours.py out.json <this repo>` compares the Emerald wild tables with the shipped Map, `places_vs_ours.py` the Places, and `onetime_vs_ours.py` the one-time rows (all need PyYAML).
-5. Seaglass: `node apply-ips.mts pokeemerald.gba EmeraldSeaglass_v3.0.ips seaglass.gba` with the official v3.0 patch (SHA-1 `4195fcc6169dba9472076b8b3846776a5d23b857`; the patched ROM's SHA-1 is `b9f4d332d30fc88c379f9e037f9eae3b2755ead4`). For an expansion ROM, `node facts.mts <rom> <species names address> <stride> <PokeAPI csv dir>` writes types and evolutions, and `python3 species_check.py out.json <PokeAPI csv dir>` checks species identity. `node starter.mts <rom> <names address> <stride> <PokeAPI csv dir>` lists Starter candidates. The PokeAPI CSVs come from the commit `importers/pokeapi.ts` pins.
+5. Seaglass: `python3 doc_vs_rom.py <doc-table.txt> <seaglass out.json> <emerald out.json>` compares the ROM with the location table of the hack's documentation, saved as text (not committed). `node apply-ips.mts pokeemerald.gba EmeraldSeaglass_v3.0.ips seaglass.gba` with the official v3.0 patch (SHA-1 `4195fcc6169dba9472076b8b3846776a5d23b857`; the patched ROM's SHA-1 is `b9f4d332d30fc88c379f9e037f9eae3b2755ead4`). For an expansion ROM, `node facts.mts <rom> <species names address> <stride> <PokeAPI csv dir>` writes types and evolutions, and `python3 species_check.py out.json <PokeAPI csv dir>` checks species identity. `node starter.mts <rom> <names address> <stride> <PokeAPI csv dir>` lists Starter candidates. The PokeAPI CSVs come from the commit `importers/pokeapi.ts` pins.
