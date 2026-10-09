@@ -28,3 +28,13 @@ React 19 joins all pending transition work, including Actions, `router.refresh()
 ## Postgres errors: read the whole cause chain
 
 Drizzle wraps the driver error, so the SQLSTATE `code` is on `error.cause`, sometimes more than one level down. Examples are `23505` (unique violation, such as a second Pokémon for one Encounter) and `40001` (serialization failure). To classify a database error, follow the `cause` chain through every object, including `Error` instances. Read `code` at each level, and stop if the chain loops. Test the classifier with an error from a real Postgres, not a hand-made object.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

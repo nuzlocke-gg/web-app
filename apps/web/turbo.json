@@ -3,7 +3,8 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "outputs": ["$TURBO_EXTENDS$", "public/sprites/**"]
+      "outputs": ["$TURBO_EXTENDS$", "public/sprites/**"],
+      "passThroughEnv": ["DATABASE_URL", "DATABASE_URL_UNPOOLED", "DATABASE_WS_PROXY"]
     },
     "dev": {
       "dependsOn": ["^build"]

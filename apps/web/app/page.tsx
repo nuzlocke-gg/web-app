@@ -1,19 +1,11 @@
-import { Button } from "@workspace/ui/components/button"
+import { requireActor } from "@/lib/actor"
 
-export default function Page() {
+export default async function HomePage() {
+  await requireActor()
+
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="text-muted-foreground font-mono text-xs">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
+    <main className="mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 px-4 py-10">
+      <h1 className="text-2xl font-medium">Your runs</h1>
+    </main>
   )
 }

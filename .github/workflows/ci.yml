@@ -22,3 +22,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx turbo run lint typecheck test
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: npm run test:e2e
+        working-directory: apps/web

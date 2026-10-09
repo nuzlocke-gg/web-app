@@ -1,0 +1,31 @@
+# The local database for tests and the Playwright flow. wsproxy lets the Neon
+# WebSocket driver, which the app uses everywhere, talk to a plain Postgres.
+name: nuzlocke-test
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nuzlocke_test
+    ports:
+      - "54329:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nuzlocke_test"]
+      interval: 1s
+      timeout: 2s
+      retries: 30
+
+  wsproxy:
+    image: ghcr.io/neondatabase/wsproxy:latest
+    environment:
+      # The destination of every connection. The driver sends no address.
+      APPEND_PORT: "postgres:5432"
+      ALLOW_ADDR_REGEX: ".*"
+      LOG_TRAFFIC: "false"
+    ports:
+      - "54330:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
