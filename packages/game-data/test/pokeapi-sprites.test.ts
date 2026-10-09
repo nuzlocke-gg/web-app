@@ -76,9 +76,13 @@ describe("the PokeAPI sprite source", () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 
-  it("gives undefined for a missing file and caches nothing", async () => {
+  it("gives undefined for a missing file, and remembers the miss", async () => {
     expect(await sourceWith(replies(404))("386-attack")).toBeUndefined()
-    expect(await cachedFiles()).toEqual([])
+
+    const fetch = replies()
+
+    expect(await sourceWith(fetch)("386-attack")).toBeUndefined()
+    expect(fetch).not.toHaveBeenCalled()
   })
 
   it("tries again after a server error or a network error", async () => {

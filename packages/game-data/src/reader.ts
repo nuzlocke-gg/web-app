@@ -42,17 +42,36 @@ export interface MapRegistry {
   catalog: MapSummary[]
   /** Loads one compiled Map, by Map id. */
   load: Record<MapId, () => Promise<CompiledMap>>
-  /** The directory under `/sprites/` that holds this build's sprites. */
-  spriteVersion: string
 }
 
-/** Where a Form's sprite is, under the sprite version's directory. */
+/**
+ * Where a Form's sprite is, under the sprite directory. A ROM hack's `:`
+ * becomes `--`, which no other identifier has, because `:` is not valid in
+ * a Windows file name.
+ */
 export function spritePath(ref: FormRef): string {
-  return `${ref.species}/${ref.form}.png`
+  return `${ref.species.replace(":", "--")}/${ref.form}.png`
 }
 
-/** Where the sprite for an unknown Pokémon is, under the sprite version's directory. */
+/** Where the sprite for an unknown Pokémon is, under the sprite directory. */
 export const UNKNOWN_SPRITE_PATH = "unknown.png"
+
+/** The URL of the sprite for an unknown Pokémon, or for a sprite that cannot load. */
+export const unknownSpriteUrl = `/sprites/${UNKNOWN_SPRITE_PATH}`
+
+/**
+ * The URL of a Form's sprite, `/sprites/<species>/<form>.png`. A Form of the
+ * Map always has one; an unknown Species or Form gives `undefined`.
+ */
+export function spriteUrl(
+  map: LoadedMap,
+  species: SpeciesId,
+  form: FormId
+): string | undefined {
+  if (!getForm(map, species, form)) return undefined
+
+  return `/sprites/${spritePath({ species, form })}`
+}
 
 /**
  * A loaded Map with lookup indexes. Every reader function takes it first.
@@ -87,18 +106,6 @@ export interface Reader {
    * A failed load rejects and is not cached, so a later call tries again.
    */
   loadMap(id: MapId): Promise<LoadedMap | undefined>
-  /**
-   * The URL of a Form's sprite, `/sprites/<version>/<species>/<form>.png`.
-   * A Form of the Map always has one; an unknown Species or Form gives
-   * `undefined`.
-   */
-  spriteUrl(
-    map: LoadedMap,
-    species: SpeciesId,
-    form: FormId
-  ): string | undefined
-  /** The URL of the sprite to show for an unknown Pokémon, or when a sprite cannot load. */
-  unknownSpriteUrl: string
 }
 
 /** Binds the reader to a registry. The app uses the one bound to the compiled Maps. */
@@ -130,14 +137,6 @@ export function createReader(registry: MapRegistry): Reader {
 
       return loading
     },
-
-    spriteUrl(map, species, form) {
-      if (!getForm(map, species, form)) return undefined
-
-      return `/sprites/${registry.spriteVersion}/${spritePath({ species, form })}`
-    },
-
-    unknownSpriteUrl: `/sprites/${registry.spriteVersion}/${UNKNOWN_SPRITE_PATH}`,
   }
 }
 

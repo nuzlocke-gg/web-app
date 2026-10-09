@@ -89,7 +89,6 @@ beforeAll(async () => {
   map = (await createReader({
     catalog: [toSummary(compiled)],
     load: { emerald: async () => compiled },
-    spriteVersion: "v1",
   }).loadMap("emerald"))!
 })
 

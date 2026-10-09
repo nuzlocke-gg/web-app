@@ -1,0 +1,5 @@
+# The PokeAPI file (without .png) for a Form whose sprite is neither
+# <dex>.png nor <dex>-<form>.png, by species/form. A Regional Variant shares
+# its dex number, so it needs one; so does a Form that PokeAPI names by its
+# Pokémon id, such as deoxys/attack: "10001".
+{}

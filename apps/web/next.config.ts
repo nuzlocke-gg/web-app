@@ -8,15 +8,12 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // The game-data build names the sprite directory by a hash of its
-        // contents, so a sprite URL never changes meaning.
+        // A sprite's path stays the same across deploys, so a tab still on
+        // an old build never asks for a sprite that is gone. Its bytes change
+        // only with a new pinned commit or override, and a week of a stale
+        // sprite is acceptable.
         source: "/sprites/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
+        headers: [{ key: "Cache-Control", value: "public, max-age=604800" }],
       },
     ]
   },

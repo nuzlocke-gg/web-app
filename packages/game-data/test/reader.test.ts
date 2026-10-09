@@ -16,9 +16,11 @@ import {
   primaryType,
   progressTotal,
   searchSpecies,
+  spriteUrl,
   suggestions,
   toSummary,
   typesOf,
+  unknownSpriteUrl,
   type LoadedMap,
   type MapRegistry,
 } from "../src/reader.ts"
@@ -31,7 +33,6 @@ function registryOf(maps: CompiledMap[]): MapRegistry {
   return {
     catalog: maps.map(toSummary),
     load: Object.fromEntries(maps.map((m) => [m.id, async () => m])),
-    spriteVersion: "v1",
   }
 }
 
@@ -285,15 +286,15 @@ describe("Forms and types", () => {
 })
 
 describe("sprites", () => {
-  it("gives every Form a sprite URL under the registry's sprite version", () => {
-    expect(reader.spriteUrl(map, "unown", "b")).toBe("/sprites/v1/unown/b.png")
-    expect(reader.spriteUrl(map, "bulbasaur", "base")).toBe(
-      "/sprites/v1/bulbasaur/base.png"
+  it("gives every Form a sprite URL", () => {
+    expect(spriteUrl(map, "unown", "b")).toBe("/sprites/unown/b.png")
+    expect(spriteUrl(map, "bulbasaur", "base")).toBe(
+      "/sprites/bulbasaur/base.png"
     )
   })
 
-  it("gives the unknown sprite a URL under the same version", () => {
-    expect(reader.unknownSpriteUrl).toBe("/sprites/v1/unknown.png")
+  it("gives the unknown sprite a URL beside them", () => {
+    expect(unknownSpriteUrl).toBe("/sprites/unknown.png")
   })
 })
 
@@ -352,7 +353,7 @@ describe("unknown identifiers read as unknown", () => {
     expect(evolutionLineOf(map, "missingno")).toBeUndefined()
     expect(dexNumber(map, "missingno")).toBeUndefined()
     expect(primaryType(map, "missingno", "base")).toBeUndefined()
-    expect(reader.spriteUrl(map, "missingno", "base")).toBeUndefined()
+    expect(spriteUrl(map, "missingno", "base")).toBeUndefined()
   })
 
   it("for a Form", () => {
@@ -360,6 +361,6 @@ describe("unknown identifiers read as unknown", () => {
     expect(formTypes(map, "burmy", "missing")).toBeUndefined()
     expect(primaryType(map, "burmy", "missing")).toBeUndefined()
     expect(nextInLine(map, "burmy", "missing")).toEqual([])
-    expect(reader.spriteUrl(map, "burmy", "missing")).toBeUndefined()
+    expect(spriteUrl(map, "burmy", "missing")).toBeUndefined()
   })
 })

@@ -1,5 +1,6 @@
 import {
   cp,
+  mkdir,
   mkdtemp,
   readdir,
   readFile,
@@ -8,7 +9,7 @@ import {
   writeFile,
 } from "node:fs/promises"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 import { ok } from "serializable-result"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
@@ -134,16 +135,11 @@ describe("the build", () => {
 })
 
 describe("sprites", () => {
-  /** The one version directory under `dist/sprites`. */
-  async function spriteVersions() {
-    return readdir(join(options.outDir, "sprites"))
-  }
+  const spritesYaml = () => join(options.sourcesDir, "sprites.yaml")
 
   async function spriteText(species: string, form: string) {
-    const [version] = await spriteVersions()
-
     return readFile(
-      join(options.outDir, "sprites", version!, species, `${form}.png`),
+      join(options.outDir, "sprites", species, `${form}.png`),
       "utf8"
     )
   }
@@ -155,8 +151,6 @@ describe("sprites", () => {
       join(options.outDir, "registry.ts")
     )) as { registry: MapRegistry }
     const reader = createReader(registry)
-
-    expect(await spriteVersions()).toEqual([registry.spriteVersion])
 
     for (const { id } of reader.listMaps()) {
       const map = (await reader.loadMap(id))!
@@ -182,7 +176,7 @@ describe("sprites", () => {
     expect(await spriteText("unown", "b")).toBe("201")
   })
 
-  it("stops, naming the Species, when a first Form has no sprite", async () => {
+  it("stops, naming the Form, when a first Form has no sprite", async () => {
     const sprites = fakeSprites()
 
     expect(
@@ -190,20 +184,14 @@ describe("sprites", () => {
         ...options,
         sprites: async (file) => (file === "201" ? undefined : sprites(file)),
       })
-    ).toEqual(["unown: no sprite 201.png at the pinned commit"])
+    ).toEqual(["unown/a.png: no sprite 201.png at the pinned commit"])
     expect(await outFiles()).toEqual([])
   })
 
   it("writes the unknown sprite, and stops without it", async () => {
     expect(await buildMaps(options)).toEqual(ok(undefined))
-
-    const [version] = await spriteVersions()
-
     expect(
-      await readFile(
-        join(options.outDir, "sprites", version!, "unknown.png"),
-        "utf8"
-      )
+      await readFile(join(options.outDir, "sprites", "unknown.png"), "utf8")
     ).toBe("0")
 
     const sprites = fakeSprites()
@@ -216,22 +204,69 @@ describe("sprites", () => {
     ).toEqual(["no unknown sprite 0.png at the pinned commit"])
   })
 
-  it("changes the version, and replaces the old sprites, when a sprite changes", async () => {
+  it("gives a Regional Variant the sprite that sprites.yaml names", async () => {
     expect(await buildMaps(options)).toEqual(ok(undefined))
+    expect(await spriteText("rattata", "base")).toBe("19")
+    expect(await spriteText("rattata-alola", "base")).toBe("10091")
+  })
 
-    const first = await spriteVersions()
+  it("stops when Species share a dex number without overrides", async () => {
+    const yaml = await readFile(spritesYaml(), "utf8")
 
-    expect(await buildMaps(options)).toEqual(ok(undefined))
-    expect(await spriteVersions()).toEqual(first)
+    await writeFile(spritesYaml(), yaml.replace(/^rattata-alola.*\n/m, ""))
 
-    expect(await buildMaps({ ...options, sprites: fakeSprites() })).toEqual(
-      ok(undefined)
+    expect(await problemsOf(options)).toEqual([
+      "rattata, rattata-alola share dex 19: give all but one a sprite for its first Form in sprites.yaml",
+    ])
+  })
+
+  it("stops on an override for no Form, or one that is not valid", async () => {
+    await writeFile(spritesYaml(), 'missingno/base: "1"\n', { flag: "a" })
+
+    expect(await problemsOf(options)).toEqual([
+      'sprites.yaml: "missingno/base" is not a Form of any Map',
+    ])
+
+    await writeFile(spritesYaml(), 'missingno: "1"\n')
+
+    expect(await problemsOf(options)).toEqual([
+      expect.stringMatching(/^sprites\.yaml: missingno: /),
+    ])
+  })
+
+  it("needs an override for a ROM-hack Species, and writes it without a colon", async () => {
+    await writeFile(
+      join(options.sourcesDir, "maps/fixture/corrections.yaml"),
+      [
+        "- op: add-species",
+        "  species:",
+        "    id: unbound:foo",
+        "    name: Foo",
+        "    dex: 1001",
+        "    forms: [{ id: base, name: Foo, types: [normal] }]",
+        "",
+      ].join("\n"),
+      { flag: "a" }
     )
 
-    const second = await spriteVersions()
+    expect(await problemsOf(options)).toEqual([
+      "unbound:foo: a ROM-hack Species needs a sprite for its first Form in sprites.yaml",
+    ])
 
-    expect(second).toHaveLength(1)
-    expect(second).not.toEqual(first)
+    await writeFile(spritesYaml(), 'unbound:foo/base: "1"\n', { flag: "a" })
+
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+    expect(await spriteText("unbound--foo", "base")).toBe("1")
+  })
+
+  it("removes the sprites of an earlier build", async () => {
+    const old = join(options.outDir, "sprites", "missingno", "base.png")
+
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+    await mkdir(dirname(old), { recursive: true })
+    await writeFile(old, "old")
+    expect(await buildMaps(options)).toEqual(ok(undefined))
+    await expect(readFile(old)).rejects.toThrow()
   })
 })
 

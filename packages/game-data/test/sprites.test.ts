@@ -19,14 +19,12 @@ function pngSize(bytes: Buffer) {
 
 describe("the built sprites", () => {
   it("are a 96 × 96 PNG for every Species and Form of every compiled Map, and for an unknown one", async () => {
-    const versions = await readdir(join(distDir, "sprites"))
     const mapFiles = (await readdir(distDir)).filter((f) => f.endsWith(".json"))
 
-    expect(versions).toHaveLength(1)
     expect(mapFiles).not.toEqual([])
 
     const unknown = await readFile(
-      join(distDir, "sprites", versions[0]!, UNKNOWN_SPRITE_PATH)
+      join(distDir, "sprites", UNKNOWN_SPRITE_PATH)
     )
 
     expect(pngSize(unknown)).toEqual({ width: 96, height: 96 })
@@ -39,9 +37,7 @@ describe("the built sprites", () => {
       for (const species of map.species) {
         for (const form of species.forms) {
           const path = spritePath({ species: species.id, form: form.id })
-          const bytes = await readFile(
-            join(distDir, "sprites", versions[0]!, path)
-          )
+          const bytes = await readFile(join(distDir, "sprites", path))
 
           expect([...bytes.subarray(0, 8)], path).toEqual(PNG_SIGNATURE)
           expect(pngSize(bytes), path).toEqual({ width: 96, height: 96 })

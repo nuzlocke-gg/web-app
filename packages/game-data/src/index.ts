@@ -12,18 +12,6 @@ export const listMaps = reader.listMaps
 /** Loads one Map, once. An unknown Map gives `undefined`. */
 export const loadMap = reader.loadMap
 
-/**
- * The URL of a Form's sprite. Every Form of a loaded Map has one; an unknown
- * Species or Form gives `undefined`.
- *
- * @example
- * const src = spriteUrl(map, pokemon.species, pokemon.form)
- */
-export const spriteUrl = reader.spriteUrl
-
-/** The URL of the sprite for an unknown Pokémon, or for a sprite that cannot load. */
-export const unknownSpriteUrl = reader.unknownSpriteUrl
-
 export {
   dexNumber,
   evolutionLineOf,
@@ -38,8 +26,10 @@ export {
   primaryType,
   progressTotal,
   searchSpecies,
+  spriteUrl,
   suggestions,
   typesOf,
+  unknownSpriteUrl,
   type LoadedMap,
   type MapSummary,
   type PlaceRow,

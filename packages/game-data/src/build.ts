@@ -7,22 +7,27 @@ import { compileMap } from "./compile.ts"
 import type { CompiledMap, MapId, ReleaseLock } from "./format.ts"
 import { checkPermanence, lockFor } from "./permanence.ts"
 import { toSummary } from "./reader.ts"
-import { resolveSprites, type SpriteSet, type SpriteSource } from "./sprites.ts"
+import {
+  resolveSprites,
+  type SpriteFiles,
+  type SpriteSource,
+} from "./sprites.ts"
 import {
   listLockedMaps,
   listSourceMaps,
   lockFileName,
   readLock,
   readMapSources,
+  readSpriteOverrides,
 } from "./sources.ts"
 
 /** Where the build reads and writes. */
 export interface BuildOptions {
-  /** Holds `methods.yaml` and `maps/<map>/`. */
+  /** Holds `methods.yaml`, `sprites.yaml`, and `maps/<map>/`. */
   sourcesDir: string
   /**
-   * Receives `<map>.json`, `registry.ts`, and `sprites/<version>/`. Its old
-   * JSON files and sprites are removed.
+   * Receives `<map>.json`, `registry.ts`, and `sprites/`. Its old JSON files
+   * and sprites are removed.
    */
   outDir: string
   /** Holds the release locks, `<map>.lock.json`. */
@@ -103,9 +108,16 @@ export async function buildMaps(
     if (!sourceMaps.includes(map)) problems.push(`No Map "${map}" to lock`)
   }
 
-  if (problems.length > 0) return err(problems)
+  const overrides = await readSpriteOverrides(sourcesDir)
 
-  const sprites = await resolveSprites(compiled, options.sprites)
+  if (!overrides.ok) problems.push(...overrides.error)
+  if (problems.length > 0 || !overrides.ok) return err(problems)
+
+  const sprites = await resolveSprites(
+    compiled,
+    overrides.value,
+    options.sprites
+  )
 
   if (!sprites.ok) return err(sprites.error)
 
@@ -124,7 +136,7 @@ export async function buildMaps(
 async function writeOutput(
   outDir: string,
   maps: CompiledMap[],
-  sprites: SpriteSet
+  sprites: SpriteFiles
 ) {
   await mkdir(outDir, { recursive: true })
 
@@ -137,17 +149,14 @@ async function writeOutput(
   }
 
   await writeSprites(join(outDir, "sprites"), sprites)
-  await writeFile(
-    join(outDir, "registry.ts"),
-    registrySource(outDir, maps, sprites.version)
-  )
+  await writeFile(join(outDir, "registry.ts"), registrySource(outDir, maps))
 }
 
-async function writeSprites(spritesDir: string, sprites: SpriteSet) {
+async function writeSprites(spritesDir: string, sprites: SpriteFiles) {
   await rm(spritesDir, { recursive: true, force: true })
 
-  for (const [path, bytes] of sprites.files) {
-    const file = join(spritesDir, sprites.version, path)
+  for (const [path, bytes] of sprites) {
+    const file = join(spritesDir, path)
 
     await mkdir(dirname(file), { recursive: true })
     await writeFile(file, bytes)
@@ -180,11 +189,7 @@ async function writeLocks(releasedDir: string, locks: ReleaseLock[]) {
  * The generated registry module. One static `import()` per Map lets a
  * bundler split each Map into its own chunk.
  */
-function registrySource(
-  outDir: string,
-  maps: CompiledMap[],
-  spriteVersion: string
-): string {
+function registrySource(outDir: string, maps: CompiledMap[]): string {
   const srcDir = relative(outDir, fileURLToPath(new URL(".", import.meta.url)))
     .split(sep)
     .join("/")
@@ -206,7 +211,6 @@ function registrySource(
     "  load: {",
     ...loaders,
     "  },",
-    `  spriteVersion: ${JSON.stringify(spriteVersion)},`,
     "}",
     "",
   ].join("\n")

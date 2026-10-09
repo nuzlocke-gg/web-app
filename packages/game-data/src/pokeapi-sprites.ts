@@ -2,7 +2,7 @@
 // commit, with a disk cache. Files at a commit never change, so a cached
 // file never goes stale.
 
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises"
+import { access, mkdir, readFile, rename, writeFile } from "node:fs/promises"
 import { dirname, join } from "node:path"
 
 import type { SpriteSource } from "./sprites.ts"
@@ -28,8 +28,9 @@ export interface PokeApiSpritesOptions {
 
 /**
  * Reads sprites from the pinned commit through the cache. A 404 gives
- * `undefined`; a network error, a timeout, a 429, or a 5xx is tried again,
- * and the source rejects after the last try.
+ * `undefined`, and the cache keeps it too, since a file cannot appear at a
+ * pinned commit. A network error, a timeout, a 429, or a 5xx is tried
+ * again, and the source rejects after the last try.
  */
 export function pokeApiSprites(options: PokeApiSpritesOptions): SpriteSource {
   const {
@@ -68,17 +69,25 @@ export function pokeApiSprites(options: PokeApiSpritesOptions): SpriteSource {
 
   return async (file) => {
     const cached = join(cacheDir, SPRITES_PIN, `${file}.png`)
+    const missing = `${cached}.missing`
     const hit = await readFile(cached).catch(() => undefined)
 
     if (hit) return hit
+    if (await exists(missing)) return undefined
 
     const bytes = await limit(() => download(file))
 
-    if (bytes) await writeAtomically(cached, bytes)
+    await writeAtomically(bytes ? cached : missing, bytes ?? new Uint8Array())
 
     return bytes
   }
 }
+
+const exists = (path: string) =>
+  access(path).then(
+    () => true,
+    () => false
+  )
 
 const isRetryable = (status: number) => status === 429 || status >= 500
 

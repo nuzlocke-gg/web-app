@@ -15,6 +15,7 @@ import {
   type MethodList,
   type OneTimeRow,
   type ReleaseLock,
+  type SpriteOverrides,
 } from "./format.ts"
 
 // Shape only. Meaning (unknown references, duplicates, play order) is the
@@ -155,6 +156,11 @@ const releaseLock: z.ZodType<ReleaseLock> = z.strictObject({
   species: z.record(z.string(), z.int().positive()),
   forms: z.array(z.string()),
 })
+
+const spriteOverrides: z.ZodType<SpriteOverrides> = z.record(
+  z.string().regex(/^[^/]+\/[^/]+$/),
+  z.string().regex(/^[0-9a-z-]+$/, "a PokeAPI file name without .png")
+)
 
 /** A parsed value, or the problems that name the file and the path. */
 export type Parsed<T> = Result<T, string[]>
@@ -316,6 +322,18 @@ export async function readMapSources(
     generatedWild: wild as GeneratedWild[],
     generatedSpecies: species as GeneratedSpecies[],
   })
+}
+
+/** Reads `sprites.yaml`; a missing file has no overrides. */
+export async function readSpriteOverrides(
+  sourcesDir: string
+): Promise<Parsed<SpriteOverrides>> {
+  const file = "sprites.yaml"
+  const text = await readOptional(join(sourcesDir, file))
+
+  if (text === undefined) return ok({})
+
+  return parseText(spriteOverrides, text, file)
 }
 
 /** The file name of a Map's release lock. */

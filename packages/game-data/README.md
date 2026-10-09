@@ -10,9 +10,11 @@ The reader reads `dist/`, which the build writes. `dist/` is not committed. A co
 
 ## Sprites
 
-The build writes a sprite for every Species and Form of every Map to `dist/sprites/<version>/<species>/<form>.png`: PokeAPI's default front sprites (Black/White style, 96 × 96) from the commit pinned in `src/pokeapi-sprites.ts`. A Form other than the first uses PokeAPI's `<dex>-<form>.png` when it exists, else the first Form's sprite. It also writes `unknown.png`, PokeAPI's `0.png` placeholder (a grey "?"). A Species with no default sprite, or a missing placeholder, stops the build. The version is a hash of every sprite, so a URL never changes meaning and the app serves the sprites with an `immutable` cache.
+The build writes a sprite for every Species and Form of every Map to `dist/sprites/<species>/<form>.png`: PokeAPI's default front sprites (Black/White style, 96 × 96) from the commit pinned in `src/pokeapi-sprites.ts`. A Form uses the file that `sources/sprites.yaml` names for it; else the first Form uses `<dex>.png`, and another Form uses `<dex>-<form>.png` when it exists, else the first Form's sprite. It also writes `unknown.png`, PokeAPI's `0.png` placeholder (a grey "?").
 
-- The app gets a sprite URL only from `spriteUrl(map, species, form)`, which gives `/sprites/<version>/…` for a Form of the Map and `undefined` for an unknown one, and from `unknownSpriteUrl` for the placeholder.
+`sources/sprites.yaml` is needed for a Regional Variant (it shares its dex number), a ROM-hack Species (its dex number is its own; a `:` in its id becomes `--` in the path), and a Form that PokeAPI names by its Pokémon id (`deoxys/attack: "10001"`). The build stops on a missing required file, a dex number that several Species share without overrides, a ROM-hack Species without one, or an override for no Form.
+
+- The app gets a sprite URL only from `spriteUrl(map, species, form)`, which gives `/sprites/<species>/<form>.png` for a Form of the Map and `undefined` for an unknown one, and from `unknownSpriteUrl` for the placeholder.
 - A build script serves the files by copying `spritesDir` (from `@workspace/game-data/sprites-dir`) to the app's `public/sprites/`. The web app does this before `next dev` and `next build`; run it through the root `npm run dev` or `npm run build`, which build this package first.
 - The build downloads a sprite only on a cache miss. The cache is `node_modules/.cache/pokeapi-sprites/`, and it can be deleted at any time.
 
@@ -20,6 +22,7 @@ The build writes a sprite for every Species and Form of every Map to `dist/sprit
 
 ```
 sources/methods.yaml                         the method groups, in record Drawer order
+sources/sprites.yaml                         PokeAPI sprite files for Forms that need one
 sources/maps/<map>/map.yaml                  Map facts, Games, Places in play order with their source areas
 sources/maps/<map>/one-time.yaml             Static, Roaming, Gift, Trade rows (hand-written only)
 sources/maps/<map>/corrections.yaml          changes to generated data, each with what it expects
