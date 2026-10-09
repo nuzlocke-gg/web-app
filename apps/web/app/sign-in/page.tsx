@@ -6,6 +6,8 @@ import { RightsLine } from "@/components/rights-line"
 import { readAccount } from "@/lib/actor"
 import { signIn } from "@/lib/auth"
 
+import { DevSignInButton } from "./dev-sign-in-button"
+
 async function signInWithGoogle() {
   "use server"
 
@@ -42,6 +44,8 @@ export default async function SignInPage({
           </p>
         )}
       </form>
+
+      <DevSignInButton />
 
       <RightsLine />
     </main>

@@ -18,6 +18,7 @@ async function signInNewPlayer(): Promise<string> {
 
   vi.mocked(requireAccount).mockResolvedValue({
     id,
+    email: null,
     givenName: "Ash",
     displayName: null,
   })

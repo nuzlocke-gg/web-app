@@ -1,6 +1,7 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import { Pool } from "@neondatabase/serverless"
 import type { BrowserContext } from "@playwright/test"
+import { eq } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/neon-serverless"
 import { randomBytes, randomUUID } from "node:crypto"
 
@@ -24,11 +25,14 @@ const adapter = DrizzleAdapter(db, {
   sessionsTable: sessions,
 })
 
-/** Signs a new Google user in, as Auth.js does at the first sign-in. */
+/**
+ * Signs a new Google user in, as Auth.js does at the first sign-in. Returns
+ * the user's id and Google email.
+ */
 export async function signInNewPlayer(
   context: BrowserContext,
   givenName: string
-): Promise<void> {
+): Promise<{ id: string; email: string }> {
   const user = await adapter.createUser!({
     id: randomUUID(),
     email: `${randomUUID()}@example.test`,
@@ -45,6 +49,23 @@ export async function signInNewPlayer(
   })
 
   await startSession(context, user.id)
+
+  return { id: user.id, email: user.email }
+}
+
+/**
+ * Signs in a Player who chose their Display Name at an earlier sign-in.
+ * Returns their Google email.
+ */
+export async function signInNamedPlayer(
+  context: BrowserContext,
+  displayName: string
+): Promise<string> {
+  const { id, email } = await signInNewPlayer(context, displayName)
+
+  await db.update(users).set({ displayName }).where(eq(users.id, id))
+
+  return email
 }
 
 /**

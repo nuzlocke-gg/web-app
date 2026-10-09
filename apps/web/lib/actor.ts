@@ -11,6 +11,8 @@ import { users } from "@/lib/db/schema"
 /** The signed-in Player's account, before or after the name step. */
 export type Account = {
   id: string
+  /** The account email. Only its own Player sees it. */
+  email: string | null
   /** The Google given name, to prefill the Display Name. Never shown. */
   givenName: string | null
   /** Null until the Player chooses one at the first sign-in. */
@@ -30,6 +32,7 @@ export const readAccount = cache(async (): Promise<Account | null> => {
   const [row] = await db
     .select({
       id: users.id,
+      email: users.email,
       givenName: users.name,
       displayName: users.displayName,
       deletedAt: users.deletedAt,
@@ -41,12 +44,18 @@ export const readAccount = cache(async (): Promise<Account | null> => {
   // the sessions in the same transaction that writes the tombstone.
   if (!row || row.deletedAt) return null
 
-  return { id: row.id, givenName: row.givenName, displayName: row.displayName }
+  return {
+    id: row.id,
+    email: row.email,
+    givenName: row.givenName,
+    displayName: row.displayName,
+  }
 })
 
 /**
  * Returns the signed-in Player's account, or redirects to the sign-in page.
- * Only the name step uses it; everything else calls {@link requireActor}.
+ * Only the name step uses it; everything else calls {@link requirePlayer} or
+ * {@link requireActor}.
  */
 export const requireAccount = cache(async (): Promise<Account> => {
   const account = await readAccount()
@@ -56,15 +65,26 @@ export const requireAccount = cache(async (): Promise<Account> => {
   return account
 })
 
+/** The account of a Player who has chosen a Display Name. */
+export type Player = Account & { displayName: string }
+
+/**
+ * Returns the signed-in Player's account for a page that shows it. Redirects
+ * as {@link requireActor} does.
+ */
+export const requirePlayer = cache(async (): Promise<Player> => {
+  const account = await requireAccount()
+
+  if (account.displayName === null) redirect("/welcome")
+
+  return { ...account, displayName: account.displayName }
+})
+
 /**
  * Returns the id of the signed-in Player for a page or a command. Redirects to
  * the sign-in page without a live account, and to the name step while the
  * Player has no Display Name, so no screen or write skips that step.
  */
-export const requireActor = cache(async (): Promise<string> => {
-  const account = await requireAccount()
-
-  if (account.displayName === null) redirect("/welcome")
-
-  return account.id
-})
+export const requireActor = cache(
+  async (): Promise<string> => (await requirePlayer()).id
+)
