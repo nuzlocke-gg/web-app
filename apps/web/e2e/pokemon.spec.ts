@@ -118,6 +118,8 @@ test("a player moves a Pokémon into a full Party with a swap, then to the Box",
     },
   ])
   await page.goto(`/runs/${runId}`)
+  // A tab chosen before the page hydrates does not open.
+  await page.waitForLoadState("networkidle")
   await page.getByRole("tab", { name: "Pokémon" }).click()
   await page
     .getByRole("region", { name: "Box" })
@@ -148,6 +150,8 @@ test("a player moves a Pokémon into a full Party with a swap, then to the Box",
     "true"
   )
 
+  // A tap before the reloaded page hydrates does nothing.
+  await page.waitForLoadState("networkidle")
   await where.getByRole("button", { name: "Box" }).click()
   await expect(where).toContainText("Your party, 5 of 6")
 
@@ -158,7 +162,7 @@ test("a player moves a Pokémon into a full Party with a swap, then to the Box",
   await expect(page.getByRole("region", { name: "Box" })).toContainText("Shade")
 })
 
-test("a player records, edits, and undoes a death, then removes the Pokémon", async ({
+test("a player records, edits, and undoes a death, then removes and restores the Pokémon", async ({
   page,
   context,
 }) => {
@@ -257,4 +261,23 @@ test("a player records, edits, and undoes a death, then removes the Pokémon", a
     "0 of 6"
   )
   await expect(page.getByRole("link", { name: /Spore/ })).toHaveCount(0)
+
+  await page.getByRole("tab", { name: "Encounters" }).click()
+  await page
+    .getByRole("region", { name: "Petalburg Woods" })
+    .getByRole("link", { name: /Shroomish/ })
+    .click()
+  await page.getByRole("button", { name: "Restore Pokémon" }).click()
+  await expect(
+    page
+      .getByRole("region", { name: "Where" })
+      .getByRole("button", { name: "Party" })
+  ).toHaveAttribute("aria-pressed", "true")
+
+  // The restore committed: a reload reads it back from the server.
+  await page.reload()
+  await expect(page.getByText("Removed", { exact: true })).toBeHidden()
+  await expect(page.getByRole("region", { name: "Where" })).toContainText(
+    "Your party, 1 of 6"
+  )
 })

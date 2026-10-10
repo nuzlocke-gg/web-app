@@ -31,6 +31,10 @@ export default defineConfig({
         test: {
           name: "unit",
           environment: "jsdom",
+          // A screen test that renders the full Species grid takes 3 to 7 s
+          // on the CI runner while the other files run beside it, above the
+          // 5 s default.
+          testTimeout: 15_000,
           include: ["**/*.test.{ts,tsx}"],
           exclude: ["**/node_modules/**", "**/*.db.test.ts", "e2e/**"],
         },
