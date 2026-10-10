@@ -72,6 +72,7 @@ export function pokemonState(
     nickname: null,
     inParty: true,
     diedAt: null,
+    deathLevel: null,
     removedAt: null,
     ...overrides,
   }

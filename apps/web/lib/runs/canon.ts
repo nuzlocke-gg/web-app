@@ -157,6 +157,7 @@ function toPokemonState(row: typeof pokemon.$inferSelect): PokemonState {
     nickname: row.nickname,
     inParty: row.inParty,
     diedAt: row.diedAt?.getTime() ?? null,
+    deathLevel: row.deathLevel,
     removedAt: row.removedAt?.getTime() ?? null,
   }
 }

@@ -6,15 +6,21 @@ import {
 } from "headcanon/next/server"
 
 import { runsBinder } from "@/lib/runs/binder"
+import { correctEncounterBinding } from "@/lib/runs/commands/correct-encounter"
 import { createRunBinding } from "@/lib/runs/commands/create-run"
 import { recordEncounterBinding } from "@/lib/runs/commands/record-encounter"
+import { removeEncounterBinding } from "@/lib/runs/commands/remove-encounter"
 import { runProtocol } from "@/lib/runs/protocol"
 
 /** The Server Action of `run.v1`: one command per change to a Run. */
 export const runAction = createNextMutationAction({
   protocol: runProtocol,
   binder: runsBinder,
-  commands: [recordEncounterBinding],
+  commands: [
+    recordEncounterBinding,
+    correctEncounterBinding,
+    removeEncounterBinding,
+  ],
 })
 
 /**

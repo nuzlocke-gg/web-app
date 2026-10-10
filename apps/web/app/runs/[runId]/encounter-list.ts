@@ -1,9 +1,16 @@
-import { searchPlaces, type PlaceId, type PlaceRow } from "@workspace/game-data"
+import {
+  getSpecies,
+  searchPlaces,
+  type LoadedMap,
+  type PlaceId,
+  type PlaceRow,
+} from "@workspace/game-data"
 
 import { byTimeOfEntry } from "@/lib/runs/changes/record-encounter"
 import {
   viewerJourney,
   type EncounterState,
+  type PokemonState,
   type RunState,
 } from "@/lib/runs/state"
 
@@ -40,6 +47,62 @@ function firstEncounterByPlace(run: RunState): Map<PlaceId, EncounterState> {
   }
 
   return first
+}
+
+/**
+ * How many Slots a location has: the distinct Slots of every Journey there,
+ * so partners who share a Slot count it once.
+ */
+export function slotCount(run: RunState, placeId: PlaceId): number {
+  const slots = run.journeys.flatMap((journey) =>
+    journey.encounters
+      .filter((encounter) => encounter.placeId === placeId)
+      .map((encounter) => encounter.slot)
+  )
+
+  return new Set(slots).size
+}
+
+/**
+ * What became of an Encounter, under its Species met: the nickname, "now
+ * Grovyle" once the Species differs from the met one, then where the Pokémon
+ * is, or how it died.
+ * @param pokemon The Encounter's Pokémon; none for a Failed Encounter.
+ * @example
+ * fateLine(map, encounter, pokemon) // "Leafy · now Grovyle · Party"
+ */
+export function fateLine(
+  map: LoadedMap,
+  encounter: EncounterState,
+  pokemon: PokemonState | undefined
+): string {
+  if (!pokemon) {
+    return encounter.outcome === "failed" ? "Failed" : "Unknown outcome"
+  }
+
+  const current = pokemon.species.species
+  const evolved = encounter.met && current !== encounter.met.species
+  const currentName = getSpecies(map, current)?.name ?? "Unknown Pokémon"
+
+  return [
+    pokemon.nickname ?? "No nickname",
+    evolved ? `now ${currentName}` : null,
+    lifeOf(pokemon),
+  ]
+    .filter((part) => part !== null)
+    .join(" · ")
+}
+
+function lifeOf(pokemon: PokemonState): string {
+  if (pokemon.removedAt !== null) return "Removed"
+
+  if (pokemon.diedAt !== null) {
+    return pokemon.deathLevel === null
+      ? "died"
+      : `died at Lv ${pokemon.deathLevel}`
+  }
+
+  return pokemon.inParty ? "Party" : "Box"
 }
 
 /** How one location shows in the Progress block. */
