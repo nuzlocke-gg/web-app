@@ -186,14 +186,14 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
           className={cn(dead && "opacity-60")}
         />
         <div className="flex min-w-0 flex-1 flex-col">
-          <h1 className="flex items-center gap-1.5 text-xl font-medium">
-            <span className="truncate">{name}</span>
+          <div className="flex min-w-0 items-center gap-1.5">
+            <h1 className="truncate text-xl font-medium">{name}</h1>
             {warnings.length > 0 ? (
               <WarningMark
                 rule={warnings.map((warning) => warning.rule).join(", ")}
               />
             ) : null}
-          </h1>
+          </div>
           <p className="text-muted-foreground">
             {formName ? `${current} · ${formName}` : current}
           </p>

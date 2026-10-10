@@ -59,10 +59,11 @@ export function useHouseRules(run: RunState) {
   // what was sent and is locked until the server answers: Try again resends
   // exactly that.
   const held = saving.pending?.args.houseRules
-  const text =
-    held !== undefined ? (held ?? "") : (draft ?? run.houseRules ?? "")
+  const locked = held !== undefined
+  const text = locked ? (held ?? "") : (draft ?? run.houseRules ?? "")
   const toSave = houseRulesOf(text)
-  const dirty = draft !== null && toSave !== run.houseRules
+  // Text already sent is not a draft: leaving does not stop its save.
+  const dirty = !locked && draft !== null && toSave !== run.houseRules
 
   async function save() {
     setFailure(null)
@@ -85,7 +86,7 @@ export function useHouseRules(run: RunState) {
     edit: setDraft,
     /** The field holds text that is not saved. */
     dirty,
-    locked: held !== undefined,
+    locked,
     sending: saving.status === "sending",
     unconfirmed: saving.status === "unconfirmed",
     failureText: failure ? failureMessage(failure) : null,

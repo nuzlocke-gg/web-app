@@ -308,6 +308,52 @@ test.describe("the leave prompt", () => {
     await page.close({ runBeforeUnload: true })
     expect((await asked).type()).toBe("beforeunload")
   })
+
+  test("asks while the House rules field holds unsaved text", async ({
+    page,
+    context,
+  }) => {
+    const ash = await signInNamed(context, "Ash")
+    const runId = await insertRunFor(ash.id)
+    await page.goto(`/runs/${runId}/rules`)
+
+    await page
+      .getByRole("textbox", { name: "House rules" })
+      .fill("Level cap: the next Gym")
+
+    const asked = page.waitForEvent("dialog")
+
+    await page.close({ runBeforeUnload: true })
+    expect((await asked).type()).toBe("beforeunload")
+  })
+
+  test("typing House rules and tapping Back without Save asks to discard", async ({
+    page,
+    context,
+  }) => {
+    const ash = await signInNamed(context, "Ash")
+    const runId = await insertRunFor(ash.id)
+    await page.goto(`/runs/${runId}/rules`)
+
+    await page
+      .getByRole("textbox", { name: "House rules" })
+      .fill("Level cap: the next Gym")
+    await page.getByRole("link", { name: "Back to the run" }).click()
+
+    const discard = page.getByRole("alertdialog", {
+      name: "Discard your changes to the house rules?",
+    })
+
+    await discard.getByRole("button", { name: "Keep editing" }).click()
+    await expect(page).toHaveURL(new RegExp(`/runs/${runId}/rules$`))
+    await expect(
+      page.getByRole("textbox", { name: "House rules" })
+    ).toHaveValue("Level cap: the next Gym")
+
+    await page.getByRole("link", { name: "Back to the run" }).click()
+    await discard.getByRole("button", { name: "Discard" }).click()
+    await expect(page).toHaveURL(new RegExp(`/runs/${runId}$`))
+  })
 })
 
 test.describe("the persisted queue", () => {
