@@ -35,7 +35,8 @@ Google sign-in needs a person, so local development has dev sign-in. It signs in
 
 - In a browser: open `/sign-in` and select "Dev sign in". The first time, the name step follows.
 - From a script: `POST /api/dev/sign-in` sets the session cookie and returns it in the body. `POST /api/dev/sign-out` ends the session.
-- The `web-local-db` launch configuration sets `DEV_AUTH_EMAIL` and uses the test database of `compose.test.yaml`. Start that database with `docker compose -f apps/web/compose.test.yaml up -d`.
+- The `web` launch configuration sets `DEV_AUTH_EMAIL` and uses the database of `.env.local` (the Neon `develop` branch), as `npm run dev` does. Tests use the local database of `compose.test.yaml` instead.
+- `npm run db:migrate` applies the committed migrations to the database of `.env.local`. Run it after pulling a new migration, or the dev server fails with `relation … does not exist`.
 
 Playwright does not use dev sign-in: `e2e/players.ts` makes each session in the database.
 

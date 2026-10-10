@@ -2,12 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "web-local-db",
+      "name": "web",
       "runtimeExecutable": "env",
       "runtimeArgs": [
-        "DATABASE_URL=postgres://postgres:postgres@localhost:54329/nuzlocke_test",
-        "DATABASE_URL_UNPOOLED=postgres://postgres:postgres@localhost:54329/nuzlocke_test",
-        "DATABASE_WS_PROXY=localhost:54330",
         "AUTH_REDIRECT_PROXY_URL=",
         "DEV_AUTH_EMAIL=dev@nuzlocke.test",
         "npm",
