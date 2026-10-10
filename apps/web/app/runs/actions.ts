@@ -18,6 +18,8 @@ import { removeEncounterBinding } from "@/lib/runs/commands/remove-encounter"
 import { removePokemonBinding } from "@/lib/runs/commands/remove-pokemon"
 import { renamePokemonBinding } from "@/lib/runs/commands/rename-pokemon"
 import { restorePokemonBinding } from "@/lib/runs/commands/restore-pokemon"
+import { setHouseRulesBinding } from "@/lib/runs/commands/set-house-rules"
+import { setRulesBinding } from "@/lib/runs/commands/set-rules"
 import { undoDeathBinding } from "@/lib/runs/commands/undo-death"
 import { runProtocol } from "@/lib/runs/protocol"
 
@@ -37,6 +39,7 @@ export const runAction = createNextMutationAction({
     undoDeathBinding,
     removePokemonBinding,
     changeFormBinding,
+    setRulesBinding,
     restorePokemonBinding,
   ],
 })
@@ -50,4 +53,13 @@ export const runAction = createNextMutationAction({
 export const createRunAction = createNextOperationAction({
   binder: runsBinder,
   binding: createRunBinding,
+})
+
+/**
+ * Sets a Run's House rules. A second delivery of one save returns the first
+ * answer. The Rules screen waits for the answer; nothing predicts it.
+ */
+export const setHouseRulesAction = createNextOperationAction({
+  binder: runsBinder,
+  binding: setHouseRulesBinding,
 })

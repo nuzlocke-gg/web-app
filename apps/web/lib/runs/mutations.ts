@@ -11,6 +11,7 @@ import * as removeEncounterChange from "./changes/remove-encounter"
 import * as removePokemonChange from "./changes/remove-pokemon"
 import * as renamePokemonChange from "./changes/rename-pokemon"
 import * as restorePokemonChange from "./changes/restore-pokemon"
+import * as setRulesChange from "./changes/set-rules"
 import * as undoDeathChange from "./changes/undo-death"
 import { refusalSchema } from "./refusals"
 
@@ -137,6 +138,18 @@ export const changeForm = defineMutation({
   refusal: refusalSchema("run-not-active", "gone", "unknown-entry"),
   check: changeFormChange.check,
   apply: changeFormChange.apply,
+})
+
+/**
+ * Change 15, Set the Rules: only the Rules that changed, by any player of the
+ * Run.
+ */
+export const setRules = defineMutation({
+  name: "run.set-rules.v1",
+  args: setRulesChange.setRulesArgs,
+  refusal: refusalSchema("run-not-active"),
+  check: setRulesChange.check,
+  apply: setRulesChange.apply,
 })
 
 /**

@@ -132,6 +132,7 @@ export async function readRunState(
     visibility: parseKnown(runVisibilities, run.visibility),
     attemptNumber: run.attemptNumber,
     rules: run.rules,
+    houseRules: run.houseRules,
     journeys: runJourneys.map((journey) => ({
       ...journey,
       encounters: encounterRows

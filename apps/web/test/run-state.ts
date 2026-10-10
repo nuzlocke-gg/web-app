@@ -28,6 +28,7 @@ export function runState(overrides: Partial<RunState> = {}): RunState {
     visibility: "private",
     attemptNumber: 1,
     rules: {},
+    houseRules: null,
     journeys: [journeyState()],
     ...overrides,
   }

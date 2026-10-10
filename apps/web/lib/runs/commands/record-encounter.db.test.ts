@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { defineMutation, defineProtocol } from "headcanon"
 import { createNextMutationAction } from "headcanon/next/server"
 import {
@@ -25,14 +25,15 @@ import {
   journeyOf,
   makeRun,
   record,
-  runEnvelope,
   refused,
   revisionOf,
+  runEnvelope,
+  waitUntilBlocking,
 } from "@/test/runs"
 import { signedInScope, signIn } from "@/test/session"
 
 import { runAxis } from "../axis"
-import { runsBinder, type RunTransaction } from "../binder"
+import { runsBinder } from "../binder"
 import { readRunState } from "../canon"
 import { bumpRevision, lockRun } from "../lock"
 import { recordEncounter } from "../mutations"
@@ -455,30 +456,3 @@ describe("isSlotTaken", () => {
     expect(isSlotTaken(pokemonError)).toBe(false)
   })
 })
-
-// Polls until `count` other transactions wait, directly or in a queue, for a
-// lock that `tx` holds.
-async function waitUntilBlocking(tx: RunTransaction, count = 1) {
-  const pid = await tx.execute(sql`SELECT pg_backend_pid() AS pid`)
-  const { pid: holder } = pid.rows[0] as { pid: number }
-
-  for (let attempt = 0; attempt < 100; attempt++) {
-    // A second waiter queues behind the first, so count transitively.
-    const result = await db.execute(
-      sql`WITH RECURSIVE blocked(pid) AS (
-            SELECT pid FROM pg_stat_activity
-            WHERE ${holder}::int = ANY(pg_blocking_pids(pid))
-            UNION
-            SELECT activity.pid FROM pg_stat_activity AS activity
-            JOIN blocked ON blocked.pid = ANY(pg_blocking_pids(activity.pid))
-          )
-          SELECT count(*)::int AS waiting FROM blocked`
-    )
-
-    if ((result.rows[0] as { waiting: number }).waiting >= count) return
-
-    await new Promise((resolve) => setTimeout(resolve, 10))
-  }
-
-  throw new Error(`Fewer than ${count} transactions waited for the Run lock`)
-}

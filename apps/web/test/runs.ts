@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm"
 import {
   createOperationEnvelope,
   revisionAt,
@@ -7,10 +8,15 @@ import { randomUUID } from "node:crypto"
 import { v7 as uuidv7 } from "uuid"
 import { expect } from "vitest"
 
-import { createRunAction, runAction } from "@/app/runs/actions"
+import {
+  createRunAction,
+  runAction,
+  setHouseRulesAction,
+} from "@/app/runs/actions"
 import { db } from "@/lib/db"
 import { encounters, journeys, pokemon, runs } from "@/lib/db/schema"
 import { runAxis } from "@/lib/runs/axis"
+import type { RunTransaction } from "@/lib/runs/binder"
 import { loadRunCanon } from "@/lib/runs/canon"
 import type { ChangeFormArgs } from "@/lib/runs/changes/change-form"
 import type { CorrectEncounterArgs } from "@/lib/runs/changes/correct-encounter"
@@ -23,6 +29,7 @@ import type { RemoveEncounterArgs } from "@/lib/runs/changes/remove-encounter"
 import type { RemovePokemonArgs } from "@/lib/runs/changes/remove-pokemon"
 import type { RenamePokemonArgs } from "@/lib/runs/changes/rename-pokemon"
 import type { RestorePokemonArgs } from "@/lib/runs/changes/restore-pokemon"
+import type { SetRulesArgs } from "@/lib/runs/changes/set-rules"
 import type { UndoDeathArgs } from "@/lib/runs/changes/undo-death"
 import {
   changeForm,
@@ -36,11 +43,12 @@ import {
   removePokemon,
   renamePokemon,
   restorePokemon,
+  setRules,
   undoDeath,
 } from "@/lib/runs/mutations"
-import { createRun } from "@/lib/runs/operations"
+import { createRun, setHouseRules } from "@/lib/runs/operations"
 import { runProtocol } from "@/lib/runs/protocol"
-import { viewerJourney } from "@/lib/runs/state"
+import { viewerJourney, type RunLifeState } from "@/lib/runs/state"
 
 import { signedInScope, signIn } from "./session"
 
@@ -63,6 +71,24 @@ export function soloRunValues(
     chainId: id,
     attemptNumber: 1,
     ...overrides,
+  }
+}
+
+/**
+ * The columns that put a Run in this state as its constraints admit: a Waiting
+ * Run is a Soul Link, and a Finished one has its finish time.
+ */
+export function stateColumns(
+  state: RunLifeState
+): Partial<typeof runs.$inferInsert> {
+  switch (state) {
+    case "waiting":
+      return { kind: "soul_link", state }
+    case "failed":
+    case "complete":
+      return { state, finishedAt: new Date() }
+    case "active":
+      return { state }
   }
 }
 
@@ -223,6 +249,22 @@ export function restorePokemonOf(args: RestorePokemonArgs) {
   return runAction(runEnvelope(restorePokemon(args)))
 }
 
+/** Sends Set the Rules as the signed-in Player and returns the outcome. */
+export function setRulesOf(args: SetRulesArgs) {
+  return runAction(runEnvelope(setRules(args)))
+}
+
+/** Saves House rules as the signed-in Player and returns the outcome. */
+export function saveHouseRules(runId: string, houseRules: string | null) {
+  return setHouseRulesAction(
+    createOperationEnvelope(
+      setHouseRules,
+      { runId, houseRules },
+      { scope: signedInScope() }
+    )
+  )
+}
+
 /**
  * Records a Caught Encounter at each of these Places of Emerald in the Run, a
  * minute apart from 3 October 2026, each going to the Party while it has
@@ -318,4 +360,34 @@ export async function journeyOf(runId: string) {
 /** The revision of the Run's axis, read through the loader. */
 export async function revisionOf(runId: string) {
   return revisionAt((await canonOf(runId)).revisions, runAxis.of(runId))
+}
+
+/**
+ * Waits until `count` other transactions wait, directly or in a queue, for a
+ * lock that `tx` holds.
+ * @throws When fewer wait after about a second.
+ */
+export async function waitUntilBlocking(tx: RunTransaction, count = 1) {
+  const pid = await tx.execute(sql`SELECT pg_backend_pid() AS pid`)
+  const { pid: holder } = pid.rows[0] as { pid: number }
+
+  for (let attempt = 0; attempt < 100; attempt++) {
+    // A second waiter queues behind the first, so count transitively.
+    const result = await db.execute(
+      sql`WITH RECURSIVE blocked(pid) AS (
+            SELECT pid FROM pg_stat_activity
+            WHERE ${holder}::int = ANY(pg_blocking_pids(pid))
+            UNION
+            SELECT activity.pid FROM pg_stat_activity AS activity
+            JOIN blocked ON blocked.pid = ANY(pg_blocking_pids(activity.pid))
+          )
+          SELECT count(*)::int AS waiting FROM blocked`
+    )
+
+    if ((result.rows[0] as { waiting: number }).waiting >= count) return
+
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  }
+
+  throw new Error(`Fewer than ${count} transactions waited for the Run lock`)
 }

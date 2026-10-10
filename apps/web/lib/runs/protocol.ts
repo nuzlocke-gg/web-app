@@ -12,6 +12,7 @@ import {
   removePokemon,
   renamePokemon,
   restorePokemon,
+  setRules,
   undoDeath,
 } from "./mutations"
 import type { RunState } from "./state"
@@ -35,6 +36,7 @@ export const runProtocol = defineProtocol<RunState>()({
     undoDeath,
     removePokemon,
     changeForm,
+    setRules,
     restorePokemon,
   ],
 })
