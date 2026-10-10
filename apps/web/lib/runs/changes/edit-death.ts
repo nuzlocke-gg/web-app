@@ -1,4 +1,5 @@
 import { unchanged, type Unchanged } from "headcanon"
+import { produce } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
@@ -6,7 +7,7 @@ import { admitsChanges } from "../can-change"
 import { deathCause, deathLevel } from "../death"
 import { refusal, type RunRefusal } from "../refusals"
 import { findViewerPokemon, type RunState } from "../state"
-import { withPokemon } from "./with-pokemon"
+import { pokemonOf } from "./drafts"
 
 /** The arguments of Edit a death: the new level and cause, or none. */
 export const editDeathArgs = z.object({
@@ -68,9 +69,10 @@ export function check(
 
 /** Sets the level and cause of the death; its time stays. */
 export function apply(run: RunState, effect: EditDeathEffect): RunState {
-  return withPokemon(run, effect, (pokemon) => ({
-    ...pokemon,
-    deathLevel: effect.level,
-    deathCause: effect.cause,
-  }))
+  return produce(run, (draft) => {
+    const pokemon = pokemonOf(draft, effect)
+
+    pokemon.deathLevel = effect.level
+    pokemon.deathCause = effect.cause
+  })
 }

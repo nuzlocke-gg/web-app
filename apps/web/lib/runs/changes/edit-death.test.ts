@@ -3,7 +3,7 @@ import { ok } from "serializable-result"
 import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
-import { journeyWithPokemon, runState } from "@/test/run-state"
+import { deepFrozen, journeyWithPokemon, runState } from "@/test/run-state"
 
 import { editDeath } from "../mutations"
 import {
@@ -99,4 +99,13 @@ describe("Edit a death", () => {
       })
     }
   )
+
+  test("leaves a frozen Run as it was", () => {
+    const run = deepFrozen(runWith())
+    const before = structuredClone(run)
+
+    predicted(run, edit(run, 20, "Wild Geodude"))
+
+    expect(run).toEqual(before)
+  })
 })

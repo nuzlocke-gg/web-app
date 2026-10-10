@@ -1,3 +1,4 @@
+import { produce } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
@@ -5,7 +6,7 @@ import { admitsChanges } from "../can-change"
 import { deathCause, deathLevel } from "../death"
 import { refusal, type RunRefusal } from "../refusals"
 import { findViewerPokemon, type RunState } from "../state"
-import { withPokemon } from "./with-pokemon"
+import { pokemonOf } from "./drafts"
 
 /**
  * The arguments of Record a death. `diedAt` is the client clock in epoch
@@ -70,10 +71,11 @@ export function check(
  * Party or the Box, so Undo a death can return it there.
  */
 export function apply(run: RunState, effect: RecordDeathEffect): RunState {
-  return withPokemon(run, effect, (pokemon) => ({
-    ...pokemon,
-    diedAt: effect.diedAt,
-    deathLevel: effect.level,
-    deathCause: effect.cause,
-  }))
+  return produce(run, (draft) => {
+    const pokemon = pokemonOf(draft, effect)
+
+    pokemon.diedAt = effect.diedAt
+    pokemon.deathLevel = effect.level
+    pokemon.deathCause = effect.cause
+  })
 }

@@ -1,10 +1,11 @@
+import { produce } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
 import { admitsChanges } from "../can-change"
 import { refusal, type RunRefusal } from "../refusals"
 import { findViewerPokemon, returnsToParty, type RunState } from "../state"
-import { withPokemon } from "./with-pokemon"
+import { pokemonOf } from "./drafts"
 
 /** The arguments of Restore a Pokémon. */
 export const restorePokemonArgs = z.object({
@@ -52,9 +53,10 @@ export function check(
 
 /** Clears the removal and puts the Pokémon in the Party or the Box. */
 export function apply(run: RunState, effect: RestorePokemonEffect): RunState {
-  return withPokemon(run, effect, (pokemon) => ({
-    ...pokemon,
-    inParty: effect.inParty,
-    removedAt: null,
-  }))
+  return produce(run, (draft) => {
+    const pokemon = pokemonOf(draft, effect)
+
+    pokemon.inParty = effect.inParty
+    pokemon.removedAt = null
+  })
 }

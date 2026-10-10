@@ -2,6 +2,7 @@ import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
 import {
+  deepFrozen,
   encounterState,
   journeyState,
   pokemonState,
@@ -75,5 +76,25 @@ describe("Remove an Encounter", () => {
       ok: false,
       error: { kind: "run-not-active" },
     })
+  })
+
+  test("leaves a frozen Run as it was", () => {
+    const run = deepFrozen(
+      runState({
+        journeys: [
+          journeyState({
+            encounters: [first, second, third],
+            pokemon: [first, second, third].map((encounter) =>
+              pokemonState(encounter)
+            ),
+          }),
+        ],
+      })
+    )
+    const before = structuredClone(run)
+
+    predict(run, removal(second.id))
+
+    expect(run).toEqual(before)
   })
 })

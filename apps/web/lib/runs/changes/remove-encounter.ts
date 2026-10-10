@@ -1,9 +1,11 @@
+import { produce } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
 import { admitsChanges } from "../can-change"
 import { refusal, type RunRefusal } from "../refusals"
 import { findViewerEncounter, type RunState } from "../state"
+import { journeyOf } from "./drafts"
 
 /** The arguments of Remove an Encounter: the actor's Encounter to delete. */
 export const removeEncounterArgs = z.object({
@@ -42,20 +44,14 @@ export function check(
 
 /** Deletes the Encounter and its Pokémon, so its Slot is empty again. */
 export function apply(run: RunState, effect: RemoveEncounterEffect): RunState {
-  return {
-    ...run,
-    journeys: run.journeys.map((journey) =>
-      journey.id === effect.journeyId
-        ? {
-            ...journey,
-            encounters: journey.encounters.filter(
-              (encounter) => encounter.id !== effect.encounterId
-            ),
-            pokemon: journey.pokemon.filter(
-              (pokemon) => pokemon.encounterId !== effect.encounterId
-            ),
-          }
-        : journey
-    ),
-  }
+  return produce(run, (draft) => {
+    const journey = journeyOf(draft, effect.journeyId)
+
+    journey.encounters = journey.encounters.filter(
+      (encounter) => encounter.id !== effect.encounterId
+    )
+    journey.pokemon = journey.pokemon.filter(
+      (pokemon) => pokemon.encounterId !== effect.encounterId
+    )
+  })
 }

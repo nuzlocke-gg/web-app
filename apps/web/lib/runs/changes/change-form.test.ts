@@ -3,7 +3,7 @@ import { ok } from "serializable-result"
 import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
-import { journeyWithPokemon, runState } from "@/test/run-state"
+import { deepFrozen, journeyWithPokemon, runState } from "@/test/run-state"
 
 import { changeForm } from "../mutations"
 import { viewerJourney, type PokemonState, type RunState } from "../state"
@@ -79,5 +79,14 @@ describe("Change the Form", () => {
       ok: false,
       error: { kind: "run-not-active" },
     })
+  })
+
+  test("leaves a frozen Run as it was", () => {
+    const run = deepFrozen(runWith())
+    const before = structuredClone(run)
+
+    predicted(run, toForm(run, "sandy"))
+
+    expect(run).toEqual(before)
   })
 })

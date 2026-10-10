@@ -1,7 +1,7 @@
 import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
-import { journeyWithPokemon, runState } from "@/test/run-state"
+import { deepFrozen, journeyWithPokemon, runState } from "@/test/run-state"
 
 import { undoDeath } from "../mutations"
 import {
@@ -87,4 +87,13 @@ describe("Undo a death", () => {
       })
     }
   )
+
+  test("leaves a frozen Run as it was", () => {
+    const run = deepFrozen(runWith([dead]))
+    const before = structuredClone(run)
+
+    predicted(run, undo(run))
+
+    expect(run).toEqual(before)
+  })
 })

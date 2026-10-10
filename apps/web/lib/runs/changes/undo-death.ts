@@ -1,10 +1,11 @@
+import { produce } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
 import { admitsChanges } from "../can-change"
 import { refusal, type RunRefusal } from "../refusals"
 import { findViewerPokemon, returnsToParty, type RunState } from "../state"
-import { withPokemon } from "./with-pokemon"
+import { pokemonOf } from "./drafts"
 
 /** The arguments of Undo a death. */
 export const undoDeathArgs = z.object({
@@ -57,11 +58,12 @@ export function check(
 
 /** Clears the death and puts the Pokémon in the Party or the Box. */
 export function apply(run: RunState, effect: UndoDeathEffect): RunState {
-  return withPokemon(run, effect, (pokemon) => ({
-    ...pokemon,
-    inParty: effect.inParty,
-    diedAt: null,
-    deathLevel: null,
-    deathCause: null,
-  }))
+  return produce(run, (draft) => {
+    const pokemon = pokemonOf(draft, effect)
+
+    pokemon.inParty = effect.inParty
+    pokemon.diedAt = null
+    pokemon.deathLevel = null
+    pokemon.deathCause = null
+  })
 }
