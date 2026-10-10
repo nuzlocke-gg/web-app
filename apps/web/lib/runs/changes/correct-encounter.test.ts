@@ -1,4 +1,5 @@
-import { andThen, ok } from "serializable-result"
+import { unchanged } from "headcanon"
+import { ok } from "serializable-result"
 import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
@@ -16,7 +17,7 @@ import {
   type PokemonState,
   type RunState,
 } from "../state"
-import { apply, check, type CorrectEncounterArgs } from "./correct-encounter"
+import { check, type CorrectEncounterArgs } from "./correct-encounter"
 
 const partnerId = "0199c4a0-0000-7000-8000-000000000009"
 
@@ -156,7 +157,7 @@ describe("Correct an Encounter", () => {
     const run = runWith([caught], [pokemonState(caught)])
     const args = correction(caught)
 
-    expect(check(run, args)).toEqual(ok(null))
+    expect(check(run, args)).toEqual(ok(unchanged()))
     expect(predicted(run, args)).toBe(run)
   })
 
@@ -200,15 +201,4 @@ describe("Correct an Encounter", () => {
       })
     }
   )
-
-  test("the predictor is check then apply", () => {
-    const run = runWith([caught], [pokemonState(caught)])
-    const args = correction(caught, {
-      met: { species: "mudkip", form: "base" },
-    })
-
-    expect(predict(run, args)).toEqual(
-      andThen(check(run, args), (effect) => ok(apply(run, effect)))
-    )
-  })
 })

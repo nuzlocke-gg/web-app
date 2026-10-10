@@ -1,4 +1,5 @@
 import { ORIGINS, type FormRef, type Origin } from "@workspace/game-data"
+import { unchanged, type Unchanged } from "headcanon"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
@@ -45,12 +46,12 @@ export type CorrectEncounterEffect = {
  * Decides Correct an Encounter for the viewer's Journey: refused on a Run that
  * is not Active, on an Encounter the Journey no longer has, and on clearing
  * the Species of an Encounter that is not Failed.
- * @returns A null Effect when the Encounter already holds these values.
+ * @returns {@link unchanged} when the Encounter already holds these values.
  */
 export function check(
   run: RunState,
   args: CorrectEncounterArgs
-): Result<CorrectEncounterEffect | null, CorrectEncounterRefusal> {
+): Result<CorrectEncounterEffect | Unchanged, CorrectEncounterRefusal> {
   if (!admitsChanges(run)) return err(refusal("run-not-active"))
 
   const found = findViewerEncounter(run, args.encounterId)
@@ -64,7 +65,7 @@ export function check(
   if (!args.met && encounter.outcome !== "failed") return err(refusal("gone"))
 
   if (sameForm(encounter.met, args.met) && encounter.origin === args.origin) {
-    return ok(null)
+    return ok(unchanged())
   }
 
   const pokemon = journey.pokemon.find(
@@ -111,12 +112,7 @@ function sameForm(a: FormRef | null, b: FormRef | null): boolean {
 }
 
 /** Sets the Encounter's Species, Form, and origin met, and its Pokémon's when it follows. */
-export function apply(
-  run: RunState,
-  effect: CorrectEncounterEffect | null
-): RunState {
-  if (!effect) return run
-
+export function apply(run: RunState, effect: CorrectEncounterEffect): RunState {
   return {
     ...run,
     journeys: run.journeys.map((journey) =>

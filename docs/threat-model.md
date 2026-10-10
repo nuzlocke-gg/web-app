@@ -93,7 +93,7 @@ flowchart LR
 
 ### Implemented milestone: the Run boundary
 
-A Player makes a solo Run with "Make the run", a headcanon operation (`apps/web/app/runs/actions.ts:26`); the server makes the Run id, and the browser's mutation id is only an idempotency key. Every change to a Run is a `run.v1` mutation through one Server Action (`apps/web/app/runs/actions.ts:14`). The action parses the envelope strictly, derives the actor from the session (`requireActor`), and **denies an envelope whose receipt scope is not the actor's** before any receipt lookup or command (headcanon 0.4.0, `next/server/action.js`). Then `screen` checks the actor's Journey outside the transaction, which also guards replay of stored receipts; `admit` takes the Run lock (`SELECT … FOR UPDATE`) and rereads membership and the Run; `execute` runs the shared `check`, the server-only game-data gate, and explicit row writes with a revision bump (`apps/web/lib/runs/commands/record-encounter.ts:43-110`). Receipts are scoped to the Player id, with two attempts at most and headcanon's default delivery window: 7 days, 1 hour of clock skew (`apps/web/lib/runs/binder.ts:13-17`).
+A Player makes a solo Run with "Make the run", a headcanon operation (`apps/web/app/runs/actions.ts:26`); the server makes the Run id, and the browser's mutation id is only an idempotency key. Every change to a Run is a `run.v1` mutation through one Server Action (`apps/web/app/runs/actions.ts:14`). The action parses the envelope strictly, derives the actor from the session (`requireActor`), and **denies an envelope whose receipt scope is not the actor's** before any receipt lookup or command (headcanon 0.4.0, `next/server/action.js`). Then `screen` checks the actor's Journey outside the transaction, which also guards replay of stored receipts; `admit` takes the Run lock (`SELECT … FOR UPDATE`) and rereads membership and the Run; headcanon runs the mutation's shared `check` over that Run (headcanon 0.5.0); `execute` runs the server-only game-data gate, and explicit row writes with a revision bump (`apps/web/lib/runs/commands/record-encounter.ts:43-110`). Receipts are scoped to the Player id, with two attempts at most and headcanon's default delivery window: 7 days, 1 hour of clock skew (`apps/web/lib/runs/binder.ts:13-17`).
 
 The canon loader reads membership, the Run, and its children in one `REPEATABLE READ READ ONLY` snapshot and returns nothing for a non-member, an unknown id, or a signed-out visitor alike (`apps/web/lib/runs/canon.ts:34-67`). It reads stored enum values leniently: a value this build does not know (a newer build wrote it, then a rollback) reads as null and renders as unknown; a null Run state admits no change, and no command writes a read value back (`apps/web/lib/runs/canon.ts:114-143`, `apps/web/lib/runs/state.ts:35-40`).
 
@@ -109,7 +109,8 @@ flowchart LR
   A -->|"scope = actor?"| X{"deny if not"}
   A --> SC["screen: Journey in Run"]
   SC --> L["admit: Run lock, membership"]
-  L --> E["execute: check, game-data gate, rows, revision"]
+  L --> K["check: shared rules over the locked Run"]
+  K --> E["execute: game-data gate, rows, revision"]
   E --> D[("Neon: runs, journeys, encounters, pokemon, receipts")]
   C["Vercel Cron + CRON_SECRET"] --> CL["delete expired receipts, 1,000 per batch"]
   CL --> D

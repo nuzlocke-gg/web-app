@@ -1,4 +1,3 @@
-import { andThen, ok } from "serializable-result"
 import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
@@ -12,12 +11,7 @@ import {
 
 import { recordEncounter } from "../mutations"
 import { boxOf, partyOf, viewerJourney, type RunState } from "../state"
-import {
-  apply,
-  check,
-  nextSlot,
-  type RecordEncounterArgs,
-} from "./record-encounter"
+import { nextSlot, type RecordEncounterArgs } from "./record-encounter"
 
 function caughtMudkip(
   overrides: Partial<RecordEncounterArgs> = {}
@@ -145,15 +139,6 @@ describe("Record an Encounter", () => {
       })
     }
   )
-
-  test("the predictor is check then apply", () => {
-    const run = runState({ journeys: [journeyWithPokemon([{}, {}])] })
-    const args = caughtMudkip()
-
-    expect(predict(run, args)).toEqual(
-      andThen(check(run, args), (effect) => ok(apply(run, effect)))
-    )
-  })
 
   test("a backdated Encounter takes its place in the order of entry, with its Pokémon", () => {
     const later = encounterState({ enteredAt: Date.UTC(2026, 9, 5) })

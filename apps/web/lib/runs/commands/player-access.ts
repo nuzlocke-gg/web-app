@@ -33,7 +33,8 @@ export async function screenPlayer({
 /**
  * The `admit` of a change to the actor's own Journey: takes the Run lock and
  * reads the Run for the actor, denying an actor with no Journey in it. The
- * locked Run is the evidence that `execute` checks the change against.
+ * locked Run is the state that headcanon checks the change against before
+ * `execute`.
  */
 export async function admitPlayer({
   tx,
@@ -46,7 +47,7 @@ export async function admitPlayer({
 }) {
   const run = await lockAndRead(tx, actor, args.runId)
 
-  return run ? allowAdmission({ run }) : denyMutation()
+  return run ? allowAdmission({ state: run }) : denyMutation()
 }
 
 /**
@@ -69,7 +70,7 @@ export async function admitEncounterOwner({
     return denyMutation()
   }
 
-  return allowAdmission({ run })
+  return allowAdmission({ state: run })
 }
 
 function isAnotherPlayersEncounter(
