@@ -24,7 +24,13 @@ const endpointId = new URL(connectionString).hostname.split(".")[0]
 
 console.log(`Migrating Neon endpoint ${endpointId}`)
 
-const pool = new Pool({ connectionString })
+// The database's deadlines (drizzle/0002_run_deadlines.sql) would cut a long
+// migration short, so this session turns them off.
+const pool = new Pool({
+  connectionString,
+  options:
+    "-c statement_timeout=0 -c lock_timeout=0 -c idle_in_transaction_session_timeout=0",
+})
 
 try {
   await migrate(drizzle({ client: pool }), {

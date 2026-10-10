@@ -21,9 +21,10 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
-    // next-auth imports `next/server` with no extension, which Node's ESM
-    // loader refuses; Vite resolves it when the package is inlined.
-    server: { deps: { inline: ["next-auth"] } },
+    // next-auth and headcanon import `next/server` or `next/cache` with no
+    // extension, which Node's ESM loader refuses; Vite resolves them when the
+    // package is inlined.
+    server: { deps: { inline: ["next-auth", "headcanon"] } },
     projects: [
       {
         ...shared,

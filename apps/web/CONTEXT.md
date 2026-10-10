@@ -69,7 +69,7 @@ The state of a Run that is in play. It admits every change.
 _Avoid_: In progress, ongoing, open, live
 
 **Failed**:
-The state of a Finished Run that a player marked as lost, with an optional cause. The app suggests it when a Journey has no living Pokémon, and never applies it on its own.
+The state of a Finished Run that a player marked as lost, with an optional cause. The app suggests it when a Journey has no living Pokémon, and never applies it on its own. A Failed Encounter is the other use of the word: the outcome of an Encounter that gave no Pokémon. Say "Failed Run" or "Failed Encounter" wherever the context does not settle which.
 _Avoid_: Dead, lost, wiped, game over, abandoned
 
 **Complete**:
@@ -103,11 +103,15 @@ One position for an Encounter at a Place, shared by all Journeys of a Run. Each 
 _Avoid_: Using Encounter for the shared position
 
 **Encounter**:
-One meeting with a wild, gift, or traded Pokémon that the player counts for the Run, recorded in a Slot at a Place. It is Caught or Missed, and its origin is Wild, Gift, or Trade. It keeps the Species and Form that the player met and does not change after an evolution.
-_Avoid_: Catch (for the record itself), capture
+One meeting with a wild, gift, or traded Pokémon that the player counts for the Run, recorded in a Slot at a Place. It is Caught or Failed, and its origin is Wild, Gift, or Trade. It keeps the Species and Form that the player met and does not change after an evolution.
+_Avoid_: Catch (for the record itself), capture, Missed (the old word for a Failed Encounter)
+
+**Missing**:
+A Place in a player's list of a Soul Link where a partner's Journey has an Encounter and the player's own Journey has none. It counts toward Progress through the partner, and the player sees "Record yours" there. It is a mark on the list and on Progress, not a Warning.
+_Avoid_: Missed (the old word for a Failed Encounter), skipped, deferred
 
 **Pokémon**:
-One individual that a player owns in a Journey. It has a Species, a Form of that Species, and an optional nickname, and it is in the Party, the Box, or the Graveyard. Each Pokémon comes from exactly one Encounter. A Caught Encounter has exactly one Pokémon and a Missed one has none. A Shedinja from a Nincada is recorded as its own Gift Encounter at a Custom Place.
+One individual that a player owns in a Journey. It has a Species, a Form of that Species, and an optional nickname, and it is in the Party, the Box, or the Graveyard. Each Pokémon comes from exactly one Encounter. A Caught Encounter has exactly one Pokémon and a Failed one has none. A Shedinja from a Nincada is recorded as its own Gift Encounter at a Custom Place.
 _Avoid_: Using it to mean a Species; mon
 
 **Species**:

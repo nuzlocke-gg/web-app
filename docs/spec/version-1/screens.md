@@ -69,11 +69,14 @@ One screen in this order:
 
 #### The **Encounters** tab
 
-- Locations in play order, Starter first.
-- A "+" per location that records in a new Slot (Slot 1 when the location has none; a Slot count on a location with two or more).
-- Rows with the met Species sprite and the fate line.
-- The **"Custom locations"** section at the end ("Locations that this run adds. All journeys share them.", "Add a location", "Add location").
-- And the end line "The last locations of Emerald. Event locations come last."
+The list grows as the player goes, because Pokémon games are not linear. The [Run Tracking Screen](https://claude.ai/artifact/8tPzcegdygrUNyWXUg2mvW) prototype's "Add as you go" row draws it and replaces the list in play order.
+
+- A new Run shows only the Starter location. With no Encounter it shows a dashed "Record your starter" that opens the record Drawer at the Starter location.
+- Every other location joins the list when it gets its first Encounter, in the order of that Encounter (its time of entry). A Custom location joins when it is added, with a dashed "Record an encounter" until it has one. There is no section at the end and no end line.
+- Rows with the met Species sprite and the fate line, a Slot count on a location with two or more.
+- No "+" on a location: a second Encounter is recorded by picking the location again in the [Add a location Drawer](#add-a-location-drawer).
+- After a save the new location is at the end with "Just added" in the primary color, and the list scrolls to it. The screen opens scrolled to the end.
+- The list ends with the **Progress** block: "11/64 encounters", one cell per location (filled primary for Caught, destructive for Failed, and an amber `warning` cell for Missing in a Soul Link, in the order of the list, then grey for each remaining location; the cells wrap onto more rows when a Map has more locations than fit), and the legend "Caught 10 · Failed 1 · Remaining 53" (in a Soul Link "Missing 2" joins it before Remaining when there is one). The legend word always accompanies the amber. A tap opens the Add a location Drawer on Remaining. For a Reader and on a Finished Run it is not a button.
 
 #### The **Pokémon** tab
 
@@ -84,15 +87,32 @@ One screen in this order:
 #### Soul Link
 
 - Layout "yours first", each partner's Encounter a chip under your row.
-- "Record yours" where a partner filled a Slot.
+- One shared list: a location joins every player's list once any Journey has an Encounter there, in the order of its first Encounter in the Run.
+- "Record yours" where a partner filled a Slot, including at a location only a partner has. Such a location is Missing for you, with an amber Progress cell.
 - A tap on a chip opens a read-only Drawer with that Encounter (Species met, origin, outcome, nickname, current Species, where it is, its Warning, the other Encounters of the Link).
 
 ### The dock
 
-- One floating dock at the bottom of both tabs with one shadow: the Warnings bar ("2 warnings", "Tap to see").
-- A tap opens its list; a second tap minimizes it.
+One floating dock at the bottom of both tabs with one shadow:
+
+- On an Active Run for a player: a compact primary button "+ Add a location", the count of remaining locations right-aligned beside it in muted text ("53 remaining", hidden at 0), a divider, and the Warnings button (a WarningIcon and the count, with the accessible label "2 warnings"; absent with no Warnings).
+- For a Reader and on a Finished Run: the Warnings bar alone ("2 warnings", "Tap to see"), as before.
+- A tap on the Warnings button opens its list under the Add row; a second tap minimizes it. The Add button stays in reach while the list is open.
 - The fail bar sits above the dock.
 - A Warning in the list goes to its row; a Shared Fate Warning also carries "Record death".
+
+### Add a location Drawer
+
+- Opened by "Add a location" in the dock and by the Progress block.
+- Title "Add a location", description "Where did you meet it?".
+- Search "Search 68 locations" over every location of the Map in the player's Game.
+- A joined ToggleGroup: "Remaining 53" (default) | "All 68".
+- Remaining: one plain list "No encounter yet", A to Z with numbers in order (Route 9 before Route 10). No play order and no grouping by progress, because no order fits every game. Event locations are in the list like the others.
+- All: every location A to Z; a location with Encounters shows the Species met under its name and their sprites on the right.
+- The Run's Custom locations in a group of their own at the end of both views, with rename and remove (remove refused while the location has Encounters).
+- At the end: "Not listed? Add a custom location" with an Input and "Add location". Adding saves the Custom location, which joins the list at once, and opens the Species step for it.
+- A tap on a location goes straight to step 1 of the record Drawer, which then has a back control to this Drawer. Closing adds nothing.
+- A location that already has an Encounter opens in a new Slot, and step 1 shows the First Encounter Rule Alert.
 
 ### Record Drawer
 
@@ -101,12 +121,12 @@ One screen in this order:
 - Search "Search all 386 species", method groups, "Other species".
 - At a Custom location "All species".
 - The Duplicate mark "Same line as Fang".
-- A last row "Species unknown" that goes to step 2 with the outcome Missed and no Species.
+- A last row "Species unknown" that goes to step 2 with the outcome Failed and no Species.
 
 #### Step 2: Details
 
 - Species with Change, or "Unknown" when none.
-- Outcome Caught | Missed, with Caught disabled while the Species is unknown.
+- Outcome Caught | Failed, with Caught disabled while the Species is unknown.
 - Origin Wild | Gift | Trade.
 - Form when needed.
 - Nickname and "Goes to" Party | Box only when Caught, with Party disabled when full and the note "Your party is full (6 of 6), so it goes to the box."
@@ -126,12 +146,12 @@ Then "Save encounter".
 
 - The record Drawer filled in, with the location and Slot shown as read-only text, the Species met with Change, Origin, and Form.
 - "Remove encounter" at the end opens its AlertDialog, which names the Pokémon that goes with it and says to record the Encounter again for a wrong location, Slot, or outcome.
-- The Drawer is reached from "Correct encounter" on the Pokémon screen and from a tap on a Missed row (where it holds the Species, with "Species unknown", the Origin, the Form when the Species has more than one, and Remove; the outcome, location, and Slot stay fixed).
+- The Drawer is reached from "Correct encounter" on the Pokémon screen and from a tap on a Failed row (where it holds the Species, with "Species unknown", the Origin, the Form when the Species has more than one, and Remove; the outcome, location, and Slot stay fixed).
 
 ### Read-only Encounter view
 
 - The same content as a partner's chip Drawer (location and Slot, Species met, origin, outcome, the Encounter's Pokémon with where it is, the other Encounters of the Link).
-- It opens from a Missed row and from a removed Pokémon's row for a Reader, a partner, and any Finished or earlier-Attempt screen.
+- It opens from a Failed row and from a removed Pokémon's row for a Reader, a partner, and any Finished or earlier-Attempt screen.
 
 ### Pokémon screen
 
@@ -229,7 +249,7 @@ A bottom Drawer, not a dropdown.
 
 - Under the header: icon, "Failed on 3 Oct", "Wiped to Norman · Attempt 3", Try again and Reopen (Complete: Reopen only).
 - "Try again is not available because a player deleted their account." when so.
-- The "+" buttons go and rows open read only.
+- The Add a location button and "Record yours" go, and rows open read only.
 - An earlier Attempt: "A newer attempt exists, so this one stays as it ended. It cannot be reopened." with "Go to attempt 3".
 
 ### Attempts screen
@@ -281,7 +301,7 @@ Build with the components of `packages/ui` (shadcn, base-luma style, Base UI pri
 - Two weights (400 and 500, no bold).
 - Phosphor regular icons.
 - `text-base` on inputs so iOS does not zoom.
-- Toggle group for selected options (Caught | Missed, Party | Box).
+- Toggle group for selected options (Caught | Failed, Party | Box).
 - Drawer for bottom sheets.
 - AlertDialog for confirms (buttons stacked full width on a phone).
 
