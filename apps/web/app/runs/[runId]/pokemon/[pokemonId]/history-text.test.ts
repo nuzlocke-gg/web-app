@@ -9,12 +9,20 @@ import { historyDate, historyText, type HistoryNames } from "./history-text"
 const nincada = { species: "nincada", form: "base" }
 const ninjask = { species: "ninjask", form: "base" }
 
+const speciesNames: Record<string, string> = {
+  nincada: "Nincada",
+  ninjask: "Ninjask",
+  treecko: "Treecko",
+}
+const placeNames: Record<string, string> = {
+  "route-116": "Route 116",
+  starter: "Starter",
+}
+
 /** The names of a small synthetic Game. */
 const names: HistoryNames = {
-  speciesName: (species) =>
-    ({ nincada: "Nincada", ninjask: "Ninjask", treecko: "Treecko" })[species],
-  placeName: (place) =>
-    ({ "route-116": "Route 116", starter: "Starter" })[place],
+  speciesName: (species) => speciesNames[species]!,
+  placeName: (place) => placeNames[place],
 }
 
 /** The text of each History line of the Pokémon. */
@@ -59,20 +67,11 @@ describe("History text", () => {
     ])
   })
 
-  test("a Species or location the Game does not know reads as unknown", () => {
-    const line = evolutionState(nincada, ninjask)
-    const pokemon = pokemonState(route116, {
-      species: ninjask,
-      evolutions: [line],
-    })
-    const unknown: HistoryNames = {
-      speciesName: () => undefined,
-      placeName: () => undefined,
-    }
+  test("an unknown location and a Species never seen read as unknown", () => {
+    const unseen = { ...route116, placeId: "nowhere", met: null }
 
-    expect(texts(route116, pokemon, unknown)).toEqual([
+    expect(texts(unseen, pokemonState(unseen, { species: nincada }))).toEqual([
       "Met as Unknown Pokémon at an unknown location",
-      "Evolved into Unknown Pokémon",
     ])
   })
 

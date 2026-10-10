@@ -1,19 +1,20 @@
 import type { PlaceId, SpeciesId } from "@workspace/game-data"
 
+import { UNKNOWN_SPECIES } from "@/components/species-name"
 import type { HistoryLine } from "@/lib/runs/history"
 import type { PokemonState } from "@/lib/runs/state"
 
 /**
- * How History names a Species and a location in the Pokémon's Game; each
- * gives undefined for one it does not know.
+ * How History names a Species and a location in the Pokémon's Game. A
+ * location it does not know is undefined.
  * @example
  * const names: HistoryNames = {
- *   speciesName: (species) => getSpecies(map, species)?.name,
+ *   speciesName: (species) => speciesName(map, species),
  *   placeName: (place) => placeName(map, place, journey.gameId),
  * }
  */
 export type HistoryNames = {
-  speciesName: (species: SpeciesId) => string | undefined
+  speciesName: (species: SpeciesId) => string
   placeName: (place: PlaceId) => string | undefined
 }
 
@@ -27,16 +28,13 @@ export function historyText(
   pokemon: PokemonState,
   line: HistoryLine
 ): string {
-  const speciesName = (species: SpeciesId) =>
-    names.speciesName(species) ?? "Unknown Pokémon"
-
   switch (line.kind) {
     case "encounter": {
       const { encounter } = line
       const where = names.placeName(encounter.placeId) ?? "an unknown location"
       const met = encounter.met
-        ? speciesName(encounter.met.species)
-        : "Unknown Pokémon"
+        ? names.speciesName(encounter.met.species)
+        : UNKNOWN_SPECIES
 
       if (encounter.origin === "trade") return `Traded for ${met} at ${where}`
 
@@ -48,7 +46,7 @@ export function historyText(
       return `${verb}${as} at ${where}`
     }
     case "evolution":
-      return `Evolved into ${speciesName(line.line.to.species)}`
+      return `Evolved into ${names.speciesName(line.line.to.species)}`
     case "death":
       return [
         "Died",

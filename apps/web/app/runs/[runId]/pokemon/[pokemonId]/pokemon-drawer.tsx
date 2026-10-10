@@ -2,7 +2,6 @@
 
 import {
   getGame,
-  getSpecies,
   nextInLine,
   searchSpecies,
   type FormRef,
@@ -19,6 +18,7 @@ import { Input } from "@workspace/ui/components/input"
 import { useId, useState } from "react"
 import { v7 as uuidv7 } from "uuid"
 
+import { speciesName } from "@/components/species-name"
 import { useLeavePrompt } from "@/components/use-leave-prompt"
 import { changeForm, evolvePokemon, renamePokemon } from "@/lib/runs/mutations"
 import { nicknameRefusal, nicknameRefusalMessages } from "@/lib/runs/nickname"
@@ -76,12 +76,9 @@ type StepProps = {
 
 /** The name of a Pokémon on its screen: its nickname, else its Species. */
 export function pokemonName(map: LoadedMap, shown: ViewerPokemon): string {
-  return shown.pokemon.nickname ?? speciesName(map, shown.pokemon.species)
-}
-
-/** The name of a Species. */
-export function speciesName(map: LoadedMap, species: FormRef): string {
-  return getSpecies(map, species.species)?.name ?? "Unknown Pokémon"
+  return (
+    shown.pokemon.nickname ?? speciesName(map, shown.pokemon.species.species)
+  )
 }
 
 function RenameStep({ map, shown, open, onClose }: StepProps) {
@@ -111,7 +108,7 @@ function RenameStep({ map, shown, open, onClose }: StepProps) {
     <>
       <DrawerHeaderRow
         title={`Rename ${pokemonName(map, shown)}`}
-        description={speciesName(map, pokemon.species)}
+        description={speciesName(map, pokemon.species.species)}
       />
       <form
         className="flex flex-col"
@@ -156,7 +153,7 @@ function EvolveStep({ map, shown, open, onClose }: StepProps) {
   const { value: run } = useRun()
   const change = useRunChange()
   const { journey, pokemon } = shown
-  const current = speciesName(map, pokemon.species)
+  const current = speciesName(map, pokemon.species.species)
   const [query, setQuery] = useState("")
   const [picked, setPicked] = useState<{ met: FormRef; name: string } | null>(
     null
@@ -277,7 +274,7 @@ function FormStep({ map, shown, open, onClose }: StepProps) {
     <>
       <DrawerHeaderRow
         title={`Change the form of ${pokemonName(map, shown)}`}
-        description={speciesName(map, pokemon.species)}
+        description={speciesName(map, pokemon.species.species)}
       />
       <div className="px-4 pt-3 pb-2">
         <FormChoice

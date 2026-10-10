@@ -7,7 +7,6 @@ import {
 } from "@phosphor-icons/react"
 import {
   getForm,
-  getSpecies,
   hasFormChoice,
   placeName,
   type LoadedMap,
@@ -18,6 +17,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import Link from "next/link"
 import { useState, type ReactNode } from "react"
 
+import { speciesName } from "@/components/species-name"
 import { Sprite } from "@/components/sprite"
 import { admitsChanges } from "@/lib/runs/can-change"
 import { historyOf } from "@/lib/runs/history"
@@ -34,12 +34,7 @@ import { useRun } from "../../run-root"
 import { useRunTab } from "../../run-tab"
 import { useLoadedMap } from "../../use-map"
 import { historyDate, historyText, type HistoryNames } from "./history-text"
-import {
-  PokemonDrawer,
-  pokemonName,
-  speciesName,
-  type PokemonSheet,
-} from "./pokemon-drawer"
+import { PokemonDrawer, pokemonName, type PokemonSheet } from "./pokemon-drawer"
 
 /**
  * The Pokémon screen: one of the viewer's Pokémon with its header, its
@@ -126,7 +121,7 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
   // A removed Pokémon keeps its Encounter actions but has no Pokémon ones.
   const editable = runAdmits && pokemon.removedAt === null
   const dead = pokemon.diedAt !== null
-  const current = speciesName(map, pokemon.species)
+  const current = speciesName(map, pokemon.species.species)
   const formName = hasFormChoice(map, pokemon.species.species)
     ? (getForm(map, pokemon.species.species, pokemon.species.form)?.name ??
       "Unknown form")
@@ -136,7 +131,7 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
   const where =
     placeName(map, encounter.placeId, journey.gameId) ?? "Unknown location"
   const names: HistoryNames = {
-    speciesName: (species) => getSpecies(map, species)?.name,
+    speciesName: (species) => speciesName(map, species),
     placeName: (place) => placeName(map, place, journey.gameId),
   }
 
@@ -197,7 +192,9 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
             {where} · slot {encounter.slot}
           </EncounterFact>
           <EncounterFact label="Species met">
-            {encounter.met ? speciesName(map, encounter.met) : "Unknown"}
+            {encounter.met
+              ? speciesName(map, encounter.met.species)
+              : "Unknown"}
             <span className="block text-xs font-normal text-muted-foreground">
               It stays the same after an evolution.
             </span>

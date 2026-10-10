@@ -3,7 +3,6 @@
 import { CaretLeftIcon, CaretRightIcon, PlusIcon } from "@phosphor-icons/react"
 import {
   getGame,
-  getSpecies,
   placeName,
   placesOf,
   progressTotal,
@@ -32,6 +31,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import Link from "next/link"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
+import { speciesName } from "@/components/species-name"
 import { Sprite, UnknownSprite } from "@/components/sprite"
 import { admitsChanges } from "@/lib/runs/can-change"
 import {
@@ -432,8 +432,8 @@ function EncounterRow({
 }: EncounterRowProps) {
   const failed = encounter.outcome === "failed"
   const dimmed = failed || (pokemon !== undefined && pokemon.diedAt !== null)
-  const speciesName = encounter.met
-    ? (getSpecies(map, encounter.met.species)?.name ?? "Unknown Pokémon")
+  const metName = encounter.met
+    ? speciesName(map, encounter.met.species)
     : "Species unknown"
   const correctable = failed && onCorrect !== undefined
 
@@ -466,7 +466,7 @@ function EncounterRow({
         )}
       </ItemMedia>
       <ItemContent className="min-w-0">
-        <ItemTitle>{speciesName}</ItemTitle>
+        <ItemTitle>{metName}</ItemTitle>
         <ItemDescription>{fateLine(map, encounter, pokemon)}</ItemDescription>
       </ItemContent>
       {failed ? (
@@ -527,8 +527,7 @@ function PokemonRow({
 }) {
   const { value: run } = useRun()
   const journey = viewerJourney(run)
-  const speciesName =
-    getSpecies(map, pokemon.species.species)?.name ?? "Unknown Pokémon"
+  const name = speciesName(map, pokemon.species.species)
   const encounter = journey.encounters.find(
     (candidate) => candidate.id === pokemon.encounterId
   )
@@ -552,9 +551,9 @@ function PokemonRow({
           />
         </ItemMedia>
         <ItemContent className="min-w-0">
-          <ItemTitle>{pokemon.nickname ?? speciesName}</ItemTitle>
+          <ItemTitle>{pokemon.nickname ?? name}</ItemTitle>
           <ItemDescription>
-            {pokemon.nickname ? speciesName : "No nickname"} · from {metAt}
+            {pokemon.nickname ? name : "No nickname"} · from {metAt}
           </ItemDescription>
         </ItemContent>
         <ItemActions>

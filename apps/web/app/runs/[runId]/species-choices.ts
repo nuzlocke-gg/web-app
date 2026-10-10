@@ -6,6 +6,8 @@ import type {
   SuggestionGroup,
 } from "@workspace/game-data"
 
+import { UNKNOWN_SPECIES } from "@/components/species-name"
+
 /** One Species the player can pick in step 1 of the record Drawer. */
 export type SpeciesChoice = {
   met: FormRef
@@ -45,7 +47,7 @@ export function speciesGroups(
     name: group.name,
     choices: group.entries.map((met) => ({
       met,
-      name: nameOf.get(met.species) ?? "Unknown Pokémon",
+      name: nameOf.get(met.species) ?? UNKNOWN_SPECIES,
       group: { name: group.name, origin: group.origin },
     })),
   }))
@@ -131,7 +133,7 @@ export function evolveGroups(
       .filter((target) => !matched || matched.has(target.species))
       .map((target) => ({
         met: target,
-        name: nameOf.get(target.species) ?? "Unknown Pokémon",
+        name: nameOf.get(target.species) ?? UNKNOWN_SPECIES,
         group: null,
       })),
     others: (matches ?? allSpecies)
