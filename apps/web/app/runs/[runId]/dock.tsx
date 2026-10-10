@@ -74,7 +74,8 @@ export function Dock({ remaining, onAdd, warnings, onGoTo }: DockProps) {
                       type="button"
                       variant="ghost"
                       size="lg"
-                      className="h-11"
+                      // Narrow, so "84 remaining" fits beside it on a phone.
+                      className="h-11 gap-1 px-2.5"
                       aria-label={label}
                     />
                   }
