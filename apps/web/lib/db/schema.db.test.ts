@@ -3,12 +3,13 @@ import { describe, expect, test } from "vitest"
 
 import { db } from "@/lib/db"
 import { postgresErrorCode } from "@/lib/db/errors"
-import { journeys, runs, users } from "@/lib/db/schema"
+import { encounters, journeys, pokemon, runs, users } from "@/lib/db/schema"
 import { createPlayer } from "@/test/players"
-import { insertRun, soloRunValues } from "@/test/runs"
+import { insertJourney, insertRun, soloRunValues } from "@/test/runs"
 
 const CHECK_VIOLATION = "23514"
 const UNIQUE_VIOLATION = "23505"
+const FOREIGN_KEY_VIOLATION = "23503"
 
 async function insertError(values: typeof users.$inferInsert) {
   try {
@@ -140,5 +141,155 @@ describe("journeys", () => {
           (error: unknown) => postgresErrorCode(error)
         )
     ).resolves.toBe(UNIQUE_VIOLATION)
+  })
+})
+
+function insertOutcome(insert: Promise<unknown>) {
+  return insert.then(
+    () => "inserted",
+    (error: unknown) => postgresErrorCode(error)
+  )
+}
+
+/** A Run with one Journey, and a Caught Mudkip Encounter's columns in it. */
+async function journeyWithEncounter() {
+  const runId = await insertRun()
+  const journeyId = await insertJourney(
+    runId,
+    await createPlayer({ displayName: "Ash" })
+  )
+  const encounter: typeof encounters.$inferInsert = {
+    id: randomUUID(),
+    runId,
+    journeyId,
+    placeId: "starter",
+    slotOrdinal: 1,
+    origin: "gift",
+    outcome: "caught",
+    speciesId: "mudkip",
+    formId: "base",
+    enteredAt: new Date(),
+  }
+
+  return { runId, journeyId, encounter }
+}
+
+describe("encounters", () => {
+  test("a valid Caught Encounter is inserted", async () => {
+    const { encounter } = await journeyWithEncounter()
+
+    await expect(
+      insertOutcome(db.insert(encounters).values(encounter))
+    ).resolves.toBe("inserted")
+  })
+
+  test.each<[string, Partial<typeof encounters.$inferInsert>]>([
+    ["a Caught Encounter with no Species", { speciesId: null, formId: null }],
+    ["a Species with no Form", { outcome: "failed", formId: null }],
+    ["no Place", { placeId: null }],
+    ["a Place and a Custom Place", { customPlaceId: randomUUID() }],
+    ["Slot 0", { slotOrdinal: 0 }],
+  ])("the CHECKs refuse %s", async (_, overrides) => {
+    const { encounter } = await journeyWithEncounter()
+
+    await expect(
+      insertOutcome(
+        db.insert(encounters).values({ ...encounter, ...overrides })
+      )
+    ).resolves.toBe(CHECK_VIOLATION)
+  })
+
+  test("a Journey has one Encounter at most in a Slot", async () => {
+    const { encounter } = await journeyWithEncounter()
+
+    await db.insert(encounters).values(encounter)
+
+    await expect(
+      insertOutcome(
+        db.insert(encounters).values({ ...encounter, id: randomUUID() })
+      )
+    ).resolves.toBe(UNIQUE_VIOLATION)
+  })
+
+  test("an Encounter sits in the Run of its Journey", async () => {
+    const { encounter } = await journeyWithEncounter()
+    const otherRunId = await insertRun()
+
+    await expect(
+      insertOutcome(
+        db.insert(encounters).values({ ...encounter, runId: otherRunId })
+      )
+    ).resolves.toBe(FOREIGN_KEY_VIOLATION)
+  })
+})
+
+describe("pokemon", () => {
+  async function pokemonValuesWithInsertedEncounter() {
+    const { journeyId, encounter } = await journeyWithEncounter()
+
+    await db.insert(encounters).values(encounter)
+
+    const pokemonValues: typeof pokemon.$inferInsert = {
+      id: randomUUID(),
+      journeyId,
+      encounterId: encounter.id!,
+      speciesId: "mudkip",
+      formId: "base",
+      inParty: true,
+    }
+
+    return pokemonValues
+  }
+
+  test("a second Pokémon for one Encounter is refused by the unique index", async () => {
+    const pokemonValues = await pokemonValuesWithInsertedEncounter()
+
+    await db.insert(pokemon).values(pokemonValues)
+
+    await expect(
+      insertOutcome(
+        db.insert(pokemon).values({ ...pokemonValues, id: randomUUID() })
+      )
+    ).resolves.toBe(UNIQUE_VIOLATION)
+  })
+
+  test.each<[string, Partial<typeof pokemon.$inferInsert>]>([
+    ["a 13-character nickname", { nickname: "a".repeat(13) }],
+    ["an empty nickname", { nickname: "" }],
+    ["a death level on a living Pokémon", { deathLevel: 24 }],
+    ["a death cause on a living Pokémon", { deathCause: "Crit" }],
+  ])("the CHECKs refuse %s", async (_, overrides) => {
+    const pokemonValues = await pokemonValuesWithInsertedEncounter()
+
+    await expect(
+      insertOutcome(
+        db.insert(pokemon).values({ ...pokemonValues, ...overrides })
+      )
+    ).resolves.toBe(CHECK_VIOLATION)
+  })
+
+  test("the nickname CHECK counts code points, as the screen does", async () => {
+    const pokemonValues = await pokemonValuesWithInsertedEncounter()
+
+    await expect(
+      insertOutcome(
+        db
+          .insert(pokemon)
+          .values({ ...pokemonValues, nickname: "🐉".repeat(12) })
+      )
+    ).resolves.toBe("inserted")
+  })
+
+  test("a Pokémon sits in the Journey of its Encounter", async () => {
+    const pokemonValues = await pokemonValuesWithInsertedEncounter()
+    const { journeyId: otherJourneyId } = await journeyWithEncounter()
+
+    await expect(
+      insertOutcome(
+        db
+          .insert(pokemon)
+          .values({ ...pokemonValues, journeyId: otherJourneyId })
+      )
+    ).resolves.toBe(FOREIGN_KEY_VIOLATION)
   })
 })

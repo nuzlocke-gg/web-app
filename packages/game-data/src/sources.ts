@@ -5,6 +5,7 @@ import { parse as parseYaml, YAMLError } from "yaml"
 import { z } from "zod"
 
 import {
+  ORIGINS,
   TYPES,
   type Correction,
   type GeneratedSpecies,
@@ -55,7 +56,7 @@ const methodList: z.ZodType<MethodList> = z.array(
   z.strictObject({
     id: z.string(),
     name: z.string(),
-    origin: z.enum(["wild", "gift", "trade"]),
+    origin: z.enum(ORIGINS),
     oneTime: z.boolean(),
   })
 )

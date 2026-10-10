@@ -1,14 +1,12 @@
 import { eq } from "drizzle-orm"
-import { createOperationEnvelope } from "headcanon"
 import { describe, expect, test, vi } from "vitest"
 
-import { createRunAction } from "@/app/runs/actions"
 import { db } from "@/lib/db"
 import { runs } from "@/lib/db/schema"
+import { makeRun } from "@/test/runs"
 import { signIn, signOut } from "@/test/session"
 
 import { loadRunCanon } from "./canon"
-import { createRun } from "./operations"
 
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }))
 vi.mock("next/cache", () => ({
@@ -17,22 +15,6 @@ vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
   updateTag: vi.fn(),
 }))
-
-async function makeRun() {
-  const outcome = await createRunAction(
-    createOperationEnvelope(createRun, {
-      mapId: "emerald",
-      gameId: "emerald",
-      name: "Emerald Hardcore",
-    })
-  )
-
-  if (!outcome.ok || outcome.value.kind !== "accepted") {
-    throw new Error(`Expected an accepted Run, got ${JSON.stringify(outcome)}`)
-  }
-
-  return outcome.value.result.runId
-}
 
 describe("loadRunCanon", () => {
   test("a Player of the Run gets its canon", async () => {

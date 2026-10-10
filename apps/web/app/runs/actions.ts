@@ -7,13 +7,14 @@ import {
 
 import { runsBinder } from "@/lib/runs/binder"
 import { createRunBinding } from "@/lib/runs/commands/create-run"
+import { recordEncounterBinding } from "@/lib/runs/commands/record-encounter"
 import { runProtocol } from "@/lib/runs/protocol"
 
-/** The Server Action of `run.v1`. It has no commands until NUZ-51. */
+/** The Server Action of `run.v1`: one command per change to a Run. */
 export const runAction = createNextMutationAction({
   protocol: runProtocol,
   binder: runsBinder,
-  commands: [],
+  commands: [recordEncounterBinding],
 })
 
 /**

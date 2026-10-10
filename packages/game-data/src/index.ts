@@ -36,6 +36,8 @@ export {
   type SuggestionGroup,
 } from "./reader.ts"
 
+export { ORIGINS } from "./format.ts"
+
 export type {
   CompiledMap,
   EvolutionLineId,

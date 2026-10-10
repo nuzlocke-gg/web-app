@@ -9,6 +9,7 @@ import { runAxis } from "@/lib/runs/axis"
 import { loadRunCanon } from "@/lib/runs/canon"
 import { createRun } from "@/lib/runs/operations"
 import { redirectOf } from "@/test/redirect"
+import { makeRun } from "@/test/runs"
 import { signIn } from "@/test/session"
 
 import { createRunAction } from "./actions"
@@ -27,18 +28,6 @@ const emerald = {
   mapId: "emerald",
   gameId: "emerald",
   name: "Emerald Hardcore",
-}
-
-async function makeRun(args = emerald) {
-  const outcome = await createRunAction(
-    createOperationEnvelope(createRun, args)
-  )
-
-  if (!outcome.ok || outcome.value.kind !== "accepted") {
-    throw new Error(`Expected an accepted Run, got ${JSON.stringify(outcome)}`)
-  }
-
-  return outcome.value.result.runId
 }
 
 async function journeyCountOf(playerId: string) {
@@ -77,7 +66,15 @@ describe("createRunAction", () => {
         "type-restriction": false,
         "shared-duplicate-clause": false,
       },
-      journeys: [{ id: expect.any(String), playerId, gameId: "emerald" }],
+      journeys: [
+        {
+          id: expect.any(String),
+          playerId,
+          gameId: "emerald",
+          encounters: [],
+          pokemon: [],
+        },
+      ],
     })
     expect(canon?.revisions).toEqual({ [runAxis.of(runId)]: 1 })
   })

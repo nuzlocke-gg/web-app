@@ -35,8 +35,11 @@ export type MethodId = string
 /** The earliest Species of a line. Not permanent: compare in one Map only. */
 export type EvolutionLineId = SpeciesId
 
+/** Every origin of an Encounter: how the player got the Pokémon. */
+export const ORIGINS = ["wild", "gift", "trade"] as const
+
 /** The value an Encounter stores as its origin. */
-export type Origin = "wild" | "gift" | "trade"
+export type Origin = (typeof ORIGINS)[number]
 
 /** Every type, in the games' own order. */
 export const TYPES = [
