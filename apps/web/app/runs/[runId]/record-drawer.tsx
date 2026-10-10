@@ -5,6 +5,8 @@ import {
   getSpecies,
   hasFormChoice,
   ORIGINS,
+  searchSpecies,
+  suggestions,
   type FormRef,
   type LoadedMap,
   type Origin,
@@ -280,6 +282,7 @@ type SpeciesStepProps = {
 function SpeciesStep({ map, placeId, gameId, onPick }: SpeciesStepProps) {
   const [query, setQuery] = useState("")
   const searching = query.trim() !== ""
+  const suggested = suggestions(map, placeId, gameId)
 
   return (
     <>
@@ -299,12 +302,12 @@ function SpeciesStep({ map, placeId, gameId, onPick }: SpeciesStepProps) {
           <SpeciesSection title="Results">
             <ChoiceGrid
               map={map}
-              choices={searchChoices(map, placeId, gameId, query)}
+              choices={searchChoices(suggested, searchSpecies(map, query))}
               onPick={onPick}
             />
           </SpeciesSection>
         ) : (
-          speciesGroups(map, placeId, gameId).map((group) => (
+          speciesGroups(suggested, map.data.species).map((group) => (
             <SpeciesSection key={group.name} title={group.name}>
               <ChoiceGrid map={map} choices={group.choices} onPick={onPick} />
             </SpeciesSection>
