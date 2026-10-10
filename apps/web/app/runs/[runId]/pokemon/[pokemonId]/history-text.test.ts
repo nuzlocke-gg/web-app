@@ -1,25 +1,30 @@
-import { loadMap, type LoadedMap } from "@workspace/game-data"
-import { beforeAll, describe, expect, test } from "vitest"
+import { describe, expect, test } from "vitest"
 
 import { historyOf } from "@/lib/runs/history"
 import type { EncounterState, PokemonState } from "@/lib/runs/state"
 import { encounterState, evolutionState, pokemonState } from "@/test/run-state"
 
-import { historyDate, historyText } from "./history-text"
+import { historyDate, historyText, type HistoryNames } from "./history-text"
 
 const nincada = { species: "nincada", form: "base" }
 const ninjask = { species: "ninjask", form: "base" }
 
-let map: LoadedMap
-
-beforeAll(async () => {
-  map = (await loadMap("emerald"))!
-})
+/** The names of a small synthetic Game. */
+const names: HistoryNames = {
+  speciesName: (species) =>
+    ({ nincada: "Nincada", ninjask: "Ninjask", treecko: "Treecko" })[species],
+  placeName: (place) =>
+    ({ "route-116": "Route 116", starter: "Starter" })[place],
+}
 
 /** The text of each History line of the Pokémon. */
-function texts(encounter: EncounterState, pokemon: PokemonState): string[] {
+function texts(
+  encounter: EncounterState,
+  pokemon: PokemonState,
+  gameNames = names
+): string[] {
   return historyOf(encounter, pokemon).map((line) =>
-    historyText(map, "emerald", pokemon, line)
+    historyText(gameNames, pokemon, line)
   )
 }
 
@@ -51,6 +56,23 @@ describe("History text", () => {
     expect(texts(gift, pokemonState(gift))).toEqual(["Received at Starter"])
     expect(texts(trade, pokemonState(trade))).toEqual([
       "Traded for Nincada at Route 116",
+    ])
+  })
+
+  test("a Species or location the Game does not know reads as unknown", () => {
+    const line = evolutionState(nincada, ninjask)
+    const pokemon = pokemonState(route116, {
+      species: ninjask,
+      evolutions: [line],
+    })
+    const unknown: HistoryNames = {
+      speciesName: () => undefined,
+      placeName: () => undefined,
+    }
+
+    expect(texts(route116, pokemon, unknown)).toEqual([
+      "Met as Unknown Pokémon at an unknown location",
+      "Evolved into Unknown Pokémon",
     ])
   })
 

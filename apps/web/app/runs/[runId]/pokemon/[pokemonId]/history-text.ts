@@ -1,27 +1,39 @@
-import { getSpecies, placeName, type LoadedMap } from "@workspace/game-data"
+import type { PlaceId, SpeciesId } from "@workspace/game-data"
 
 import type { HistoryLine } from "@/lib/runs/history"
 import type { PokemonState } from "@/lib/runs/state"
 
 /**
- * The text of one History line of a Pokémon in a Game, such as "Met as
- * Nincada at Route 116", "Evolved into Ninjask", or "Died at level 14 to
- * Roxanne's Nosepass".
+ * How History names a Species and a location in the Pokémon's Game; each
+ * gives undefined for one it does not know.
+ * @example
+ * const names: HistoryNames = {
+ *   speciesName: (species) => getSpecies(map, species)?.name,
+ *   placeName: (place) => placeName(map, place, journey.gameId),
+ * }
+ */
+export type HistoryNames = {
+  speciesName: (species: SpeciesId) => string | undefined
+  placeName: (place: PlaceId) => string | undefined
+}
+
+/**
+ * The text of one History line of a Pokémon, such as "Met as Nincada at
+ * Route 116", "Evolved into Ninjask", or "Died at level 14 to Roxanne's
+ * Nosepass".
  */
 export function historyText(
-  map: LoadedMap,
-  gameId: string,
+  names: HistoryNames,
   pokemon: PokemonState,
   line: HistoryLine
 ): string {
-  const speciesName = (species: string) =>
-    getSpecies(map, species)?.name ?? "Unknown Pokémon"
+  const speciesName = (species: SpeciesId) =>
+    names.speciesName(species) ?? "Unknown Pokémon"
 
   switch (line.kind) {
     case "encounter": {
       const { encounter } = line
-      const where =
-        placeName(map, encounter.placeId, gameId) ?? "an unknown location"
+      const where = names.placeName(encounter.placeId) ?? "an unknown location"
       const met = encounter.met
         ? speciesName(encounter.met.species)
         : "Unknown Pokémon"

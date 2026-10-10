@@ -7,6 +7,7 @@ import {
 } from "@phosphor-icons/react"
 import {
   getForm,
+  getSpecies,
   hasFormChoice,
   placeName,
   type LoadedMap,
@@ -32,7 +33,7 @@ import { originNames } from "../../record-steps"
 import { useRun } from "../../run-root"
 import { useRunTab } from "../../run-tab"
 import { useLoadedMap } from "../../use-map"
-import { historyDate, historyText } from "./history-text"
+import { historyDate, historyText, type HistoryNames } from "./history-text"
 import {
   PokemonDrawer,
   pokemonName,
@@ -134,6 +135,10 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
   const name = pokemonName(map, shown)
   const where =
     placeName(map, encounter.placeId, journey.gameId) ?? "Unknown location"
+  const names: HistoryNames = {
+    speciesName: (species) => getSpecies(map, species)?.name,
+    placeName: (place) => placeName(map, place, journey.gameId),
+  }
 
   function open(next: PokemonSheet) {
     setSheet(next)
@@ -220,7 +225,7 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
           {historyOf(encounter, pokemon).map((line) => (
             <li key={line.id} className="flex items-baseline gap-3">
               <span className="min-w-0 flex-1">
-                {historyText(map, journey.gameId, pokemon, line)}
+                {historyText(names, pokemon, line)}
               </span>
               <HistoryDate enteredAt={line.enteredAt} />
             </li>
