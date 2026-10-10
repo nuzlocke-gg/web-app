@@ -84,7 +84,7 @@ export function MapPicker({ maps, value, disabled, onChange }: MapPickerProps) {
             {value.region} · Generation {value.generation}
           </ItemDescription>
         </ItemContent>
-        <ItemActions className="text-primary">Change</ItemActions>
+        <ItemActions className="font-medium">Change</ItemActions>
       </Item>
 
       <Drawer open={open} onOpenChange={setOpen} showSwipeHandle>

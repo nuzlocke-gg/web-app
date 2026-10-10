@@ -4,7 +4,12 @@
   "tasks": {
     "build": {
       "outputs": ["$TURBO_EXTENDS$", "public/sprites/**"],
-      "passThroughEnv": ["DATABASE_URL", "DATABASE_URL_UNPOOLED", "DATABASE_WS_PROXY"]
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "DATABASE_URL_UNPOOLED",
+        "DATABASE_WS_PROXY",
+        "CRON_SECRET"
+      ]
     },
     "dev": {
       "dependsOn": ["^build"]

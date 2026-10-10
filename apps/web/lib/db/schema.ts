@@ -3,6 +3,7 @@ import {
   bigint,
   boolean,
   check,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -16,9 +17,15 @@ import {
   uuid,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core"
+import { ORIGINS } from "@workspace/game-data"
 import type { AdapterAccountType } from "next-auth/adapters"
 
-import { runKinds, runLifeStates, runVisibilities } from "../runs/state"
+import {
+  encounterOutcomes,
+  runKinds,
+  runLifeStates,
+  runVisibilities,
+} from "../runs/state"
 
 export { headcanonMutationReceipts } from "headcanon/drizzle-schema"
 
@@ -203,5 +210,125 @@ export const journeys = pgTable(
     // its own Run.
     unique("journeys_run_id_key").on(table.runId, table.id),
     index("journeys_player_run_idx").on(table.playerId, table.runId),
+  ]
+)
+
+/** A Place that one Run adds; every Journey of the Run shares it. */
+export const customPlaces = pgTable(
+  "custom_places",
+  {
+    // A UUID v7 from the client, so its time orders a Place with no Encounter.
+    id: uuid("id").primaryKey(),
+    runId: uuid("run_id")
+      .notNull()
+      .references(() => runs.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+  },
+  (table) => [unique("custom_places_run_id_key").on(table.runId, table.id)]
+)
+
+/** How the player got an Encounter's Pokémon. */
+export const encounterOrigin = pgEnum("encounter_origin", ORIGINS)
+
+/** Whether an Encounter gave a Pokémon. */
+export const encounterOutcome = pgEnum("encounter_outcome", encounterOutcomes)
+
+/**
+ * One Encounter of a Journey, in a Slot at a Place of the Map or a Custom
+ * Place. A Slot exists when an Encounter has it (ADR 0008).
+ */
+export const encounters = pgTable(
+  "encounters",
+  {
+    // A UUID v7 from the client.
+    id: uuid("id").primaryKey(),
+    runId: uuid("run_id").notNull(),
+    journeyId: uuid("journey_id").notNull(),
+    placeId: text("place_id"),
+    customPlaceId: uuid("custom_place_id"),
+    slotOrdinal: integer("slot_ordinal").notNull(),
+    origin: encounterOrigin("origin").notNull(),
+    outcome: encounterOutcome("outcome").notNull(),
+    speciesId: text("species_id"),
+    formId: text("form_id"),
+    enteredAt: timestamp("entered_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+  },
+  (table) => [
+    foreignKey({
+      name: "encounters_journey_fk",
+      columns: [table.runId, table.journeyId],
+      foreignColumns: [journeys.runId, journeys.id],
+    }).onDelete("cascade"),
+    // No action: a Custom Place cannot go while an Encounter names it.
+    foreignKey({
+      name: "encounters_custom_place_fk",
+      columns: [table.runId, table.customPlaceId],
+      foreignColumns: [customPlaces.runId, customPlaces.id],
+    }),
+    // The target of the Pokémon's composite foreign key.
+    unique("encounters_journey_id_key").on(table.journeyId, table.id),
+    // One Encounter per Journey per Slot; its violation is `slot-taken`.
+    uniqueIndex("encounters_journey_place_slot_key")
+      .on(table.journeyId, table.placeId, table.slotOrdinal)
+      .where(sql`${table.placeId} IS NOT NULL`),
+    uniqueIndex("encounters_journey_custom_place_slot_key")
+      .on(table.journeyId, table.customPlaceId, table.slotOrdinal)
+      .where(sql`${table.customPlaceId} IS NOT NULL`),
+    index("encounters_run_place_idx").on(table.runId, table.placeId),
+    check(
+      "encounters_one_place",
+      sql`(${table.placeId} IS NULL) <> (${table.customPlaceId} IS NULL)`
+    ),
+    check("encounters_slot_ordinal", sql`${table.slotOrdinal} >= 1`),
+    check(
+      "encounters_caught_has_species",
+      sql`${table.outcome} <> 'caught' OR ${table.speciesId} IS NOT NULL`
+    ),
+    check(
+      "encounters_species_with_form",
+      sql`(${table.speciesId} IS NULL) = (${table.formId} IS NULL)`
+    ),
+  ]
+)
+
+/**
+ * One Pokémon of a Journey, from exactly one Caught Encounter. A removed
+ * Pokémon keeps its row, so its Encounter and history stay.
+ */
+export const pokemon = pgTable(
+  "pokemon",
+  {
+    // A UUID v7 from the client.
+    id: uuid("id").primaryKey(),
+    journeyId: uuid("journey_id").notNull(),
+    encounterId: uuid("encounter_id").notNull(),
+    speciesId: text("species_id").notNull(),
+    formId: text("form_id").notNull(),
+    nickname: text("nickname"),
+    inParty: boolean("in_party").notNull(),
+    diedAt: timestamp("died_at", { withTimezone: true, mode: "date" }),
+    deathLevel: integer("death_level"),
+    deathCause: text("death_cause"),
+    removedAt: timestamp("removed_at", { withTimezone: true, mode: "date" }),
+  },
+  (table) => [
+    foreignKey({
+      name: "pokemon_encounter_fk",
+      columns: [table.journeyId, table.encounterId],
+      foreignColumns: [encounters.journeyId, encounters.id],
+    }).onDelete("cascade"),
+    unique("pokemon_encounter_id_key").on(table.encounterId),
+    check(
+      "pokemon_death_details_on_death",
+      sql`(${table.deathLevel} IS NULL AND ${table.deathCause} IS NULL) OR ${table.diedAt} IS NOT NULL`
+    ),
+    // char_length counts code points, as the nickname schema does.
+    check(
+      "pokemon_nickname_length",
+      sql`char_length(${table.nickname}) BETWEEN 1 AND 12`
+    ),
   ]
 )

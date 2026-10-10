@@ -144,6 +144,7 @@ for (const width of [390, 820]) {
       page.getByRole("link", { name: "Back to your runs" }),
       page.getByRole("tab", { name: "Encounters" }),
       page.getByRole("tab", { name: "Pokémon" }),
+      page.getByRole("button", { name: "Record your starter" }),
     ]
 
     for (const target of trackingTargets) {

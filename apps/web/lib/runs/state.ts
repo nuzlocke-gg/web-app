@@ -1,3 +1,5 @@
+import type { FormRef, Origin, PlaceId } from "@workspace/game-data"
+
 // The alternatives are the database enums too (lib/db/schema.ts), so each list
 // has one home. Values are only ever added.
 
@@ -18,11 +20,50 @@ export type RunLifeState = (typeof runLifeStates)[number]
 export const runVisibilities = ["private", "link"] as const
 export type RunVisibility = (typeof runVisibilities)[number]
 
-/** One Player's part of a Run. */
+/** Whether an Encounter gave a Pokémon. */
+export const encounterOutcomes = ["caught", "failed"] as const
+export type EncounterOutcome = (typeof encounterOutcomes)[number]
+
+/** The most Pokémon a Party holds. */
+export const PARTY_SIZE = 6
+
+/** One Encounter of a Journey, in a Slot at a Place. */
+export type EncounterState = {
+  id: string
+  placeId: PlaceId
+  /** The Slot's ordinal at its Place, from 1. */
+  slot: number
+  origin: Origin
+  outcome: EncounterOutcome
+  /** The Species and Form met. Null only on a Failed Encounter. */
+  met: FormRef | null
+  /** When the player recorded it, in epoch milliseconds. */
+  enteredAt: number
+}
+
+/** One Pokémon of a Journey, from one Caught Encounter. */
+export type PokemonState = {
+  id: string
+  encounterId: string
+  /** The current Species and Form. */
+  species: FormRef
+  nickname: string | null
+  /** In the Party, else in the Box; kept as it was at death. */
+  inParty: boolean
+  /** Epoch milliseconds, or null while it lives. */
+  diedAt: number | null
+  /** Epoch milliseconds when traded away or released, or null. */
+  removedAt: number | null
+}
+
+/** One Player's part of a Run, with its Encounters in order of entry. */
 export type JourneyState = {
   id: string
   playerId: string
   gameId: string
+  encounters: EncounterState[]
+  /** In the order of their Encounters. */
+  pokemon: PokemonState[]
 }
 
 /**
@@ -53,4 +94,27 @@ export function viewerJourney(run: RunState): JourneyState {
   if (!journey) throw new Error(`Run ${run.id} has no Journey for its viewer`)
 
   return journey
+}
+
+/** The living Pokémon of a Journey that the player carries. */
+export function partyOf(journey: JourneyState): PokemonState[] {
+  return journey.pokemon.filter(
+    (pokemon) =>
+      pokemon.inParty && pokemon.diedAt === null && pokemon.removedAt === null
+  )
+}
+
+/** The living Pokémon of a Journey that are not in the Party. */
+export function boxOf(journey: JourneyState): PokemonState[] {
+  return journey.pokemon.filter(
+    (pokemon) =>
+      !pokemon.inParty && pokemon.diedAt === null && pokemon.removedAt === null
+  )
+}
+
+/** The dead Pokémon of a Journey. */
+export function graveyardOf(journey: JourneyState): PokemonState[] {
+  return journey.pokemon.filter(
+    (pokemon) => pokemon.diedAt !== null && pokemon.removedAt === null
+  )
 }

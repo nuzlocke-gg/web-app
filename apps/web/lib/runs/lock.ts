@@ -1,6 +1,6 @@
 import "server-only"
 
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 
 import { runs } from "@/lib/db/schema"
 
@@ -22,4 +22,24 @@ export async function lockRun(tx: RunTransaction, runId: string) {
     .for("update")
 
   return run
+}
+
+/**
+ * Bumps the Run's revision with its `last_changed_at`, as every writer does
+ * once under the Run lock after its writes.
+ * @returns The new revision, for `stamp.record(runAxis.of(runId), revision)`.
+ */
+export async function bumpRevision(
+  tx: RunTransaction,
+  runId: string
+): Promise<number> {
+  const [run] = await tx
+    .update(runs)
+    .set({ revision: sql`${runs.revision} + 1`, lastChangedAt: sql`now()` })
+    .where(eq(runs.id, runId))
+    .returning({ revision: runs.revision })
+
+  if (!run) throw new Error(`Run ${runId} is gone under its lock`)
+
+  return run.revision
 }

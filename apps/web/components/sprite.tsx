@@ -51,3 +51,22 @@ export function Sprite({ map, species, form, size, className }: SpriteProps) {
     />
   )
 }
+
+/**
+ * The unknown sprite, labelled "Unknown Pokémon", for an Encounter whose
+ * Species the player did not see.
+ */
+export function UnknownSprite({
+  size,
+  className,
+}: Pick<SpriteProps, "size" | "className">) {
+  return (
+    <SpriteImage
+      src={unknownSpriteUrl}
+      fallbackSrc={unknownSpriteUrl}
+      label="Unknown Pokémon"
+      size={size}
+      className={className}
+    />
+  )
+}

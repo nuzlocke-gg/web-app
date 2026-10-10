@@ -22,6 +22,13 @@
       "when": 1791587249173,
       "tag": "0002_run_deadlines",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791592531402,
+      "tag": "0003_encounters_and_pokemon",
+      "breakpoints": true
     }
   ]
 }

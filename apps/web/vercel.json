@@ -1,4 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "node scripts/migrate.ts && cd ../.. && npx turbo run build --filter=web"
+  "buildCommand": "node scripts/migrate.ts && cd ../.. && npx turbo run build --filter=web",
+  "crons": [
+    {
+      "path": "/api/cron/delete-expired-receipts",
+      "schedule": "0 9 * * *"
+    }
+  ]
 }
