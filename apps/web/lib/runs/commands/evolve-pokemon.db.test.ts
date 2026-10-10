@@ -34,15 +34,21 @@ const mudkip = { species: "mudkip", form: "base" }
 const marshtomp = { species: "marshtomp", form: "base" }
 const torchic = { species: "torchic", form: "base" }
 
+/** The Species and Form the loader reads for the Run's one Pokémon. */
+async function speciesOf(runId: string): Promise<FormRef> {
+  return (await journeyOf(runId)).pokemon[0]!.species
+}
+
 /** "Next in its line" into `species`, entered on 3 October 2026. */
-function next(
+async function next(
   runId: string,
   pokemonId: string,
   species: FormRef
-): EvolvePokemonArgs {
+): Promise<EvolvePokemonArgs> {
   return {
     runId,
     pokemonId,
+    from: await speciesOf(runId),
     species,
     pick: {
       kind: "next",
@@ -53,12 +59,18 @@ function next(
 }
 
 /** "Other species": `species`, to correct a wrong one. */
-function other(
+async function other(
   runId: string,
   pokemonId: string,
   species: FormRef
-): EvolvePokemonArgs {
-  return { runId, pokemonId, species, pick: { kind: "other" } }
+): Promise<EvolvePokemonArgs> {
+  return {
+    runId,
+    pokemonId,
+    from: await speciesOf(runId),
+    species,
+    pick: { kind: "other" },
+  }
 }
 
 async function linesOf(pokemonId: string) {
@@ -68,7 +80,7 @@ async function linesOf(pokemonId: string) {
 describe("Evolve a Pokémon", () => {
   test("Next in its line sets the Species, adds a line, and bumps the revision", async () => {
     const { runId, pokemonId } = await runWithMudkip()
-    const args = next(runId, pokemonId, marshtomp)
+    const args = await next(runId, pokemonId, marshtomp)
 
     await expect(evolve(args)).resolves.toEqual(accepted)
 
@@ -89,11 +101,11 @@ describe("Evolve a Pokémon", () => {
   test("Other species edits the target of the latest line", async () => {
     const { runId, pokemonId } = await runWithMudkip()
 
-    await evolve(next(runId, pokemonId, marshtomp))
+    await evolve(await next(runId, pokemonId, marshtomp))
 
-    await expect(evolve(other(runId, pokemonId, torchic))).resolves.toEqual(
-      accepted
-    )
+    await expect(
+      evolve(await other(runId, pokemonId, torchic))
+    ).resolves.toEqual(accepted)
 
     const [corrected] = (await journeyOf(runId)).pokemon
 
@@ -104,11 +116,11 @@ describe("Evolve a Pokémon", () => {
   test("Other species back to where the latest line started removes it", async () => {
     const { runId, pokemonId } = await runWithMudkip()
 
-    await evolve(next(runId, pokemonId, marshtomp))
+    await evolve(await next(runId, pokemonId, marshtomp))
 
-    await expect(evolve(other(runId, pokemonId, mudkip))).resolves.toEqual(
-      accepted
-    )
+    await expect(
+      evolve(await other(runId, pokemonId, mudkip))
+    ).resolves.toEqual(accepted)
     expect((await journeyOf(runId)).pokemon[0]!.species).toEqual(mudkip)
     await expect(linesOf(pokemonId)).resolves.toEqual([])
   })
@@ -116,9 +128,9 @@ describe("Evolve a Pokémon", () => {
   test("Other species with no line sets the Species and adds no line", async () => {
     const { runId, pokemonId } = await runWithMudkip()
 
-    await expect(evolve(other(runId, pokemonId, torchic))).resolves.toEqual(
-      accepted
-    )
+    await expect(
+      evolve(await other(runId, pokemonId, torchic))
+    ).resolves.toEqual(accepted)
     expect((await journeyOf(runId)).pokemon[0]!.species).toEqual(torchic)
     await expect(linesOf(pokemonId)).resolves.toEqual([])
   })
@@ -128,8 +140,8 @@ describe("Evolve a Pokémon", () => {
 
     // Evolved and back again: the Species matches the one met, but the
     // Pokémon has evolution lines.
-    await evolve(next(runId, pokemonId, marshtomp))
-    await evolve(next(runId, pokemonId, mudkip))
+    await evolve(await next(runId, pokemonId, marshtomp))
+    await evolve(await next(runId, pokemonId, mudkip))
 
     await expect(
       correct({
@@ -146,10 +158,21 @@ describe("Evolve a Pokémon", () => {
     expect(journey.pokemon[0]!.species).toEqual(mudkip)
   })
 
+  test("a pick made for a Species that changed since is refused as gone", async () => {
+    const { runId, pokemonId } = await runWithMudkip()
+    const stale = await next(runId, pokemonId, marshtomp)
+
+    await evolve(await other(runId, pokemonId, torchic))
+
+    await expect(evolve(stale)).resolves.toEqual(refused("gone"))
+    expect((await journeyOf(runId)).pokemon[0]!.species).toEqual(torchic)
+    await expect(linesOf(pokemonId)).resolves.toEqual([])
+  })
+
   test("the Species it already has is accepted unchanged and keeps the revision", async () => {
     const { runId, pokemonId } = await runWithMudkip()
 
-    await expect(evolve(next(runId, pokemonId, mudkip))).resolves.toEqual(
+    await expect(evolve(await next(runId, pokemonId, mudkip))).resolves.toEqual(
       accepted
     )
     await expect(revisionOf(runId)).resolves.toBe(2)
@@ -164,16 +187,16 @@ describe("Evolve a Pokémon", () => {
       .set({ diedAt: new Date() })
       .where(eq(pokemon.id, pokemonId))
 
-    await expect(evolve(next(runId, pokemonId, marshtomp))).resolves.toEqual(
-      refused("gone")
-    )
+    await expect(
+      evolve(await next(runId, pokemonId, marshtomp))
+    ).resolves.toEqual(refused("gone"))
   })
 
   test("a Species the Map does not have is refused as unknown-entry", async () => {
     const { runId, pokemonId } = await runWithMudkip()
 
     await expect(
-      evolve(next(runId, pokemonId, { species: "pikachu", form: "x" }))
+      evolve(await next(runId, pokemonId, { species: "pikachu", form: "x" }))
     ).resolves.toEqual(refused("unknown-entry"))
     await expect(linesOf(pokemonId)).resolves.toEqual([])
   })
@@ -181,7 +204,7 @@ describe("Evolve a Pokémon", () => {
   test("the predictor and the server give the same Run", async () => {
     const { runId, pokemonId } = await runWithMudkip()
     const before = await canonOf(runId)
-    const args = next(runId, pokemonId, marshtomp)
+    const args = await next(runId, pokemonId, marshtomp)
     const predicted = evolvePokemon.predict(before.value, args, {
       mutationId: uuidv7(),
     })

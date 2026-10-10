@@ -35,6 +35,7 @@ function next(
   return {
     runId: run.id,
     pokemonId: onlyPokemon(run).id,
+    from: onlyPokemon(run).species,
     species,
     pick: { kind: "next", lineId: uuidv7(), enteredAt },
   }
@@ -45,6 +46,7 @@ function other(run: RunState, species: FormRef): EvolvePokemonArgs {
   return {
     runId: run.id,
     pokemonId: onlyPokemon(run).id,
+    from: onlyPokemon(run).species,
     species,
     pick: { kind: "other" },
   }
@@ -122,6 +124,34 @@ describe("Evolve a Pokémon", () => {
 
     expect(after.species).toEqual(mudkip)
     expect(after.evolutions).toEqual([])
+  })
+
+  test("Other species corrects the line that made the current Species", () => {
+    // Entered later from a device whose clock is behind, so it sorts first.
+    const made = evolutionState(grovyle, sceptile, {
+      enteredAt: Date.UTC(2026, 9, 2),
+    })
+    const earlier = evolutionState(treecko, grovyle, {
+      enteredAt: Date.UTC(2026, 9, 3),
+    })
+    const marshtomp = { species: "marshtomp", form: "base" }
+    const run = runWith({ species: sceptile, evolutions: [made, earlier] })
+    const after = onlyPokemon(predicted(run, other(run, marshtomp)))
+
+    expect(after.evolutions).toEqual([{ ...made, to: marshtomp }, earlier])
+  })
+
+  test("a pick made for a Species that changed since is refused as gone", () => {
+    const run = runWith()
+    // Picked for Treecko, then another device corrected it to Mudkip.
+    const args = next(run, grovyle)
+    const corrected = runWith({ species: mudkip })
+    const stale = { ...args, pokemonId: onlyPokemon(corrected).id }
+
+    expect(predict(corrected, stale)).toEqual({
+      ok: false,
+      error: { kind: "gone" },
+    })
   })
 
   test("the Species and Form it already has is a no-op", () => {

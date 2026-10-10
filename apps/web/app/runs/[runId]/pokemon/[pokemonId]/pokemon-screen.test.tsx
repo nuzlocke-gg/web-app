@@ -155,6 +155,7 @@ describe("the Pokémon screen", () => {
       evolvePokemon({
         runId: run.id,
         pokemonId: pokemon.id,
+        from: { species: "ninjask", form: "base" },
         species: { species: "nincada", form: "base" },
         pick: { kind: "other" },
       }),

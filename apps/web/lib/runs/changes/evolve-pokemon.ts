@@ -16,15 +16,17 @@ import { formRefArgs, sameForm } from "./form-ref"
 import { withPokemon } from "./with-pokemon"
 
 /**
- * The arguments of Evolve a Pokémon, in parsed form: the Species and Form it
- * becomes, and where the player picked it. "Next in its line" adds an
- * evolution line, so its id (UUID v7) and `enteredAt` (the client clock in
- * epoch milliseconds) are chosen once, when the player saves. "Other species"
- * corrects a wrong Species and adds no line.
+ * The arguments of Evolve a Pokémon, in parsed form: the Species and Form the
+ * player saw, the Species and Form it becomes, and where the player picked
+ * it. "Next in its line" adds an evolution line, so its id (UUID v7) and
+ * `enteredAt` (the client clock in epoch milliseconds) are chosen once, when
+ * the player saves. "Other species" corrects a wrong Species.
  */
 export const evolvePokemonArgs = z.object({
   runId: z.uuid(),
   pokemonId: z.uuid(),
+  /** The Species and Form the Pokémon had when the player picked. */
+  from: formRefArgs,
   species: formRefArgs,
   pick: z.discriminatedUnion("kind", [
     z.object({
@@ -46,9 +48,9 @@ export type EvolvePokemonRefusal = RunRefusal<"run-not-active" | "gone">
 export type EvolutionLineChange =
   /** "Next in its line": a new line. */
   | { kind: "add"; line: EvolutionState }
-  /** "Other species" on an evolved Pokémon: the latest line gets the new target. */
+  /** "Other species" on an evolved Pokémon: its latest line gets the new target. */
   | { kind: "retarget"; id: string }
-  /** "Other species" back to where the latest line started: the line goes. */
+  /** "Other species" back to where that line started: the line goes. */
   | { kind: "remove"; id: string }
 
 /** What Evolve a Pokémon changes. */
@@ -63,7 +65,8 @@ export type EvolvePokemonEffect = {
 
 /**
  * Decides Evolve a Pokémon for the viewer's Journey: refused on a Run that is
- * not Active and on a Pokémon that is gone, removed, or dead.
+ * not Active, on a Pokémon that is gone, removed, or dead, and on one whose
+ * Species or Form changed since the player picked.
  * @returns {@link unchanged} when the Pokémon already has this Species and Form.
  */
 export function check(
@@ -85,6 +88,10 @@ export function check(
 
   if (sameForm(pokemon.species, args.species)) return ok(unchanged())
 
+  // The pick was made for the Species the player saw. Over a Species changed
+  // since, it would record a false line: the target is in the wrong state.
+  if (!sameForm(pokemon.species, args.from)) return err(refusal("gone"))
+
   return ok({
     journeyId: journey.id,
     pokemonId: pokemon.id,
@@ -94,9 +101,10 @@ export function check(
 }
 
 /**
- * "Next in its line" adds a line. "Other species" is a correction: it edits
- * the latest line, or removes it when the Pokémon goes back to the Species
- * that line started from, so a wrong Species leaves no false history.
+ * "Next in its line" adds a line. "Other species" is a correction of the
+ * latest line into the current Species: it edits that line, or removes it
+ * when the Pokémon goes back to the Species the line started from, so a wrong
+ * Species leaves no false history.
  */
 function lineChange(
   pokemon: PokemonState,
@@ -114,7 +122,12 @@ function lineChange(
     }
   }
 
-  const latest = pokemon.evolutions[pokemon.evolutions.length - 1]
+  // Lines are in order of the client clock, so a line entered later from a
+  // device whose clock is behind can sort before the one that made the
+  // current Species. Correct the line that made it, not the last one.
+  const latest = [...pokemon.evolutions]
+    .reverse()
+    .find((line) => line.to.species === pokemon.species.species)
 
   if (!latest) return null
 

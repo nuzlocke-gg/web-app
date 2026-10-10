@@ -182,6 +182,7 @@ function EvolveStep({ map, shown, open, onClose }: StepProps) {
       evolvePokemon({
         runId: run.id,
         pokemonId: pokemon.id,
+        from: pokemon.species,
         species: picked.met,
         pick: evolves
           ? { kind: "next", lineId: uuidv7(), enteredAt: Date.now() }

@@ -15,7 +15,7 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Button, buttonVariants } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 import Link from "next/link"
-import { useState, type ReactNode } from "react"
+import { useState, useSyncExternalStore, type ReactNode } from "react"
 
 import { speciesName } from "@/components/species-name"
 import { Sprite } from "@/components/sprite"
@@ -336,16 +336,24 @@ function EncounterFact({
 }
 
 function HistoryDate({ enteredAt }: { enteredAt: number }) {
-  // The server renders in its own time zone, so the browser's date may differ.
-  const [thisYear] = useState(() => new Date().getFullYear())
+  const thisYear = useSyncExternalStore(
+    subscribeToNothing,
+    () => new Date().getFullYear(),
+    // The server knows neither the reader's locale nor their time zone, so
+    // the date renders only in the browser.
+    () => null
+  )
 
   return (
     <time
       dateTime={new Date(enteredAt).toISOString()}
       className="shrink-0 text-xs text-muted-foreground"
-      suppressHydrationWarning
     >
-      {historyDate(enteredAt, thisYear)}
+      {thisYear === null ? null : historyDate(enteredAt, thisYear)}
     </time>
   )
+}
+
+function subscribeToNothing() {
+  return () => {}
 }
