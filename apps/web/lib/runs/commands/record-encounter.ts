@@ -8,7 +8,7 @@ import { encounters, pokemon } from "@/lib/db/schema"
 
 import { runAxis } from "../axis"
 import { runsBinder, type RunTransaction } from "../binder"
-import * as recordEncounterChange from "../changes/record-encounter"
+import type { RecordEncounterEffect } from "../changes/record-encounter"
 import { passesGameDataGate } from "../game-data-gate"
 import { bumpRevision } from "../lock"
 import { recordEncounter } from "../mutations"
@@ -26,22 +26,11 @@ export function isSlotTaken(error: unknown): boolean {
   })
 }
 
-/**
- * Records an Encounter in the actor's Journey. Membership is checked before
- * the transaction and again under the Run lock; the shared `check` then
- * decides the change over the locked Run, the game-data gate checks its
- * Place and Species, and the rows are written from the Effect.
- */
+/** Records an Encounter, and its Pokémon when Caught, in the actor's Journey. */
 export const recordEncounterBinding = runsBinder.bind(recordEncounter, {
   screen: screenPlayer,
   admit: admitPlayer,
-  execute: async ({ tx, args, evidence, stamp }) => {
-    const { run } = evidence
-    const checked = recordEncounterChange.check(run, args)
-
-    if (!checked.ok) return refuseMutation(checked.error)
-
-    const effect = checked.value
+  execute: async ({ tx, state: run, effect, stamp }) => {
     const { gameId } = run.journeys.find(
       (journey) => journey.id === effect.journeyId
     )!
@@ -71,7 +60,7 @@ export const recordEncounterBinding = runsBinder.bind(recordEncounter, {
 async function writeEffect(
   tx: RunTransaction,
   runId: string,
-  effect: recordEncounterChange.RecordEncounterEffect
+  effect: RecordEncounterEffect
 ) {
   const { encounter } = effect
 
