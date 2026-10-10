@@ -53,6 +53,11 @@ function starterSprite(page: Page) {
 
 const notSavedYet = "Not saved yet. Your changes are kept here."
 
+/** The page's toasts; a screen reader's copy of each lives elsewhere. */
+function toasts(page: Page) {
+  return page.getByRole("region", { name: "Notifications" })
+}
+
 /**
  * A stored Record an Encounter at the Starter location, as a Run root keeps
  * it in `sessionStorage`. `scope` null is the shape headcanon 0.3.0 stored.
@@ -128,8 +133,10 @@ test.describe("a change that does not save", () => {
     await setRunStateElsewhere(runId, "failed")
     await recordMudkip(page)
 
-    await expect(page.getByText("Encounter not saved")).toBeVisible()
-    await expect(page.getByText("This run is not active.")).toBeVisible()
+    await expect(toasts(page).getByText("Encounter not saved")).toBeVisible()
+    await expect(
+      toasts(page).getByText("This run is not active.")
+    ).toBeVisible()
     await expect(starterSprite(page)).toBeHidden()
     expect(await startersOf(runId)).toEqual([])
   })
@@ -150,7 +157,7 @@ test.describe("a change that does not save", () => {
     )
 
     await recordMudkip(page)
-    await expect(page.getByText("Encounter not saved")).toBeVisible()
+    await expect(toasts(page).getByText("Encounter not saved")).toBeVisible()
     await refreshed
 
     // The Drawer opens again on the choices the player made.
@@ -174,11 +181,11 @@ test.describe("a change whose outcome is unknown", () => {
     const stop = await intercept(page, isServerAction, commitAndLoseResponse)
 
     await recordMudkip(page)
-    await expect(page.getByText(notSavedYet)).toBeVisible()
+    await expect(toasts(page).getByText(notSavedYet)).toBeVisible()
     await stop()
     await page.getByRole("button", { name: "Retry" }).click()
 
-    await expect(page.getByText(notSavedYet)).toBeHidden()
+    await expect(toasts(page).getByText(notSavedYet)).toBeHidden()
     await expect(starterSprite(page)).toBeVisible()
     expect(await startersOf(runId)).toEqual([{ playerId: ash.id, slot: 1 }])
   })
@@ -198,7 +205,7 @@ test.describe("a change whose outcome is unknown", () => {
     )
 
     await recordMudkip(page)
-    await expect(page.getByText(notSavedYet)).toBeVisible()
+    await expect(toasts(page).getByText(notSavedYet)).toBeVisible()
     await stopActions()
 
     // Next answers a refresh that fails with a full-page load.
@@ -210,7 +217,7 @@ test.describe("a change whose outcome is unknown", () => {
     await stopRefresh()
 
     await expect(starterSprite(page)).toBeVisible()
-    await expect(page.getByText(notSavedYet)).toBeHidden()
+    await expect(toasts(page).getByText(notSavedYet)).toBeHidden()
     await expect
       .poll(() => startersOf(runId))
       .toEqual([{ playerId: ash.id, slot: 1 }])
@@ -226,14 +233,14 @@ test.describe("a change whose outcome is unknown", () => {
     const stop = await intercept(page, isServerAction, commitAndLoseResponse)
 
     await recordMudkip(page)
-    await expect(page.getByText(notSavedYet)).toBeVisible()
+    await expect(toasts(page).getByText(notSavedYet)).toBeVisible()
     await stop()
     await page.getByRole("link", { name: "Back to your runs" }).click()
     await expect(page).toHaveURL("/")
     await page.goBack()
 
     await expect(starterSprite(page)).toBeVisible()
-    await expect(page.getByText(notSavedYet)).toBeHidden()
+    await expect(toasts(page).getByText(notSavedYet)).toBeHidden()
     expect(await startersOf(runId)).toEqual([{ playerId: ash.id, slot: 1 }])
   })
 
@@ -248,15 +255,19 @@ test.describe("a change whose outcome is unknown", () => {
     const stop = await intercept(page, isServerAction, failBeforeServer)
 
     await recordMudkip(page)
-    await expect(page.getByText(notSavedYet)).toBeVisible()
+    await expect(toasts(page).getByText(notSavedYet)).toBeVisible()
     await stop()
     await setRunStateElsewhere(runId, "failed")
     await page.reload()
 
     await expect(
-      page.getByText("A change made before the page reloaded was not saved.")
+      toasts(page).getByText(
+        "A change made before the page reloaded was not saved."
+      )
     ).toBeVisible()
-    await expect(page.getByText("This run is not active.")).toBeVisible()
+    await expect(
+      toasts(page).getByText("This run is not active.")
+    ).toBeVisible()
     expect(await startersOf(runId)).toEqual([])
   })
 })
@@ -307,11 +318,11 @@ test.describe("the persisted queue", () => {
     const stop = await intercept(page, isServerAction, failBeforeServer)
 
     await recordMudkip(page)
-    await expect(page.getByText(notSavedYet)).toBeVisible()
+    await expect(toasts(page).getByText(notSavedYet)).toBeVisible()
     await stop()
     await openRun(page, secondRunId)
 
-    await expect(page.getByText(notSavedYet)).toBeHidden()
+    await expect(toasts(page).getByText(notSavedYet)).toBeHidden()
     expect(await storedQueueKeys(page)).toEqual([
       `run-queue:${ash.id}:${firstRunId}`,
     ])
@@ -386,8 +397,10 @@ test.describe("a change held across a change of Player", () => {
     await startSession(context, misty.id)
     await context.setOffline(false)
 
-    await expect(page.getByText("Encounter not saved")).toBeVisible()
-    await expect(page.getByText("You cannot change this run.")).toBeVisible()
+    await expect(toasts(page).getByText("Encounter not saved")).toBeVisible()
+    await expect(
+      toasts(page).getByText("You cannot change this run.")
+    ).toBeVisible()
     expect(await startersOf(runId)).toEqual([])
   })
 })
@@ -407,7 +420,7 @@ test.describe("a change outside the delivery window", () => {
     })
 
     await recordMudkip(page)
-    await expect(page.getByText(notSavedYet)).toBeVisible()
+    await expect(toasts(page).getByText(notSavedYet)).toBeVisible()
     await stopLosing()
     // Eight days later: cleanup deleted the receipt, and the resend is past
     // the 7-day delivery window.
@@ -424,10 +437,10 @@ test.describe("a change outside the delivery window", () => {
     await page.getByRole("button", { name: "Retry" }).click()
 
     await expect(
-      page.getByText("Encounter could not be confirmed")
+      toasts(page).getByText("Encounter could not be confirmed")
     ).toBeVisible()
     await expect(
-      page.getByText(
+      toasts(page).getByText(
         "It was too old to send again. The run now shows what was saved."
       )
     ).toBeVisible()
@@ -446,9 +459,9 @@ test.describe("a change outside the delivery window", () => {
 
     await recordMudkip(page)
 
-    await expect(page.getByText("Encounter not saved")).toBeVisible()
+    await expect(toasts(page).getByText("Encounter not saved")).toBeVisible()
     await expect(
-      page.getByText(
+      toasts(page).getByText(
         "Your device clock is ahead. Check its date and time, then try again."
       )
     ).toBeVisible()
@@ -473,10 +486,12 @@ test.describe("offline", () => {
     await recordMudkip(page)
     await setVisibility(page, "visible")
     // headcanon calls a delivery uncertain after 10 s without an answer.
-    await expect(page.getByText(notSavedYet)).toBeVisible({ timeout: 15_000 })
+    await expect(toasts(page).getByText(notSavedYet)).toBeVisible({
+      timeout: 15_000,
+    })
     await context.setOffline(false)
 
-    await expect(page.getByText(notSavedYet)).toBeHidden()
+    await expect(toasts(page).getByText(notSavedYet)).toBeHidden()
     await expect(starterSprite(page)).toBeVisible()
     expect(await page.evaluate(() => "sameDocument" in window)).toBe(true)
     await expect
@@ -486,7 +501,7 @@ test.describe("offline", () => {
 })
 
 test.describe("an app that is out of date", () => {
-  test("a save to an action the server does not know shows the out-of-date bar", async ({
+  test("a save to an action the server does not know shows the out-of-date toast", async ({
     page,
     context,
   }) => {
@@ -498,15 +513,15 @@ test.describe("an app that is out of date", () => {
     await recordMudkip(page)
 
     await expect(
-      page.getByText("Encounter could not be confirmed")
+      toasts(page).getByText("Encounter could not be confirmed")
     ).toBeVisible()
     await expect(
-      page.getByText("Your app is out of date. Refresh?")
+      toasts(page).getByText("Your app is out of date. Refresh?")
     ).toBeVisible()
     expect(await startersOf(runId)).toEqual([])
   })
 
-  test("a save to an action the server knows commits once with no bar", async ({
+  test("a save to an action the server knows commits once with no out-of-date toast", async ({
     page,
     context,
   }) => {
@@ -521,7 +536,7 @@ test.describe("an app that is out of date", () => {
       .poll(() => startersOf(runId))
       .toEqual([{ playerId: ash.id, slot: 1 }])
     await expect(
-      page.getByText("Your app is out of date. Refresh?")
+      toasts(page).getByText("Your app is out of date. Refresh?")
     ).toBeHidden()
   })
 
@@ -554,7 +569,7 @@ test.describe("an app that is out of date", () => {
 
     await page.reload()
     await expect(
-      page.getByText("Your app is out of date. Refresh?")
+      toasts(page).getByText("Your app is out of date. Refresh?")
     ).toBeVisible()
     await stop()
     await page.getByRole("button", { name: "Refresh" }).click()

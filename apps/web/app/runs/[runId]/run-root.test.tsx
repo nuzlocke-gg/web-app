@@ -22,26 +22,16 @@ vi.mock("next/navigation", async (importOriginal) => ({
   useRouter: () => ({ refresh }),
 }))
 
-// jsdom has no layout: the bar reports its size once, when observed.
-vi.stubGlobal(
-  "ResizeObserver",
-  class {
-    constructor(private readonly onResize: () => void) {}
-    observe() {
-      this.onResize()
-    }
-    disconnect() {}
-  }
-)
-
 const action = vi.mocked(runAction)
 const addToast = vi.spyOn(toast, "add")
+const closeToast = vi.spyOn(toast, "close")
 
 afterEach(() => {
   cleanup()
   action.mockReset()
   refresh.mockClear()
   addToast.mockClear()
+  closeToast.mockClear()
   sessionStorage.clear()
 })
 
@@ -137,7 +127,7 @@ describe("RunRoot", () => {
     expect(refresh).toHaveBeenCalled()
   })
 
-  test("an unknown action shows the out-of-date bar and never refreshes", async () => {
+  test("an unknown action shows a persistent out-of-date toast and never refreshes", async () => {
     action.mockRejectedValue(new UnrecognizedActionError("Server Action"))
     await renderRun()
 
@@ -146,46 +136,39 @@ describe("RunRoot", () => {
     expect(addToast).toHaveBeenCalledWith(
       expect.objectContaining({ title: "Encounter could not be confirmed" })
     )
-    expect(screen.getByRole("alert").textContent).toContain(
-      "Your app is out of date. Refresh?"
+    expect(addToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        timeout: 0,
+        title: "Your app is out of date. Refresh?",
+        actionProps: expect.objectContaining({ children: "Refresh" }),
+      })
     )
-    expect(screen.getByRole("button", { name: "Refresh" })).toBeTruthy()
     expect(refresh).not.toHaveBeenCalled()
   })
 
-  test("toasts stack above the bar while it shows", async () => {
-    action.mockRejectedValue(new UnrecognizedActionError("Server Action"))
-    await renderRun()
-
-    expect(toastOffset()).toBe("")
-
-    await record()
-
-    expect(toastOffset()).toMatch(/^\d+px$/)
-
-    cleanup()
-
-    expect(toastOffset()).toBe("")
-  })
-
-  test("an unknown outcome shows the Not saved yet bar, and Retry sends again", async () => {
+  test("an unknown outcome shows a persistent Not saved yet toast, and Retry sends again", async () => {
     action.mockRejectedValueOnce(new Error("network"))
     await renderRun()
 
     await record()
 
-    expect(screen.getByRole("status").textContent).toContain(
-      "Not saved yet. Your changes are kept here."
-    )
-    expect(addToast).not.toHaveBeenCalled()
+    expect(addToast).toHaveBeenCalledOnce()
+
+    const [notSaved] = addToast.mock.calls[0]!
+
+    expect(notSaved).toMatchObject({
+      timeout: 0,
+      title: "Not saved yet. Your changes are kept here.",
+      actionProps: { children: "Retry" },
+    })
 
     action.mockReturnValueOnce(new Promise(() => {}))
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Retry" }))
+      notSaved.actionProps!.onClick!({} as never)
     })
 
     expect(action).toHaveBeenCalledTimes(2)
-    expect(screen.queryByRole("status")).toBeNull()
+    expect(closeToast).toHaveBeenCalledWith(notSaved.id)
   })
 
   test("asks before the page unloads while a change is unsent", async () => {
@@ -226,12 +209,6 @@ describe("RunRoot", () => {
     })
   })
 })
-
-function toastOffset() {
-  return document.documentElement.style.getPropertyValue(
-    "--toast-viewport-offset"
-  )
-}
 
 /** A cancelable `beforeunload`; a listener that asks cancels it. */
 function unloadEvent() {

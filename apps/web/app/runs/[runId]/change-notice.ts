@@ -13,7 +13,7 @@ export type RunChangeFailure = MutationLifecycleError<{ readonly kind: string }>
 export type ChangeNotice = {
   title: string
   description: string
-  /** Shows "Your app is out of date. Refresh?" until the page reloads. */
+  /** Shows the persistent "Your app is out of date. Refresh?" toast. */
   outOfDate: boolean
 }
 

@@ -17,14 +17,12 @@ function ToastPortal({ ...props }: ToastPrimitive.Portal.Props) {
   return <ToastPrimitive.Portal data-slot="toast-portal" {...props} />
 }
 
-// A screen with its own bar at the bottom sets `--toast-viewport-offset` to the
-// bar's height, so toasts stack above the bar instead of covering it.
 function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
   return (
     <ToastPrimitive.Viewport
       data-slot="toast-viewport"
       className={cn(
-        "pointer-events-none fixed inset-x-4 bottom-[calc(1rem+var(--toast-viewport-offset,0px))] z-50 mx-auto w-auto max-w-sm outline-none sm:right-4 sm:left-auto sm:mx-0 sm:w-full",
+        "pointer-events-none fixed inset-x-4 bottom-4 z-50 mx-auto w-auto max-w-sm outline-none sm:right-4 sm:left-auto sm:mx-0 sm:w-full",
         className
       )}
       {...props}

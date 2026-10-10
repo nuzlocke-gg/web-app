@@ -1,7 +1,5 @@
 "use client"
 
-import { Alert, AlertTitle } from "@workspace/ui/components/alert"
-import { Button } from "@workspace/ui/components/button"
 import { toast } from "@workspace/ui/components/toast"
 import {
   createNoRealtimeInvalidationAdapter,
@@ -19,7 +17,6 @@ import {
   use,
   useCallback,
   useEffect,
-  useRef,
   useState,
   type ReactNode,
 } from "react"
@@ -76,8 +73,8 @@ type RunRootProps = {
 
 /**
  * Mounts the Run's one predicted root with its recovery: a toast for each
- * change that does not save, the "Not saved yet" and out-of-date bar, and the
- * leave prompt while a change is unsent. Key it by the viewer and the Run, so
+ * change that does not save, a persistent "Not saved yet" or out-of-date
+ * toast, and the leave prompt while a change is unsent. Key it by the viewer and the Run, so
  * a change of either mounts a new root with its own queue.
  */
 export function RunRoot({ canon, children }: RunRootProps) {
@@ -112,7 +109,7 @@ export function RunRoot({ canon, children }: RunRootProps) {
     >
       <ReportFailureContext value={reportFailure}>
         {children}
-        <RecoveryBar outOfDate={outOfDate} />
+        <RecoveryToast outOfDate={outOfDate} />
       </ReportFailureContext>
     </runRoot.Provider>
   )
@@ -151,90 +148,58 @@ export function useRunChange(): (
   )
 }
 
+// The toast's small button gets a 44 px tap target, as its close button has.
+const tapTarget = "relative after:absolute after:-inset-1.5 after:content-['']"
+
+/** Why a change may not be saved yet, while the player can act on it. */
+type RecoveryState = "out-of-date" | "not-saved"
+
 /**
- * The one bar of the Run screens: out of date until the page reloads, else
- * "Not saved yet" while the outcome of a change is unknown.
+ * The one persistent toast of the Run screens: out of date until the page
+ * reloads, else "Not saved yet" while the outcome of a change is unknown.
  */
-function RecoveryBar({ outOfDate }: { outOfDate: boolean }) {
+function RecoveryToast({ outOfDate }: { outOfDate: boolean }) {
   const { status, retryDelivery } = useRun()
+  const state: RecoveryState | null = outOfDate
+    ? "out-of-date"
+    : status.delivery === "uncertain"
+      ? "not-saved"
+      : null
 
   // A closed tab loses the changes it has not delivered.
   useLeavePrompt(status.delivery !== "idle")
 
-  if (outOfDate) {
-    return (
-      <BottomBar
-        role="alert"
-        message="Your app is out of date. Refresh?"
-        action="Refresh"
-        onAction={() => window.location.reload()}
-      />
-    )
-  }
+  useEffect(() => {
+    if (!state) return
 
-  if (status.delivery === "uncertain") {
-    return (
-      <BottomBar
-        role="status"
-        message="Not saved yet. Your changes are kept here."
-        action="Retry"
-        onAction={retryDelivery}
-      />
+    const id = `run-recovery-${state}`
+
+    toast.add(
+      state === "out-of-date"
+        ? {
+            id,
+            timeout: 0,
+            title: "Your app is out of date. Refresh?",
+            actionProps: {
+              children: "Refresh",
+              className: tapTarget,
+              onClick: () => window.location.reload(),
+            },
+          }
+        : {
+            id,
+            timeout: 0,
+            title: "Not saved yet. Your changes are kept here.",
+            actionProps: {
+              children: "Retry",
+              className: tapTarget,
+              onClick: retryDelivery,
+            },
+          }
     )
-  }
+
+    return () => toast.close(id)
+  }, [state, retryDelivery])
 
   return null
-}
-
-type BottomBarProps = {
-  role: "alert" | "status"
-  message: string
-  /** The label of the one button. */
-  action: string
-  onAction: () => void
-}
-
-/** A bar fixed at the bottom of the Run screens, as tall as its text. */
-function BottomBar({ role, message, action, onAction }: BottomBarProps) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  // Toasts stack above the bar instead of covering it.
-  useEffect(() => {
-    const bar = ref.current
-    const root = document.documentElement
-
-    if (!bar) return
-
-    const observer = new ResizeObserver(() =>
-      root.style.setProperty("--toast-viewport-offset", `${bar.offsetHeight}px`)
-    )
-
-    observer.observe(bar)
-
-    return () => {
-      observer.disconnect()
-      root.style.removeProperty("--toast-viewport-offset")
-    }
-  }, [])
-
-  return (
-    <div
-      ref={ref}
-      className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-md px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
-    >
-      <Alert role={role} className="flex items-center gap-3 shadow-lg">
-        <AlertTitle className="flex-1">{message}</AlertTitle>
-        {/* A small button with a 44 px tap target. */}
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="relative after:absolute after:-inset-1.5 after:content-['']"
-          onClick={onAction}
-        >
-          {action}
-        </Button>
-      </Alert>
-    </div>
-  )
 }

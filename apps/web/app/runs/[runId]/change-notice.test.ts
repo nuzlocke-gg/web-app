@@ -107,7 +107,7 @@ describe("changeNotice", () => {
     ).toMatchObject({ title: "Encounter could not be confirmed" })
   })
 
-  test("an out-of-date app could not confirm the change and shows the bar", () => {
+  test("an out-of-date app could not confirm the change and says to refresh", () => {
     expect(
       changeNotice(
         { kind: "stale-client", mayHaveCommitted: false },
