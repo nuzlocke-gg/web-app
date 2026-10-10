@@ -499,6 +499,8 @@ function EncounterRow({
   return (
     <Item
       id={encounterRowId(encounter.id)}
+      // A row with no action still takes focus when a Warning goes to it.
+      tabIndex={correctable || pokemon ? undefined : -1}
       variant="muted"
       size="sm"
       // Shown in the middle when a Warning goes to it, clear of the dock.

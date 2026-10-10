@@ -36,7 +36,10 @@ afterEach(() => {
   push.mockClear()
 })
 
-async function renderRules(overrides: Partial<RunState> = {}) {
+async function renderRules(
+  overrides: Partial<RunState> = {},
+  saving: { pending?: unknown; status?: string } = {}
+) {
   const run = runState({ rules: defaultRules(), ...overrides })
 
   vi.mocked(useRun).mockReturnValue({ value: run } as never)
@@ -46,6 +49,7 @@ async function renderRules(overrides: Partial<RunState> = {}) {
     retry: vi.fn(),
     pending: undefined,
     status: "idle",
+    ...saving,
   } as never)
 
   await act(async () => render(<RulesScreen />))
@@ -68,7 +72,9 @@ describe("the Rules screen", () => {
   test("a solo Run shows the Rules with their descriptions and no Soul Link group", async () => {
     await renderRules()
 
-    expect(screen.getByRole("heading", { name: "Set the rules" })).toBeDefined()
+    expect(
+      screen.getByRole("heading", { name: "Rules", level: 1 })
+    ).toBeDefined()
     expect(
       screen.getByText("You must give each Pokémon a nickname.")
     ).toBeDefined()
@@ -79,7 +85,7 @@ describe("the Rules screen", () => {
   test("a Soul Link shows the Soul Link rules in a group of their own", async () => {
     await renderRules({ kind: "soul_link" })
 
-    const group = screen.getByRole("group", { name: "Soul Link rules" })
+    const group = screen.getByRole("region", { name: "Soul Link rules" })
 
     expect(within(group).getAllByRole("switch")).toHaveLength(5)
   })
@@ -87,7 +93,9 @@ describe("the Rules screen", () => {
   test("a finished Run shows its Rules as a record and keeps House rules editable", async () => {
     await renderRules({ state: "failed" })
 
-    expect(screen.getByRole("heading", { name: "Rules" })).toBeDefined()
+    expect(
+      screen.getByRole("heading", { name: "Rules", level: 1 })
+    ).toBeDefined()
     expect(screen.getByRole("status").textContent).toContain(
       "This run is finished"
     )
@@ -142,5 +150,27 @@ describe("the Rules screen", () => {
     fireEvent.click(screen.getByRole("link", { name: "Back to the run" }))
 
     expect(screen.queryByRole("alertdialog")).toBeNull()
+  })
+
+  test("Back with an unconfirmed save asks first, because only this screen can retry it", async () => {
+    await renderRules(
+      {},
+      {
+        pending: { args: { houseRules: "Set mode" } },
+        status: "unconfirmed",
+      }
+    )
+
+    expect(
+      screen.getByText("Not saved yet. Your house rules are kept here.")
+    ).toBeDefined()
+
+    fireEvent.click(screen.getByRole("link", { name: "Back to the run" }))
+
+    expect(
+      await screen.findByRole("alertdialog", {
+        name: "Discard your changes to the house rules?",
+      })
+    ).toBeDefined()
   })
 })

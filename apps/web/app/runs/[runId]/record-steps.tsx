@@ -125,9 +125,9 @@ export function RecordSteps({
   const partyFull = partyCount >= PARTY_SIZE
   const where = slot > 1 ? `${placeName} · slot ${slot}` : placeName
 
-  // The preview of the Warnings reuses one set of ids and one time of entry,
-  // so its Alerts keep their identity while the player types; a save takes
-  // new ones.
+  // The preview of the Warnings reuses one set of ids, so its Alerts keep
+  // their identity while the player types; a save takes new ones. The save
+  // keeps the preview's time of entry, so it sorts where the preview did.
   const [preview] = useState(() => ({
     ids: newRecordIds(),
     enteredAt: Date.now(),
@@ -204,7 +204,7 @@ export function RecordSteps({
 
   function save(details: RecordDraft) {
     change(
-      recordEncounter(argsOf(details, newRecordIds(), Date.now())),
+      recordEncounter(argsOf(details, newRecordIds(), preview.enteredAt)),
       "Encounter"
     )
 

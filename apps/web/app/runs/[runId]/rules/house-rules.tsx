@@ -42,7 +42,7 @@ function failureMessage(failure: HouseRulesFailure): string | null {
 /**
  * The House rules field of a Run: the text the player is typing over the
  * Run's saved text, and its Save. Pass it to {@link HouseRulesField}; the
- * screen reads `dirty` to ask before the player leaves.
+ * screen reads `unsaved` to ask before the player leaves.
  */
 export function useHouseRules(run: RunState) {
   const [draft, setDraft] = useState<string | null>(null)
@@ -62,7 +62,7 @@ export function useHouseRules(run: RunState) {
   const locked = held !== undefined
   const text = locked ? (held ?? "") : (draft ?? run.houseRules ?? "")
   const toSave = houseRulesOf(text)
-  // Text already sent is not a draft: leaving does not stop its save.
+  // Text already sent is not typed text: Save stays off until it settles.
   const dirty = !locked && draft !== null && toSave !== run.houseRules
 
   async function save() {
@@ -84,8 +84,13 @@ export function useHouseRules(run: RunState) {
   return {
     text,
     edit: setDraft,
-    /** The field holds text that is not saved. */
+    /** The field holds typed text that Save would send. */
     dirty,
+    /**
+     * Leaving would lose text: typed and not saved, or sent with no answer
+     * yet, which only this screen can try again.
+     */
+    unsaved: dirty || saving.status === "unconfirmed",
     locked,
     sending: saving.status === "sending",
     unconfirmed: saving.status === "unconfirmed",
