@@ -6,6 +6,7 @@ import {
   encounters,
   headcanonMutationReceipts,
   journeys,
+  pokemon,
   runs,
 } from "../lib/db/schema.ts"
 import { testDb } from "./database.ts"
@@ -85,6 +86,17 @@ export async function startersOf(
     .innerJoin(journeys, eq(journeys.id, encounters.journeyId))
     .where(and(eq(encounters.runId, runId), eq(encounters.placeId, "starter")))
     .orderBy(encounters.slotOrdinal)
+}
+
+/** The nicknames of the Pokémon of a Run, as the database holds them. */
+export async function nicknamesOf(runId: string): Promise<(string | null)[]> {
+  const rows = await testDb
+    .select({ nickname: pokemon.nickname })
+    .from(pokemon)
+    .innerJoin(encounters, eq(encounters.id, pokemon.encounterId))
+    .where(eq(encounters.runId, runId))
+
+  return rows.map((row) => row.nickname)
 }
 
 /** Deletes a change's receipt, as the daily cleanup does after 7 days. */

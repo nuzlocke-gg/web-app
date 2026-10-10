@@ -164,8 +164,8 @@ Then "Save encounter".
 ##### Pokémon
 
 - Nickname, Species, Form rows that open small Drawers.
-- Evolve shows "Next in its line" then "Other species" "To correct a wrong species".
-- A Species that does not evolve says so.
+- Evolve shows "Next in its line" then "Other species" "To correct a wrong species", with a search over both; its button says "Evolve into Grovyle" for a Species of the line and "Change to Torchic" for another.
+- A Species that does not evolve says so ("Treecko does not evolve further in Emerald.").
 
 ##### Where
 
@@ -189,7 +189,11 @@ Soul Link only:
 
 ##### History
 
-Lines with dates.
+Lines with dates ("Oct 2", with the year when it is not this year):
+
+- The Encounter: "Met at Granite Cave" (wild), "Received at Starter" (gift), with "as Nincada" after the verb once the Pokémon is another Species; "Traded for Marill at Route 104" (trade) always names it.
+- Each evolution: "Evolved into Ninjask".
+- A death: "Died", "Died at level 14", or "Died at level 14 to Roxanne's Nosepass".
 
 #### Actions
 

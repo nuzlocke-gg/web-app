@@ -5,6 +5,7 @@ import { loadRunCanon } from "@/lib/runs/canon"
 
 import { PrivateRun } from "./private-run"
 import { RunRoot } from "./run-root"
+import { RunTabProvider } from "./run-tab"
 
 type RunLayoutProps = {
   children: ReactNode
@@ -27,7 +28,7 @@ async function RunCanon({ children, params }: RunLayoutProps) {
 
   return (
     <RunRoot key={`${canon.value.viewerId}:${runId}`} canon={canon}>
-      {children}
+      <RunTabProvider>{children}</RunTabProvider>
     </RunRoot>
   )
 }

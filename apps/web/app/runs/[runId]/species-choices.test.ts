@@ -1,7 +1,7 @@
 import type { Species, SuggestionGroup } from "@workspace/game-data"
 import { describe, expect, test } from "vitest"
 
-import { searchChoices, speciesGroups } from "./species-choices"
+import { evolveGroups, searchChoices, speciesGroups } from "./species-choices"
 
 function species(id: string, name: string, forms = ["base"]): Species {
   return {
@@ -91,5 +91,40 @@ describe("searchChoices", () => {
         group: { name: "Walk", origin: "wild" },
       },
     ])
+  })
+})
+
+describe("the Evolve Drawer's groups", () => {
+  const silcoon = species("silcoon", "Silcoon")
+  const cascoon = species("cascoon", "Cascoon")
+  const line = [silcoon, cascoon, ...allSpecies]
+  const next = [
+    { species: "silcoon", form: "base" },
+    { species: "cascoon", form: "base" },
+  ]
+
+  test("lists the next Species first, then every other but its own", () => {
+    const groups = evolveGroups("wurmple", next, line, null)
+
+    expect(groups.next.map((choice) => choice.name)).toEqual([
+      "Silcoon",
+      "Cascoon",
+    ])
+    expect(groups.others.map((choice) => choice.name)).toEqual([
+      "Zigzagoon",
+      "Marill",
+      "Castform",
+    ])
+  })
+
+  test("a search keeps only its matches, in their order", () => {
+    const groups = evolveGroups("wurmple", next, line, [marill, cascoon])
+
+    expect(groups.next.map((choice) => choice.name)).toEqual(["Cascoon"])
+    expect(groups.others.map((choice) => choice.name)).toEqual(["Marill"])
+  })
+
+  test("a Species that does not evolve has no next Species", () => {
+    expect(evolveGroups("marill", [], line, null).next).toEqual([])
   })
 })

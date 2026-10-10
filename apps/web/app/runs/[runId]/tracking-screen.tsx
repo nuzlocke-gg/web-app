@@ -30,7 +30,7 @@ import {
 } from "@workspace/ui/components/tabs"
 import { cn } from "@workspace/ui/lib/utils"
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 
 import { Sprite, UnknownSprite } from "@/components/sprite"
 import { admitsChanges } from "@/lib/runs/can-change"
@@ -57,14 +57,13 @@ import {
 } from "./encounter-list"
 import { Dock } from "./dock"
 import { useRun } from "./run-root"
+import { useRunTab, type RunTab } from "./run-tab"
 import { useLoadedMap } from "./use-map"
 
 const kindNames: Record<RunKind, string> = {
   solo: "Solo",
   soul_link: "Soul Link",
 }
-
-type Tab = "encounters" | "pokemon"
 
 /**
  * The tracking screen of a Run: its header, the Encounters and Pokémon tabs,
@@ -80,7 +79,7 @@ export function TrackingScreen() {
   const listed = listedPlaces(places, run)
   const progress = progressOf(listed, run, map ? progressTotal(map) : 0)
   const canAdd = map !== undefined && admitsChanges(run)
-  const [tab, setTab] = useState<Tab>("encounters")
+  const [tab, setTab] = useRunTab()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [sheet, setSheet] = useState<Sheet>({ step: "places" })
   const [justAdded, setJustAdded] = useState<PlaceId | null>(null)
@@ -88,9 +87,13 @@ export function TrackingScreen() {
   const [correctOpen, setCorrectOpen] = useState(false)
   const savedAt = useRef<PlaceId | null>(null)
 
-  // The screen opens on the newest location, at the end of the list.
+  const opensOnEncounters = useRef(tab === "encounters")
+
+  // The Encounters tab opens on the newest location, at the end of the list.
   useEffect(() => {
-    window.scrollTo({ top: document.documentElement.scrollHeight })
+    if (opensOnEncounters.current) {
+      window.scrollTo({ top: document.documentElement.scrollHeight })
+    }
   }, [])
 
   function openDrawer(next: Sheet) {
@@ -149,7 +152,7 @@ export function TrackingScreen() {
 
       <Tabs
         value={tab}
-        onValueChange={(next) => setTab(next as Tab)}
+        onValueChange={(next) => setTab(next as RunTab)}
         className="flex-1 px-4"
       >
         {/* Each tab is a 44 px tap target; the list grows around them. */}
@@ -194,6 +197,12 @@ export function TrackingScreen() {
             title="Party"
             count={`${partyOf(journey).length} of ${PARTY_SIZE}`}
             pokemon={partyOf(journey)}
+            // The Party editor comes in M7.
+            action={
+              <Button type="button" variant="ghost" size="sm" disabled>
+                Edit
+              </Button>
+            }
           />
           <PokemonGroup
             map={map}
@@ -291,6 +300,7 @@ function PlaceSection({
           {encounters.map((encounter) => (
             <div key={encounter.id} role="listitem">
               <EncounterRow
+                runId={run.id}
                 map={map}
                 encounter={encounter}
                 pokemon={journey.pokemon.find(
@@ -404,6 +414,7 @@ function ProgressBlock({ progress, onOpen }: ProgressBlockProps) {
 }
 
 type EncounterRowProps = {
+  runId: string
   map: LoadedMap
   encounter: EncounterState
   /** The Encounter's Pokémon; none for a Failed Encounter. */
@@ -413,6 +424,7 @@ type EncounterRowProps = {
 }
 
 function EncounterRow({
+  runId,
   map,
   encounter,
   pokemon,
@@ -436,6 +448,8 @@ function EncounterRow({
             className="text-left hover:bg-muted"
             onClick={() => onCorrect(encounter.id)}
           />
+        ) : pokemon ? (
+          <Link href={`/runs/${runId}/pokemon/${pokemon.id}`} />
         ) : undefined
       }
     >
@@ -460,6 +474,10 @@ function EncounterRow({
           <Badge variant="outline">Failed</Badge>
           {correctable ? <CaretRightIcon aria-hidden /> : null}
         </ItemActions>
+      ) : pokemon ? (
+        <ItemActions>
+          <CaretRightIcon aria-hidden />
+        </ItemActions>
       ) : null}
     </Item>
   )
@@ -471,14 +489,23 @@ type PokemonGroupProps = {
   /** Shown at the end of the header, such as "2 of 6". */
   count: string
   pokemon: PokemonState[]
+  /** A control after the count. */
+  action?: ReactNode
 }
 
-function PokemonGroup({ map, title, count, pokemon }: PokemonGroupProps) {
+function PokemonGroup({
+  map,
+  title,
+  count,
+  pokemon,
+  action,
+}: PokemonGroupProps) {
   return (
     <section aria-label={title} className="flex flex-col gap-2 pt-1.5 pb-3">
-      <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-medium">{title}</h2>
+      <div className="flex min-h-8 items-center gap-2">
+        <h2 className="flex-1 text-sm font-medium">{title}</h2>
         <span className="text-xs text-muted-foreground">{count}</span>
+        {action}
       </div>
       {map && pokemon.length > 0 ? (
         <ItemGroup className="gap-1.5">
@@ -510,21 +537,30 @@ function PokemonRow({
     "an unknown location"
 
   return (
-    <Item role="listitem" variant="muted" size="sm">
-      <ItemMedia>
-        <Sprite
-          map={map}
-          species={pokemon.species.species}
-          form={pokemon.species.form}
-          size={36}
-        />
-      </ItemMedia>
-      <ItemContent className="min-w-0">
-        <ItemTitle>{pokemon.nickname ?? speciesName}</ItemTitle>
-        <ItemDescription>
-          {pokemon.nickname ? speciesName : "No nickname"} · from {metAt}
-        </ItemDescription>
-      </ItemContent>
-    </Item>
+    <div role="listitem">
+      <Item
+        variant="muted"
+        size="sm"
+        render={<Link href={`/runs/${run.id}/pokemon/${pokemon.id}`} />}
+      >
+        <ItemMedia className={cn(pokemon.diedAt !== null && "opacity-60")}>
+          <Sprite
+            map={map}
+            species={pokemon.species.species}
+            form={pokemon.species.form}
+            size={36}
+          />
+        </ItemMedia>
+        <ItemContent className="min-w-0">
+          <ItemTitle>{pokemon.nickname ?? speciesName}</ItemTitle>
+          <ItemDescription>
+            {pokemon.nickname ? speciesName : "No nickname"} · from {metAt}
+          </ItemDescription>
+        </ItemContent>
+        <ItemActions>
+          <CaretRightIcon aria-hidden />
+        </ItemActions>
+      </Item>
+    </div>
   )
 }
