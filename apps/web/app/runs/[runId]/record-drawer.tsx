@@ -1,6 +1,6 @@
 "use client"
 
-import { CaretLeftIcon, MagnifyingGlassIcon } from "@phosphor-icons/react"
+import { CaretLeftIcon, XIcon } from "@phosphor-icons/react"
 import {
   getSpecies,
   hasFormChoice,
@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
@@ -27,17 +28,14 @@ import {
   FieldLabel,
   FieldTitle,
 } from "@workspace/ui/components/field"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@workspace/ui/components/input-group"
 import { Input } from "@workspace/ui/components/input"
 import {
   Item,
   ItemActions,
   ItemContent,
+  ItemDescription,
   ItemGroup,
+  ItemMedia,
   ItemTitle,
 } from "@workspace/ui/components/item"
 import {
@@ -45,7 +43,7 @@ import {
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
 import type { MutationErrorOf } from "headcanon"
-import { useId, useState } from "react"
+import { useId, useState, type ReactNode } from "react"
 import { v7 as uuidv7 } from "uuid"
 
 import { Sprite, UnknownSprite } from "@/components/sprite"
@@ -64,6 +62,7 @@ import {
   searchChoices,
   speciesGroups,
   type SpeciesChoice,
+  type SuggestedGroup,
 } from "./species-choices"
 import { useLoadedMap } from "./use-map"
 
@@ -84,6 +83,8 @@ type RecordRefusal = MutationErrorOf<typeof recordEncounter>
 type Draft = {
   /** Null for "Species unknown". */
   met: FormRef | null
+  /** The method group the Species was picked from, if any. */
+  group: SuggestedGroup | null
   origin: Origin
   outcome: EncounterOutcome
   nickname: string
@@ -116,9 +117,11 @@ export function RecordDrawer({
   const { value: run, mutate } = useRun()
   const map = useLoadedMap()
   const journey = viewerJourney(run)
-  const partyFull = partyOf(journey).length >= PARTY_SIZE
+  const partyCount = partyOf(journey).length
+  const partyFull = partyCount >= PARTY_SIZE
   const [draft, setDraft] = useState<Draft | null>(null)
   const [refusal, setRefusal] = useState<RecordRefusal | null>(null)
+  const where = slot > 1 ? `${placeName} · slot ${slot}` : placeName
 
   function changeOpen(next: boolean) {
     if (next) {
@@ -133,7 +136,8 @@ export function RecordDrawer({
     setRefusal(null)
     setDraft({
       met: choice?.met ?? null,
-      origin: choice?.origin ?? "wild",
+      group: choice?.group ?? null,
+      origin: choice?.group?.origin ?? "wild",
       outcome: choice ? "caught" : "failed",
       nickname: draft?.nickname ?? "",
       goesTo: partyFull ? "box" : "party",
@@ -165,12 +169,16 @@ export function RecordDrawer({
   return (
     <Drawer open={open} onOpenChange={changeOpen} showSwipeHandle>
       <DrawerContent>
+        <RecordHeader
+          description={where}
+          onBack={draft ? () => setDraft(null) : undefined}
+        />
         {!map ? null : draft ? (
           <DetailsStep
             map={map}
             placeName={placeName}
             draft={draft}
-            partyFull={partyFull}
+            partyCount={partyCount}
             refusal={refusal}
             onChange={setDraft}
             onChangeSpecies={() => setDraft(null)}
@@ -180,7 +188,6 @@ export function RecordDrawer({
           <SpeciesStep
             map={map}
             placeId={placeId}
-            placeName={placeName}
             gameId={journey.gameId}
             onPick={pick}
           />
@@ -211,65 +218,96 @@ function outcomeArgs(
   }
 }
 
+type RecordHeaderProps = {
+  description: string
+  /** Shown as "Back to species" when given. */
+  onBack?: () => void
+}
+
+function RecordHeader({ description, onBack }: RecordHeaderProps) {
+  return (
+    <div className="flex items-start gap-1 px-2">
+      <div className="w-11 shrink-0 pt-2">
+        {onBack ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-11"
+            aria-label="Back to species"
+            onClick={onBack}
+          >
+            <CaretLeftIcon />
+          </Button>
+        ) : null}
+      </div>
+      <DrawerHeader className="flex-1 px-0">
+        <DrawerTitle>Record an encounter</DrawerTitle>
+        <DrawerDescription>{description}</DrawerDescription>
+      </DrawerHeader>
+      <div className="w-11 shrink-0 pt-2">
+        <DrawerClose
+          render={
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-11"
+              aria-label="Close"
+            />
+          }
+        >
+          <XIcon />
+        </DrawerClose>
+      </div>
+    </div>
+  )
+}
+
 type SpeciesStepProps = {
   map: LoadedMap
   placeId: PlaceId
-  placeName: string
   gameId: string
   onPick: (choice: SpeciesChoice | null) => void
 }
 
-function SpeciesStep({
-  map,
-  placeId,
-  placeName,
-  gameId,
-  onPick,
-}: SpeciesStepProps) {
+function SpeciesStep({ map, placeId, gameId, onPick }: SpeciesStepProps) {
   const [query, setQuery] = useState("")
   const searching = query.trim() !== ""
 
   return (
     <>
-      <DrawerHeader>
-        <DrawerTitle>{placeName}</DrawerTitle>
-        <DrawerDescription>Which species did you meet?</DrawerDescription>
-      </DrawerHeader>
-      <div className="px-4 pb-2">
-        <InputGroup className="h-11">
-          <InputGroupAddon>
-            <MagnifyingGlassIcon aria-hidden />
-          </InputGroupAddon>
-          <InputGroupInput
-            type="search"
-            aria-label="Search species"
-            placeholder={`Search all ${map.data.species.length} species`}
-            className="text-base"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </InputGroup>
+      <div className="px-4 pt-3 pb-1">
+        <Input
+          type="search"
+          aria-label="Search species"
+          placeholder={`Search all ${map.data.species.length} species`}
+          autoComplete="off"
+          className="h-11 text-base"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
         {searching ? (
-          <ChoiceList
-            map={map}
-            choices={searchChoices(map, placeId, gameId, query)}
-            onPick={onPick}
-          />
+          <SpeciesSection title="Results">
+            <ChoiceGrid
+              map={map}
+              choices={searchChoices(map, placeId, gameId, query)}
+              onPick={onPick}
+            />
+          </SpeciesSection>
         ) : (
           speciesGroups(map, placeId, gameId).map((group) => (
-            <section key={group.name} aria-label={group.name}>
-              <h3 className="px-1 pt-3 pb-1 text-sm font-medium">
-                {group.name}
-              </h3>
-              <ChoiceList map={map} choices={group.choices} onPick={onPick} />
-            </section>
+            <SpeciesSection key={group.name} title={group.name}>
+              <ChoiceGrid map={map} choices={group.choices} onPick={onPick} />
+            </SpeciesSection>
           ))
         )}
         <Item
-          size="sm"
-          className="mt-2"
+          variant="muted"
+          size="xs"
+          className="mt-4"
           render={
             <button
               type="button"
@@ -278,7 +316,9 @@ function SpeciesStep({
             />
           }
         >
-          <UnknownSprite size={36} />
+          <ItemMedia>
+            <UnknownSprite size={32} />
+          </ItemMedia>
           <ItemContent>
             <ItemTitle>Species unknown</ItemTitle>
           </ItemContent>
@@ -288,37 +328,56 @@ function SpeciesStep({
   )
 }
 
-type ChoiceListProps = {
+function SpeciesSection({
+  title,
+  children,
+}: {
+  title: string
+  children: ReactNode
+}) {
+  return (
+    <section aria-label={title} className="flex flex-col gap-1.5 pt-3">
+      <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+      {children}
+    </section>
+  )
+}
+
+type ChoiceGridProps = {
   map: LoadedMap
   choices: SpeciesChoice[]
   onPick: (choice: SpeciesChoice) => void
 }
 
-function ChoiceList({ map, choices, onPick }: ChoiceListProps) {
+function ChoiceGrid({ map, choices, onPick }: ChoiceGridProps) {
   return (
-    <ItemGroup className="gap-0">
+    <ItemGroup className="grid grid-cols-2 gap-1.5">
       {choices.map((choice) => (
-        <Item
-          key={`${choice.met.species}/${choice.met.form}`}
-          size="sm"
-          render={
-            <button
-              type="button"
-              className="min-h-11 text-left"
-              onClick={() => onPick(choice)}
-            />
-          }
-        >
-          <Sprite
-            map={map}
-            species={choice.met.species}
-            form={choice.met.form}
-            size={36}
-          />
-          <ItemContent>
-            <ItemTitle>{choice.name}</ItemTitle>
-          </ItemContent>
-        </Item>
+        <div key={`${choice.met.species}/${choice.met.form}`} role="listitem">
+          <Item
+            variant="muted"
+            size="xs"
+            render={
+              <button
+                type="button"
+                className="min-h-11 text-left"
+                onClick={() => onPick(choice)}
+              />
+            }
+          >
+            <ItemMedia>
+              <Sprite
+                map={map}
+                species={choice.met.species}
+                form={choice.met.form}
+                size={32}
+              />
+            </ItemMedia>
+            <ItemContent className="min-w-0">
+              <ItemTitle>{choice.name}</ItemTitle>
+            </ItemContent>
+          </Item>
+        </div>
       ))}
     </ItemGroup>
   )
@@ -328,7 +387,7 @@ type DetailsStepProps = {
   map: LoadedMap
   placeName: string
   draft: Draft
-  partyFull: boolean
+  partyCount: number
   refusal: RecordRefusal | null
   onChange: (draft: Draft) => void
   onChangeSpecies: () => void
@@ -339,7 +398,7 @@ function DetailsStep({
   map,
   placeName,
   draft,
-  partyFull,
+  partyCount,
   refusal,
   onChange,
   onChangeSpecies,
@@ -348,42 +407,48 @@ function DetailsStep({
   const id = useId()
   const species = draft.met ? getSpecies(map, draft.met.species) : undefined
   const caught = draft.outcome === "caught"
-  const nicknameProblem = nicknameRefusal(draft.nickname.trim())
+  const partyFull = partyCount >= PARTY_SIZE
   const goesTo = partyFull ? "box" : draft.goesTo
+  const nicknameProblem = nicknameRefusal(draft.nickname.trim())
 
   return (
     <>
-      <DrawerHeader>
-        <DrawerTitle>{placeName}</DrawerTitle>
-        <DrawerDescription>Fill in the details.</DrawerDescription>
-      </DrawerHeader>
-      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
-        <Item variant="muted" size="sm">
-          {draft.met ? (
-            <Sprite
-              map={map}
-              species={draft.met.species}
-              form={draft.met.form}
-              size={36}
-            />
-          ) : (
-            <UnknownSprite size={36} />
-          )}
-          <ItemContent>
-            <ItemTitle>{species?.name ?? "Unknown"}</ItemTitle>
-          </ItemContent>
-          <ItemActions>
-            <Button
-              type="button"
-              variant="ghost"
-              className="h-11 text-primary"
-              onClick={onChangeSpecies}
-            >
-              <CaretLeftIcon aria-hidden />
-              Change
-            </Button>
-          </ItemActions>
-        </Item>
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pt-3 pb-4">
+        <Field>
+          <FieldTitle>Species</FieldTitle>
+          <Item variant="muted" size="xs">
+            <ItemMedia>
+              {draft.met ? (
+                <Sprite
+                  map={map}
+                  species={draft.met.species}
+                  form={draft.met.form}
+                  size={32}
+                />
+              ) : (
+                <UnknownSprite size={32} />
+              )}
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle>{species?.name ?? "Unknown"}</ItemTitle>
+              {draft.met ? (
+                <ItemDescription>
+                  {pickedFrom(draft.group, placeName)}
+                </ItemDescription>
+              ) : null}
+            </ItemContent>
+            <ItemActions>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-11"
+                onClick={onChangeSpecies}
+              >
+                Change
+              </Button>
+            </ItemActions>
+          </Item>
+        </Field>
 
         <Choice
           id={`${id}-outcome`}
@@ -404,6 +469,7 @@ function DetailsStep({
             value: origin,
             label: originNames[origin],
           }))}
+          description={originHelp(draft.group)}
           onChange={(origin) => onChange({ ...draft, origin })}
         />
 
@@ -430,6 +496,7 @@ function DetailsStep({
               <Input
                 id={`${id}-nickname`}
                 className="h-11 text-base"
+                placeholder="Nickname"
                 autoComplete="off"
                 value={draft.nickname}
                 aria-invalid={nicknameProblem !== null || undefined}
@@ -455,7 +522,7 @@ function DetailsStep({
               description={
                 partyFull
                   ? `Your party is full (${PARTY_SIZE} of ${PARTY_SIZE}), so it goes to the box.`
-                  : undefined
+                  : `Your party has ${partyCount} of ${PARTY_SIZE}.`
               }
               onChange={(next) => onChange({ ...draft, goesTo: next })}
             />
@@ -481,6 +548,20 @@ function DetailsStep({
       </DrawerFooter>
     </>
   )
+}
+
+/** Where step 1 found the Species, under its name in step 2. */
+function pickedFrom(group: SuggestedGroup | null, placeName: string): string {
+  return group
+    ? `From the ${group.name.toLowerCase()} table`
+    : `Not in the table of ${placeName}`
+}
+
+/** Why the Origin starts where it does. */
+function originHelp(group: SuggestedGroup | null): string {
+  return group
+    ? `${originNames[group.origin]} is the default for the ${group.name.toLowerCase()} table.`
+    : "Select how you got it."
 }
 
 type ChoiceProps<Value extends string> = {

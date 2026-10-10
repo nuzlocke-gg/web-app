@@ -13,7 +13,14 @@ import {
 export type SpeciesChoice = {
   met: FormRef
   name: string
-  /** The origin step 2 starts with: its method group's, else Wild. */
+  /** The method group it was suggested in at this location, if any. */
+  group: SuggestedGroup | null
+}
+
+/** A method group that suggests a Species at a location. */
+export type SuggestedGroup = {
+  name: string
+  /** The origin step 2 starts with. */
   origin: Origin
 }
 
@@ -38,7 +45,7 @@ export function speciesGroups(
     choices: group.entries.map((met) => ({
       met,
       name: map.species.get(met.species)?.name ?? "Unknown Pokémon",
-      origin: group.origin,
+      group: { name: group.name, origin: group.origin },
     })),
   }))
   const suggested = new Set(
@@ -53,7 +60,7 @@ export function speciesGroups(
 
 /**
  * The Species matching a search, over every Species of the Map. A Species
- * that the location suggests keeps its method group's origin.
+ * that the location suggests keeps its first method group.
  */
 export function searchChoices(
   map: LoadedMap,
@@ -61,25 +68,28 @@ export function searchChoices(
   gameId: GameId,
   query: string
 ): SpeciesChoice[] {
-  const originOf = new Map<string, Origin>()
+  const groupOf = new Map<string, SuggestedGroup>()
 
   for (const group of suggestions(map, placeId, gameId)) {
     for (const entry of group.entries) {
-      if (!originOf.has(entry.species)) {
-        originOf.set(entry.species, group.origin)
+      if (!groupOf.has(entry.species)) {
+        groupOf.set(entry.species, { name: group.name, origin: group.origin })
       }
     }
   }
 
   return searchSpecies(map, query).map((species) =>
-    otherChoice(species, originOf.get(species.id))
+    otherChoice(species, groupOf.get(species.id))
   )
 }
 
-function otherChoice(species: Species, origin: Origin = "wild"): SpeciesChoice {
+function otherChoice(
+  species: Species,
+  group: SuggestedGroup | null = null
+): SpeciesChoice {
   return {
     met: { species: species.id, form: species.forms[0]!.id },
     name: species.name,
-    origin,
+    group,
   }
 }

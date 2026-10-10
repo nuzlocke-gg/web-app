@@ -4,16 +4,20 @@ import { CaretLeftIcon, PlusIcon } from "@phosphor-icons/react"
 import {
   getGame,
   getSpecies,
+  placeName,
   placesOf,
   type LoadedMap,
   type PlaceRow,
 } from "@workspace/game-data"
+import { Badge } from "@workspace/ui/components/badge"
 import { Button, buttonVariants } from "@workspace/ui/components/button"
 import {
   Item,
+  ItemActions,
   ItemContent,
   ItemDescription,
   ItemGroup,
+  ItemMedia,
   ItemTitle,
 } from "@workspace/ui/components/item"
 import {
@@ -111,10 +115,16 @@ export function TrackingScreen() {
             count={`${partyOf(journey).length} of ${PARTY_SIZE}`}
             pokemon={partyOf(journey)}
           />
-          <PokemonGroup map={map} title="Box" pokemon={boxOf(journey)} />
+          <PokemonGroup
+            map={map}
+            title="Box"
+            count={String(boxOf(journey).length)}
+            pokemon={boxOf(journey)}
+          />
           <PokemonGroup
             map={map}
             title="Graveyard"
+            count={String(graveyardOf(journey).length)}
             pokemon={graveyardOf(journey)}
           />
         </TabsContent>
@@ -131,27 +141,38 @@ type StarterSectionProps = {
 function StarterSection({ map, starter }: StarterSectionProps) {
   const { value: run } = useRun()
   const [recording, setRecording] = useState(false)
-  const encounters = viewerJourney(run).encounters.filter(
+  const journey = viewerJourney(run)
+  const encounters = journey.encounters.filter(
     (encounter) => encounter.placeId === starter.id
   )
 
   return (
-    <section aria-label={starter.name} className="border-b py-2.5">
+    <section
+      aria-label={starter.name}
+      className="flex flex-col gap-1.5 border-b py-2.5"
+    >
       <h2 className="text-sm font-medium">{starter.name}</h2>
       {encounters.length === 0 ? (
         <Button
           type="button"
           variant="outline"
-          className="mt-2 h-11 w-full border-dashed text-muted-foreground"
+          className="h-13 w-full border-dashed border-primary/55 text-primary hover:text-primary"
           onClick={() => setRecording(true)}
         >
           <PlusIcon aria-hidden />
           Record your starter
         </Button>
       ) : (
-        <ItemGroup className="mt-1 gap-0">
+        <ItemGroup className="gap-1.5">
           {encounters.map((encounter) => (
-            <EncounterRow key={encounter.id} map={map} encounter={encounter} />
+            <EncounterRow
+              key={encounter.id}
+              map={map}
+              encounter={encounter}
+              pokemon={journey.pokemon.find(
+                (mon) => mon.encounterId === encounter.id
+              )}
+            />
           ))}
         </ItemGroup>
       )}
@@ -166,64 +187,72 @@ function StarterSection({ map, starter }: StarterSectionProps) {
   )
 }
 
-function EncounterRow({
-  map,
-  encounter,
-}: {
+type EncounterRowProps = {
   map: LoadedMap
   encounter: EncounterState
-}) {
-  const species = encounter.met
-    ? getSpecies(map, encounter.met.species)
-    : undefined
+  /** The Encounter's Pokémon; none for a Failed Encounter. */
+  pokemon: PokemonState | undefined
+}
+
+function EncounterRow({ map, encounter, pokemon }: EncounterRowProps) {
+  const failed = encounter.outcome === "failed"
+  const speciesName = encounter.met
+    ? (getSpecies(map, encounter.met.species)?.name ?? "Unknown Pokémon")
+    : "Species unknown"
 
   return (
-    <Item size="sm" className="px-0">
-      {encounter.met ? (
-        <Sprite
-          map={map}
-          species={encounter.met.species}
-          form={encounter.met.form}
-          size={36}
-        />
-      ) : (
-        <UnknownSprite size={36} />
-      )}
-      <ItemContent>
-        <ItemTitle>
-          {encounter.met
-            ? (species?.name ?? "Unknown Pokémon")
-            : "Species unknown"}
-        </ItemTitle>
-        {encounter.outcome === "failed" ? (
-          <ItemDescription>Failed</ItemDescription>
-        ) : null}
+    <Item role="listitem" variant="muted" size="sm">
+      <ItemMedia className={cn(failed && "opacity-60")}>
+        {encounter.met ? (
+          <Sprite
+            map={map}
+            species={encounter.met.species}
+            form={encounter.met.form}
+            size={36}
+          />
+        ) : (
+          <UnknownSprite size={36} />
+        )}
+      </ItemMedia>
+      <ItemContent className="min-w-0">
+        <ItemTitle>{speciesName}</ItemTitle>
+        <ItemDescription>
+          {pokemon ? fateLine(pokemon) : "Failed"}
+        </ItemDescription>
       </ItemContent>
+      {failed ? (
+        <ItemActions>
+          <Badge variant="outline">Failed</Badge>
+        </ItemActions>
+      ) : null}
     </Item>
   )
+}
+
+/** What became of an Encounter's Pokémon, under the Species met. */
+function fateLine(pokemon: PokemonState): string {
+  const where = pokemon.inParty ? "Party" : "Box"
+
+  return `${pokemon.nickname ?? "No nickname"} · ${where}`
 }
 
 type PokemonGroupProps = {
   map: LoadedMap | undefined
   title: string
-  /** Shown after the title, such as "2 of 6". */
-  count?: string
+  /** Shown at the end of the header, such as "2 of 6". */
+  count: string
   pokemon: PokemonState[]
 }
 
 function PokemonGroup({ map, title, count, pokemon }: PokemonGroupProps) {
   return (
-    <section aria-label={title} className="pt-1.5 pb-2">
-      <h2 className="flex items-baseline gap-2 text-sm font-medium">
-        {title}
-        {count ? (
-          <span className="text-xs font-normal text-muted-foreground">
-            {count}
-          </span>
-        ) : null}
-      </h2>
+    <section aria-label={title} className="flex flex-col gap-2 pt-1.5 pb-3">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-sm font-medium">{title}</h2>
+        <span className="text-xs text-muted-foreground">{count}</span>
+      </div>
       {map && pokemon.length > 0 ? (
-        <ItemGroup className="mt-1 gap-0">
+        <ItemGroup className="gap-1.5">
           {pokemon.map((mon) => (
             <PokemonRow key={mon.id} map={map} pokemon={mon} />
           ))}
@@ -240,22 +269,32 @@ function PokemonRow({
   map: LoadedMap
   pokemon: PokemonState
 }) {
+  const { value: run } = useRun()
+  const journey = viewerJourney(run)
   const speciesName =
     getSpecies(map, pokemon.species.species)?.name ?? "Unknown Pokémon"
+  const encounter = journey.encounters.find(
+    (candidate) => candidate.id === pokemon.encounterId
+  )
+  const metAt =
+    (encounter && placeName(map, encounter.placeId, journey.gameId)) ??
+    "an unknown location"
 
   return (
-    <Item size="sm" className="px-0">
-      <Sprite
-        map={map}
-        species={pokemon.species.species}
-        form={pokemon.species.form}
-        size={36}
-      />
-      <ItemContent>
+    <Item role="listitem" variant="muted" size="sm">
+      <ItemMedia>
+        <Sprite
+          map={map}
+          species={pokemon.species.species}
+          form={pokemon.species.form}
+          size={36}
+        />
+      </ItemMedia>
+      <ItemContent className="min-w-0">
         <ItemTitle>{pokemon.nickname ?? speciesName}</ItemTitle>
-        {pokemon.nickname ? (
-          <ItemDescription>{speciesName}</ItemDescription>
-        ) : null}
+        <ItemDescription>
+          {pokemon.nickname ? speciesName : "No nickname"} · from {metAt}
+        </ItemDescription>
       </ItemContent>
     </Item>
   )

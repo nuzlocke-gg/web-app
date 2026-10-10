@@ -13,7 +13,7 @@ test("a player makes a Run and records the starter", async ({
 
   await page.getByRole("button", { name: "Record your starter" }).click()
 
-  const drawer = page.getByRole("dialog", { name: "Starter" })
+  const drawer = page.getByRole("dialog", { name: "Record an encounter" })
 
   await expect(drawer.getByRole("region", { name: "Gift" })).toBeVisible()
   await drawer.getByRole("button", { name: "Mudkip" }).click()
