@@ -129,11 +129,8 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
   }
 
   return (
-    // "Make the run" follows the fields instead of being pinned to the bottom
-    // of the viewport: iOS Safari's floating toolbar covers the bottom of a
-    // full-height page.
-    <form action={makeRun} className="flex flex-col">
-      <main className="flex flex-col gap-6 px-4 pt-2 pb-6">
+    <form action={makeRun} className="flex flex-1 flex-col">
+      <main className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-6">
         <MapPicker
           maps={maps}
           value={map}
