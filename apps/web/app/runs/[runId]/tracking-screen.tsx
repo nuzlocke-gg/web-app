@@ -37,6 +37,7 @@ import { Sprite, UnknownSprite } from "@/components/sprite"
 import { WarningMark } from "@/components/warning-alert"
 import { admitsChanges } from "@/lib/runs/can-change"
 import type { Warning } from "@/lib/runs/rule-checks"
+import { ruleName } from "@/lib/runs/rules"
 import {
   boxOf,
   graveyardOf,
@@ -64,7 +65,7 @@ import { useRun } from "./run-root"
 import { useRunTab, type RunTab } from "./run-tab"
 import { useLoadedMap } from "./use-map"
 import { useWarnings } from "./use-warnings"
-import { ruleNameOf, warningText } from "./warning-text"
+import { warningText } from "./warning-text"
 
 const kindNames: Record<RunKind, string> = {
   solo: "Solo",
@@ -292,7 +293,7 @@ function marksOf(warnings: Warning[]): Marks {
   for (const warning of warnings) {
     const names = marks.get(warning.encounterId) ?? []
 
-    marks.set(warning.encounterId, [...names, ruleNameOf(warning)])
+    marks.set(warning.encounterId, [...names, ruleName(warning.rule)])
   }
 
   return marks

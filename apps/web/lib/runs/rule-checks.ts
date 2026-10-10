@@ -93,7 +93,7 @@ export const checkDuplicateClause: RuleCheck = (run, facts) =>
     journey.encounters.flatMap((encounter): Warning[] => {
       if (encounter.outcome !== "caught" || !encounter.met) return []
 
-      const earliest = sameLineAs(journey, encounter.met.species, facts)
+      const earliest = firstCatchInLine(journey, encounter.met.species, facts)
 
       if (!earliest || earliest.id === encounter.id) return []
 
@@ -109,11 +109,11 @@ export const checkDuplicateClause: RuleCheck = (run, facts) =>
   )
 
 /**
- * The earliest Caught Encounter of the Journey whose Species is in the
- * Evolution Line of `species`, or undefined when there is none or the game
- * data has no line for it.
+ * The first Caught Encounter of the Journey, by time of entry, whose Species
+ * is in the Evolution Line of `species`; undefined when there is none or the
+ * game data has no line for it.
  */
-export function sameLineAs(
+export function firstCatchInLine(
   journey: JourneyState,
   species: SpeciesId,
   facts: GameFacts

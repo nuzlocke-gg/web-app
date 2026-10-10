@@ -2,7 +2,7 @@ import { placeName, type LoadedMap } from "@workspace/game-data"
 
 import { speciesName } from "@/components/species-name"
 import type { Warning } from "@/lib/runs/rule-checks"
-import { rules } from "@/lib/runs/rules"
+import { ruleName } from "@/lib/runs/rules"
 import type { EncounterState, JourneyState, RunState } from "@/lib/runs/state"
 
 /** What a Warning says. */
@@ -38,7 +38,7 @@ export function warningText(
   const journey = journeyOf(run, warning.journeyId)
   const encounter = encounterOf(journey, warning.encounterId)
   const where = locationOf(map, journey, encounter)
-  const rule = ruleNameOf(warning)
+  const rule = ruleName(warning.rule)
 
   switch (warning.rule) {
     case "first-encounter": {
@@ -79,14 +79,6 @@ export function warningText(
       }
     }
   }
-}
-
-/** The name of the Rule a Warning is about. */
-export function ruleNameOf(warning: Warning): string {
-  return (
-    rules.find((candidate) => candidate.id === warning.rule)?.name ??
-    "Unknown rule"
-  )
 }
 
 /**

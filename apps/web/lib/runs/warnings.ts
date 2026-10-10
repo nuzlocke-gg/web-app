@@ -1,5 +1,4 @@
 import { evolutionLineOf, type LoadedMap } from "@workspace/game-data"
-import { v7 as uuidv7 } from "uuid"
 
 import type { RecordEncounterArgs } from "./changes/record-encounter"
 import { recordEncounter } from "./mutations"
@@ -38,14 +37,15 @@ function rulesChecked(run: RunState): readonly Rule[] {
  * What saving Record an Encounter with these arguments would do to the
  * Warnings: the predicted Run, and the Warnings it has that the Run has not
  * now, to format against that predicted Run. Null when the change would be
- * refused.
+ * refused. `mutationId` names the prediction; any UUID does.
  */
 export function warningsOfRecord(
   run: RunState,
   facts: GameFacts,
-  args: RecordEncounterArgs
+  args: RecordEncounterArgs,
+  mutationId: string
 ): { run: RunState; warnings: Warning[] } | null {
-  const predicted = recordEncounter.predict(run, args, { mutationId: uuidv7() })
+  const predicted = recordEncounter.predict(run, args, { mutationId })
 
   if (!predicted.ok) return null
 

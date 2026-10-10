@@ -128,6 +128,15 @@ export function defaultRules(): Record<RuleId, boolean> {
   ) as Record<RuleId, boolean>
 }
 
+/** The name of a Rule, as the screens show it. */
+export function ruleName(id: RuleId): string {
+  const rule = rules.find((candidate) => candidate.id === id)
+
+  if (!rule) throw new Error(`No Rule ${id}`)
+
+  return rule.name
+}
+
 /** The Rules a Run of this kind shows. */
 export function rulesShown(kind: RunKind): readonly Rule[] {
   return kind === "soul_link"

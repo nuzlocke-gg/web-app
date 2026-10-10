@@ -349,7 +349,7 @@ describe("warningsOfRecord", () => {
       only("first-encounter", "nickname-clause", "duplicate-clause")
     )
     const args = recordArgs(run)
-    const preview = warningsOfRecord(run, facts, args)
+    const preview = warningsOfRecord(run, facts, args, uuidv7())
 
     expect(preview?.warnings.map((warning) => warning.rule)).toEqual([
       "first-encounter",
@@ -384,7 +384,7 @@ describe("warningsOfRecord", () => {
       },
     })
 
-    expect(warningsOfRecord(run, facts, args)?.warnings).toEqual([
+    expect(warningsOfRecord(run, facts, args, uuidv7())?.warnings).toEqual([
       {
         rule: "duplicate-clause",
         journeyId: run.journeys[0]!.id,
@@ -409,7 +409,7 @@ describe("warningsOfRecord", () => {
       },
     })
 
-    expect(warningsOfRecord(run, facts, args)?.warnings).toEqual([])
+    expect(warningsOfRecord(run, facts, args, uuidv7())?.warnings).toEqual([])
   })
 
   test("is null when the save would be refused", () => {
@@ -418,6 +418,6 @@ describe("warningsOfRecord", () => {
       only("first-encounter")
     )
 
-    expect(warningsOfRecord(run, facts, recordArgs(run))).toBeNull()
+    expect(warningsOfRecord(run, facts, recordArgs(run), uuidv7())).toBeNull()
   })
 })

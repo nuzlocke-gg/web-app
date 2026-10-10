@@ -42,7 +42,8 @@ import { WarningAlert } from "@/components/warning-alert"
 import type { RecordEncounterArgs } from "@/lib/runs/changes/record-encounter"
 import { recordEncounter } from "@/lib/runs/mutations"
 import { nicknameRefusal, nicknameRefusalMessages } from "@/lib/runs/nickname"
-import { sameLineAs } from "@/lib/runs/rule-checks"
+import { ruleName } from "@/lib/runs/rules"
+import { firstCatchInLine } from "@/lib/runs/rule-checks"
 import {
   partyOf,
   PARTY_SIZE,
@@ -130,6 +131,7 @@ export function RecordSteps({
   const [preview] = useState(() => ({
     ids: newRecordIds(),
     enteredAt: Date.now(),
+    mutationId: uuidv7(),
   }))
 
   // Choices made in the details step are lost if the page unloads.
@@ -157,7 +159,8 @@ export function RecordSteps({
     const outcome = warningsOfRecord(
       run,
       gameFactsOf(map),
-      argsOf(details, preview.ids, preview.enteredAt)
+      argsOf(details, preview.ids, preview.enteredAt),
+      preview.mutationId
     )
 
     return (
@@ -170,11 +173,15 @@ export function RecordSteps({
   function sameLineNote(choice: SpeciesChoice): SpeciesNote | undefined {
     if (!map) return undefined
 
-    const earlier = sameLineAs(journey, choice.met.species, gameFactsOf(map))
+    const earlier = firstCatchInLine(
+      journey,
+      choice.met.species,
+      gameFactsOf(map)
+    )
 
     return (
       earlier && {
-        rule: "Duplicate Clause",
+        rule: ruleName("duplicate-clause"),
         text: `Same line as ${encounterLabel(map, journey, earlier)}`,
       }
     )
@@ -236,7 +243,7 @@ export function RecordSteps({
           alert={
             placeTaken ? (
               <WarningAlert
-                rule="First Encounter Rule"
+                rule={ruleName("first-encounter")}
                 text={`You already have an encounter at ${placeName}. You can still record this one.`}
               />
             ) : undefined
