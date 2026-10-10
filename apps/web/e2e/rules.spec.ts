@@ -35,7 +35,7 @@ test("a player chooses the Rules, sees the Warnings follow them, and writes Hous
 
   await page.getByRole("button", { name: /2 of 4 rules on/ }).click()
   await expect(
-    page.getByRole("heading", { name: "Set the rules" })
+    page.getByRole("heading", { name: "Rules", level: 1 })
   ).toBeVisible()
   await page.getByRole("switch", { name: "Duplicate Clause" }).click()
   await page.getByRole("button", { name: "Back to new run" }).click()

@@ -1,16 +1,16 @@
 "use client"
 
 import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from "@workspace/ui/components/field"
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemSeparator,
+  ItemTitle,
+} from "@workspace/ui/components/item"
 import { Switch } from "@workspace/ui/components/switch"
-import { useId } from "react"
+import { Fragment, useId } from "react"
 
 import { rulesShown, type Rule, type RulePatch } from "@/lib/runs/rules"
 import type { RunKind } from "@/lib/runs/state"
@@ -47,22 +47,42 @@ export function RulesSwitches({
   return (
     <div className="flex flex-col gap-6">
       {groups.map((group) => (
-        <FieldSet key={group.title}>
-          <FieldLegend variant="label">{group.title}</FieldLegend>
-          <FieldGroup className="gap-4">
-            {group.rules.map((rule) => (
+        <RuleGroup key={group.title} title={group.title}>
+          {group.rules.map((rule, index) => (
+            <Fragment key={rule.id}>
+              {index > 0 ? <ItemSeparator className="my-0" /> : null}
               <RuleSwitch
-                key={rule.id}
                 rule={rule}
                 on={rules[rule.id] === true}
                 disabled={disabled}
                 onChange={(on) => onChange({ [rule.id]: on })}
               />
-            ))}
-          </FieldGroup>
-        </FieldSet>
+            </Fragment>
+          ))}
+        </RuleGroup>
       ))}
     </div>
+  )
+}
+
+function RuleGroup({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  const id = useId()
+
+  return (
+    <section aria-labelledby={id} className="flex flex-col gap-1.5">
+      <h2 id={id} className="px-1 text-sm text-muted-foreground">
+        {title}
+      </h2>
+      <ItemGroup className="gap-0 rounded-2xl bg-muted/50">
+        {children}
+      </ItemGroup>
+    </section>
   )
 }
 
@@ -77,17 +97,22 @@ function RuleSwitch({ rule, on, disabled, onChange }: RuleSwitchProps) {
   const id = useId()
 
   return (
-    <Field orientation="horizontal" data-disabled={disabled || undefined}>
-      <FieldContent>
-        <FieldLabel htmlFor={id}>{rule.name}</FieldLabel>
-        <FieldDescription>{rule.description}</FieldDescription>
-      </FieldContent>
-      <Switch
-        id={id}
-        checked={on}
-        disabled={disabled}
-        onCheckedChange={onChange}
-      />
-    </Field>
+    <Item role="listitem" className="items-start">
+      <ItemContent>
+        <ItemTitle id={`${id}-title`}>{rule.name}</ItemTitle>
+        <ItemDescription id={`${id}-description`} className="line-clamp-none">
+          {rule.description}
+        </ItemDescription>
+      </ItemContent>
+      <ItemActions className="pt-0.5">
+        <Switch
+          checked={on}
+          disabled={disabled}
+          aria-labelledby={`${id}-title`}
+          aria-describedby={`${id}-description`}
+          onCheckedChange={onChange}
+        />
+      </ItemActions>
+    </Item>
   )
 }

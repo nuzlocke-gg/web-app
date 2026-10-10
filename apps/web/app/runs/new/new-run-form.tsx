@@ -152,7 +152,7 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
     return (
       <>
         <ScreenHeader
-          title="Set the rules"
+          title="Rules"
           subtitle="New run"
           back={
             <Button
@@ -168,7 +168,7 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
           }
         />
         <main className="flex flex-col gap-8 px-4 pt-2 pb-8">
-          <p className="text-sm text-muted-foreground">
+          <p className="px-1 text-sm text-muted-foreground">
             The usual rules are on. Warnings follow the rules. A warning never
             blocks an entry.
           </p>

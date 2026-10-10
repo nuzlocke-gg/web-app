@@ -61,7 +61,7 @@ export function RulesScreen() {
   const backHref = `/runs/${run.id}`
 
   // Text typed in the House rules field is lost if the page unloads.
-  useLeavePrompt(houseRules.dirty)
+  useLeavePrompt(houseRules.unsaved)
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col">
@@ -74,7 +74,7 @@ export function RulesScreen() {
             "size-11"
           )}
           onClick={(event) => {
-            if (!houseRules.dirty) return
+            if (!houseRules.unsaved) return
 
             event.preventDefault()
             setDiscardOpen(true)
@@ -83,10 +83,10 @@ export function RulesScreen() {
           <CaretLeftIcon />
         </Link>
         <div className="flex min-w-0 flex-1 flex-col pl-1">
-          <h1 className="text-base font-medium">
-            {editable ? "Set the rules" : "Rules"}
-          </h1>
-          <p className="truncate text-xs text-muted-foreground">{run.name}</p>
+          <h1 className="text-base font-medium">Rules</h1>
+          <p className="truncate text-xs text-muted-foreground">
+            {run.kind === "soul_link" ? `${run.name} · Soul Link` : run.name}
+          </p>
         </div>
       </header>
 
@@ -100,9 +100,11 @@ export function RulesScreen() {
             ) : null}
           </Alert>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            A change saves at once. Warnings follow the rules at once. A warning
-            never blocks an entry.
+          <p className="px-1 text-sm text-muted-foreground">
+            {run.kind === "soul_link"
+              ? "A change saves at once, for every player."
+              : "A change saves at once."}{" "}
+            Warnings follow the rules at once. A warning never blocks an entry.
           </p>
         )}
 
