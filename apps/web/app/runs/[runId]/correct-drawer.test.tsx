@@ -108,7 +108,20 @@ describe("the Correct Drawer", () => {
       screen.getByText("It stays the same after an evolution.")
     ).toBeTruthy()
     expect(toggle("Wild").getAttribute("aria-pressed")).toBe("true")
-    expect(screen.queryByRole("group", { name: "Outcome" })).toBeNull()
+  })
+
+  test("shows the outcome as text, with how to change it", async () => {
+    await renderDrawer(runWith([failed]), failed)
+
+    expect(await screen.findByText("Outcome")).toBeTruthy()
+    expect(screen.getByText("Failed")).toBeTruthy()
+    expect(
+      screen.getByText(
+        "To change the outcome, remove the encounter and record it again."
+      )
+    ).toBeTruthy()
+    expect(screen.queryByRole("button", { name: "Caught" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "Failed" })).toBeNull()
   })
 
   test("shows slot 1 too", async () => {

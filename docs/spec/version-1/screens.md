@@ -144,7 +144,7 @@ Then "Save encounter".
 
 ### Correct Drawer
 
-- The record Drawer filled in, with the location and Slot shown as read-only text, the Species met with Change, Origin, and Form.
+- The record Drawer filled in, with the location and Slot shown as read-only text, the Species met with Change, the Outcome as read-only text with "To change the outcome, remove the encounter and record it again.", Origin, and Form.
 - "Remove encounter" at the end opens its AlertDialog, which names the Pokémon that goes with it and says to record the Encounter again for a wrong location, Slot, or outcome.
 - The Drawer is reached from "Correct encounter" on the Pokémon screen and from a tap on a Failed row (where it holds the Species, with "Species unknown", the Origin, the Form when the Species has more than one, and Remove; the outcome, location, and Slot stay fixed).
 

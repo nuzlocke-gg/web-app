@@ -19,6 +19,12 @@ import {
 } from "@workspace/ui/components/alert-dialog"
 import { Button } from "@workspace/ui/components/button"
 import {
+  Field,
+  FieldDescription,
+  FieldTitle,
+} from "@workspace/ui/components/field"
+import { Item, ItemContent, ItemTitle } from "@workspace/ui/components/item"
+import {
   Drawer,
   DrawerContent,
   DrawerFooter,
@@ -29,6 +35,7 @@ import { useLeavePrompt } from "@/components/use-leave-prompt"
 import { correctEncounter, removeEncounter } from "@/lib/runs/mutations"
 import {
   findViewerEncounter,
+  type EncounterOutcome,
   type EncounterState,
   type PokemonState,
   type ViewerEncounter,
@@ -173,7 +180,7 @@ function CorrectSteps({ shown, open, onClose }: CorrectStepsProps) {
         <DetailsStep
           map={map}
           draft={draft}
-          failed={failed}
+          outcome={encounter.outcome}
           onChange={setDraft}
           onChangeSpecies={() => setChoosingSpecies(true)}
           onSave={save}
@@ -207,10 +214,16 @@ function nameOf(map: LoadedMap, pokemon: PokemonState): string {
   )
 }
 
+const outcomeNames: Record<EncounterOutcome, string> = {
+  caught: "Caught",
+  failed: "Failed",
+}
+
 type DetailsStepProps = {
   map: LoadedMap
   draft: CorrectDraft
-  failed: boolean
+  /** Shown, not editable; null when a newer build stored it. */
+  outcome: EncounterOutcome | null
   onChange: (draft: CorrectDraft) => void
   onChangeSpecies: () => void
   onSave: (origin: Origin) => void
@@ -220,7 +233,7 @@ type DetailsStepProps = {
 function DetailsStep({
   map,
   draft,
-  failed,
+  outcome,
   onChange,
   onChangeSpecies,
   onSave,
@@ -237,10 +250,26 @@ function DetailsStep({
           title="Species met"
           met={draft.met}
           description={
-            failed ? undefined : "It stays the same after an evolution."
+            outcome === "failed"
+              ? undefined
+              : "It stays the same after an evolution."
           }
           onChange={onChangeSpecies}
         />
+
+        <Field>
+          <FieldTitle>Outcome</FieldTitle>
+          <Item variant="muted" size="xs">
+            <ItemContent>
+              <ItemTitle>
+                {outcome ? outcomeNames[outcome] : "Unknown"}
+              </ItemTitle>
+            </ItemContent>
+          </Item>
+          <FieldDescription>
+            To change the outcome, remove the encounter and record it again.
+          </FieldDescription>
+        </Field>
 
         <OriginChoice
           id={`${id}-origin`}
