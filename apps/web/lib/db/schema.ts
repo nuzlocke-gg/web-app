@@ -330,6 +330,10 @@ export const pokemon = pgTable(
       "pokemon_nickname_length",
       sql`char_length(${table.nickname}) BETWEEN 1 AND 12`
     ),
+    check(
+      "pokemon_death_cause_length",
+      sql`char_length(${table.deathCause}) BETWEEN 1 AND 140`
+    ),
   ]
 )
 

@@ -1,5 +1,6 @@
 "use client"
 
+import { SkullIcon } from "@phosphor-icons/react"
 import {
   getGame,
   nextInLine,
@@ -12,17 +13,39 @@ import {
   DrawerContent,
   DrawerFooter,
 } from "@workspace/ui/components/drawer"
-import { Field, FieldError, FieldLabel } from "@workspace/ui/components/field"
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldTitle,
+} from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import { RadioGroup } from "@workspace/ui/components/radio-group"
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "@workspace/ui/components/radio-group"
 import { useId, useState } from "react"
 import { v7 as uuidv7 } from "uuid"
 
 import { speciesName } from "@/components/species-name"
+import { Sprite } from "@/components/sprite"
 import { useLeavePrompt } from "@/components/use-leave-prompt"
-import { changeForm, evolvePokemon, renamePokemon } from "@/lib/runs/mutations"
+import {
+  deathCauseRefusal,
+  deathCauseRefusalMessages,
+  typedDeathLevel,
+} from "@/lib/runs/death"
+import {
+  changeForm,
+  editDeath,
+  evolvePokemon,
+  movePokemon,
+  recordDeath,
+  renamePokemon,
+} from "@/lib/runs/mutations"
 import { nicknameRefusal, nicknameRefusalMessages } from "@/lib/runs/nickname"
-import type { ViewerPokemon } from "@/lib/runs/state"
+import { partyOf, PARTY_SIZE, type ViewerPokemon } from "@/lib/runs/state"
 
 import { DrawerHeaderRow } from "../../drawer-header-row"
 import { FormChoice } from "../../record-steps"
@@ -34,8 +57,8 @@ import {
   speciesChoiceValue,
 } from "../../species-grid"
 
-/** Which small Drawer of the Pokémon section is open. */
-export type PokemonSheet = "rename" | "evolve" | "form"
+/** Which small Drawer of the Pokémon screen is open. */
+export type PokemonSheet = "rename" | "evolve" | "form" | "swap" | "death"
 
 type PokemonDrawerProps = {
   map: LoadedMap
@@ -47,8 +70,9 @@ type PokemonDrawerProps = {
 }
 
 /**
- * The small Drawers of the Pokémon section: Rename, Evolve (with "Other
- * species" to correct a wrong one), and Change the Form.
+ * The small Drawers of the Pokémon screen: Rename, Evolve (with "Other
+ * species" to correct a wrong one), Change the Form, the swap into a full
+ * Party, and the death Drawer (Record a death, or Edit a death when dead).
  */
 export function PokemonDrawer({
   map,
@@ -66,6 +90,8 @@ export function PokemonDrawer({
         {sheet === "rename" ? <RenameStep {...props} /> : null}
         {sheet === "evolve" ? <EvolveStep {...props} /> : null}
         {sheet === "form" ? <FormStep {...props} /> : null}
+        {sheet === "swap" ? <SwapStep {...props} /> : null}
+        {sheet === "death" ? <DeathStep {...props} /> : null}
       </DrawerContent>
     </Drawer>
   )
@@ -293,6 +319,223 @@ function FormStep({ map, shown, open, onClose }: StepProps) {
           Save form
         </Button>
       </DrawerFooter>
+    </>
+  )
+}
+
+function SwapStep({ map, shown, open, onClose }: StepProps) {
+  const { value: run } = useRun()
+  const change = useRunChange()
+  const id = useId()
+  const { journey, pokemon } = shown
+  const party = partyOf(journey)
+  const [pickedId, setPickedId] = useState<string | null>(null)
+  const picked = party.find((candidate) => candidate.id === pickedId)
+  const name = pokemonName(map, shown)
+
+  useLeavePrompt(open && picked !== undefined)
+
+  function save() {
+    if (!picked) return
+
+    change(
+      movePokemon({
+        runId: run.id,
+        moves: [
+          { pokemonId: picked.id, to: "box" },
+          { pokemonId: pokemon.id, to: "party" },
+        ],
+      }),
+      "Party swap"
+    )
+    onClose()
+  }
+
+  return (
+    <>
+      <DrawerHeaderRow
+        title="Your party is full"
+        description={`Pick one to send to the box. ${name} takes its place.`}
+      />
+      <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-4 pt-3 pb-4">
+        <FieldDescription id={`${id}-party`}>
+          Your party, {party.length} of {PARTY_SIZE}
+        </FieldDescription>
+        <RadioGroup
+          aria-labelledby={`${id}-party`}
+          className="flex flex-col gap-1.5"
+          value={pickedId}
+          onValueChange={(value) => setPickedId(value as string)}
+        >
+          {party.map((member) => {
+            const memberName = pokemonName(map, { journey, pokemon: member })
+            const memberSpecies = speciesName(map, member.species.species)
+
+            return (
+              <FieldLabel key={member.id} htmlFor={`${id}-${member.id}`}>
+                <Field
+                  orientation="horizontal"
+                  className="min-h-13 gap-3 py-1.5! pr-3! pl-1.5!"
+                >
+                  {/* The label names the radio; the sprite would name it twice. */}
+                  <span aria-hidden className="contents">
+                    <Sprite
+                      map={map}
+                      species={member.species.species}
+                      form={member.species.form}
+                      size={36}
+                    />
+                  </span>
+                  <FieldTitle className="flex min-w-0 flex-1 flex-col items-start gap-0">
+                    <span className="truncate">{memberName}</span>
+                    {member.nickname ? (
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {memberSpecies}
+                      </span>
+                    ) : null}
+                  </FieldTitle>
+                  <RadioGroupItem value={member.id} id={`${id}-${member.id}`} />
+                </Field>
+              </FieldLabel>
+            )
+          })}
+        </RadioGroup>
+      </div>
+      <DrawerFooter className="pt-3">
+        <Button
+          type="button"
+          size="lg"
+          className="h-11"
+          disabled={!picked}
+          onClick={save}
+        >
+          {picked
+            ? `Send ${pokemonName(map, { journey, pokemon: picked })} to the box`
+            : "Pick one to send to the box"}
+        </Button>
+      </DrawerFooter>
+    </>
+  )
+}
+
+function DeathStep({ map, shown, open, onClose }: StepProps) {
+  const { value: run } = useRun()
+  const change = useRunChange()
+  const id = useId()
+  const { pokemon } = shown
+  // A dead Pokémon's Drawer edits its death; a living one's records it.
+  const editing = pokemon.diedAt !== null
+  const savedLevel = pokemon.deathLevel?.toString() ?? ""
+  const savedCause = pokemon.deathCause ?? ""
+  const [levelDraft, setLevelDraft] = useState({
+    value: savedLevel,
+    badInput: false,
+  })
+  const [causeDraft, setCauseDraft] = useState(savedCause)
+  const level = typedDeathLevel(
+    { value: levelDraft.value.trim(), badInput: levelDraft.badInput },
+    map.data.maxLevel
+  )
+  const cause = causeDraft.trim()
+  const causeProblem = deathCauseRefusal(cause)
+  const invalid = level.problem !== null || causeProblem !== null
+  const name = pokemonName(map, shown)
+  const species = speciesName(map, pokemon.species.species)
+
+  useLeavePrompt(
+    open &&
+      (levelDraft.badInput ||
+        levelDraft.value.trim() !== savedLevel ||
+        cause !== savedCause)
+  )
+
+  function save() {
+    const details = {
+      runId: run.id,
+      pokemonId: pokemon.id,
+      level: level.level,
+      cause: cause === "" ? null : cause,
+    }
+
+    if (editing) {
+      change(editDeath(details), "Death edit")
+    } else {
+      change(recordDeath({ ...details, diedAt: Date.now() }), "Death")
+    }
+    onClose()
+  }
+
+  return (
+    <>
+      <DrawerHeaderRow
+        title={editing ? `Edit the death of ${name}` : "Record a death"}
+        description={pokemon.nickname ? `${name} · ${species}` : species}
+      />
+      <form
+        className="flex flex-col"
+        onSubmit={(event) => {
+          event.preventDefault()
+          if (!invalid) save()
+        }}
+      >
+        <div className="flex flex-col gap-4 px-4 pt-3 pb-2">
+          <Field data-invalid={level.problem !== null || undefined}>
+            <FieldLabel htmlFor={`${id}-level`}>Level (optional)</FieldLabel>
+            <Input
+              id={`${id}-level`}
+              className="h-11 text-base"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={map.data.maxLevel}
+              step={1}
+              autoComplete="off"
+              value={levelDraft.value}
+              aria-invalid={level.problem !== null || undefined}
+              onChange={(event) =>
+                setLevelDraft({
+                  value: event.target.value,
+                  badInput: event.target.validity.badInput,
+                })
+              }
+            />
+            {level.problem ? <FieldError>{level.problem}</FieldError> : null}
+          </Field>
+          <Field data-invalid={causeProblem !== null || undefined}>
+            <FieldLabel htmlFor={`${id}-cause`}>Cause (optional)</FieldLabel>
+            <Input
+              id={`${id}-cause`}
+              className="h-11 text-base"
+              placeholder="Such as Roxanne's Nosepass"
+              autoComplete="off"
+              value={causeDraft}
+              aria-invalid={causeProblem !== null || undefined}
+              onChange={(event) => setCauseDraft(event.target.value)}
+            />
+            {causeProblem ? (
+              <FieldError>{deathCauseRefusalMessages[causeProblem]}</FieldError>
+            ) : null}
+          </Field>
+        </div>
+        <DrawerFooter className="pt-3">
+          {editing ? (
+            <Button type="submit" size="lg" className="h-11" disabled={invalid}>
+              Save death
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              size="lg"
+              variant="destructive"
+              className="h-11"
+              disabled={invalid}
+            >
+              <SkullIcon aria-hidden />
+              Record death
+            </Button>
+          )}
+        </DrawerFooter>
+      </form>
     </>
   )
 }

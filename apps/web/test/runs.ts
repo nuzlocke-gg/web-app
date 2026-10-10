@@ -9,22 +9,32 @@ import { expect } from "vitest"
 
 import { createRunAction, runAction } from "@/app/runs/actions"
 import { db } from "@/lib/db"
-import { journeys, runs } from "@/lib/db/schema"
+import { encounters, journeys, pokemon, runs } from "@/lib/db/schema"
 import { runAxis } from "@/lib/runs/axis"
 import { loadRunCanon } from "@/lib/runs/canon"
 import type { ChangeFormArgs } from "@/lib/runs/changes/change-form"
 import type { CorrectEncounterArgs } from "@/lib/runs/changes/correct-encounter"
+import type { EditDeathArgs } from "@/lib/runs/changes/edit-death"
 import type { EvolvePokemonArgs } from "@/lib/runs/changes/evolve-pokemon"
+import type { MovePokemonArgs } from "@/lib/runs/changes/move-pokemon"
+import type { RecordDeathArgs } from "@/lib/runs/changes/record-death"
 import type { RecordEncounterArgs } from "@/lib/runs/changes/record-encounter"
 import type { RemoveEncounterArgs } from "@/lib/runs/changes/remove-encounter"
+import type { RemovePokemonArgs } from "@/lib/runs/changes/remove-pokemon"
 import type { RenamePokemonArgs } from "@/lib/runs/changes/rename-pokemon"
+import type { UndoDeathArgs } from "@/lib/runs/changes/undo-death"
 import {
   changeForm,
   correctEncounter,
+  editDeath,
   evolvePokemon,
+  movePokemon,
+  recordDeath,
   recordEncounter,
   removeEncounter,
+  removePokemon,
   renamePokemon,
+  undoDeath,
 } from "@/lib/runs/mutations"
 import { createRun } from "@/lib/runs/operations"
 import { runProtocol } from "@/lib/runs/protocol"
@@ -179,6 +189,95 @@ export function evolve(args: EvolvePokemonArgs) {
 /** Sends Change the Form as the signed-in Player and returns the outcome. */
 export function changeFormOf(args: ChangeFormArgs) {
   return runAction(runEnvelope(changeForm(args)))
+}
+
+/** Sends Move a Pokémon as the signed-in Player and returns the outcome. */
+export function move(args: MovePokemonArgs) {
+  return runAction(runEnvelope(movePokemon(args)))
+}
+
+/** Sends Record a death as the signed-in Player and returns the outcome. */
+export function recordDeathOf(args: RecordDeathArgs) {
+  return runAction(runEnvelope(recordDeath(args)))
+}
+
+/** Sends Edit a death as the signed-in Player and returns the outcome. */
+export function editDeathOf(args: EditDeathArgs) {
+  return runAction(runEnvelope(editDeath(args)))
+}
+
+/** Sends Undo a death as the signed-in Player and returns the outcome. */
+export function undoDeathOf(args: UndoDeathArgs) {
+  return runAction(runEnvelope(undoDeath(args)))
+}
+
+/** Sends Remove a Pokémon as the signed-in Player and returns the outcome. */
+export function removePokemonOf(args: RemovePokemonArgs) {
+  return runAction(runEnvelope(removePokemon(args)))
+}
+
+/**
+ * Records a Caught Encounter at each of these Places of Emerald in the Run, a
+ * minute apart from 3 October 2026, each going to the Party while it has
+ * room, and returns their Pokémon ids in that order.
+ */
+export async function catchAt(
+  runId: string,
+  placeIds: string[]
+): Promise<string[]> {
+  const ids: string[] = []
+
+  for (const [index, placeId] of placeIds.entries()) {
+    const args = caughtMudkipArgs(runId, {
+      placeId,
+      origin: "wild",
+      enteredAt: Date.UTC(2026, 9, 3, 0, index),
+    })
+
+    await expect(record(args)).resolves.toEqual(accepted)
+    ids.push(args.outcome.kind === "caught" ? args.outcome.pokemonId : "")
+  }
+
+  return ids
+}
+
+/**
+ * Makes a Soul Link Run where Ash has a Mudkip in the Party, then signs Misty
+ * in as Ash's partner, so a change from Misty names another Player's Pokémon.
+ */
+export async function partnersMudkip() {
+  const ashId = await signIn()
+  const runId = await insertRun({ kind: "soul_link" })
+  const journeyId = await insertJourney(runId, ashId)
+  const encounterId = uuidv7()
+  const pokemonId = uuidv7()
+
+  await db.insert(encounters).values({
+    id: encounterId,
+    runId,
+    journeyId,
+    placeId: "starter",
+    slotOrdinal: 1,
+    origin: "gift",
+    outcome: "caught",
+    speciesId: "mudkip",
+    formId: "base",
+    enteredAt: new Date(),
+  })
+  await db.insert(pokemon).values({
+    id: pokemonId,
+    journeyId,
+    encounterId,
+    speciesId: "mudkip",
+    formId: "base",
+    inParty: true,
+  })
+
+  const mistyId = await signIn({ displayName: "Misty" })
+
+  await insertJourney(runId, mistyId)
+
+  return { runId, pokemonId }
 }
 
 /** The outcome of an accepted change, for `toEqual`. */

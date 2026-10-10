@@ -42,3 +42,17 @@ export async function passesGameDataGate(
 
   return true
 }
+
+/**
+ * Whether a Pokémon of the Map can reach the level, at most its `maxLevel`.
+ * A death level that fails it is refused as `level-out-of-range`. An unknown
+ * Map allows no level.
+ */
+export async function levelInRange(
+  mapId: MapId,
+  level: number
+): Promise<boolean> {
+  const map = await loadMap(mapId)
+
+  return map !== undefined && level <= map.data.maxLevel
+}

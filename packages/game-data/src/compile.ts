@@ -1,6 +1,7 @@
 import { err, ok, type Result } from "serializable-result"
 
 import {
+  DEFAULT_MAX_LEVEL,
   ID_PATTERN,
   SPECIES_ID_PATTERN,
   type CompiledMap,
@@ -74,6 +75,7 @@ export function compileMap(sources: MapSources): CompileResult {
     region: sources.map.region,
     generation: sources.map.generation,
     releaseOrder: sources.map.releaseOrder,
+    maxLevel: sources.map.maxLevel ?? DEFAULT_MAX_LEVEL,
     games: sources.map.games,
     methods: sources.methods
       .filter((method) => usedMethods.has(method.id))

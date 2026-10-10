@@ -101,22 +101,45 @@ export async function admitPokemonOwner({
 }) {
   const run = await lockAndRead(tx, actor, args.runId)
 
-  if (!run || isAnotherPlayersPokemon(run, actor, args.pokemonId)) {
+  if (!run || namesAnotherPlayersPokemon(run, actor, [args.pokemonId])) {
     return denyMutation()
   }
 
   return allowAdmission({ state: run })
 }
 
-function isAnotherPlayersPokemon(
+/**
+ * {@link admitPokemonOwner} for Move a Pokémon: denies, with no public
+ * reason, when any move names a Pokémon of another Player's Journey.
+ */
+export async function admitMovedPokemonOwner({
+  tx,
+  actor,
+  args,
+}: {
+  tx: RunTransaction
+  actor: string
+  args: { runId: string; moves: { pokemonId: string }[] }
+}) {
+  const run = await lockAndRead(tx, actor, args.runId)
+  const pokemonIds = args.moves.map((move) => move.pokemonId)
+
+  if (!run || namesAnotherPlayersPokemon(run, actor, pokemonIds)) {
+    return denyMutation()
+  }
+
+  return allowAdmission({ state: run })
+}
+
+function namesAnotherPlayersPokemon(
   run: RunState,
   actor: string,
-  pokemonId: string
+  pokemonIds: string[]
 ): boolean {
   return run.journeys.some(
     (journey) =>
       journey.playerId !== actor &&
-      journey.pokemon.some((pokemon) => pokemon.id === pokemonId)
+      journey.pokemon.some((pokemon) => pokemonIds.includes(pokemon.id))
   )
 }
 

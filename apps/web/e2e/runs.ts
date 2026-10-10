@@ -136,3 +136,55 @@ export async function recordFailedEncountersElsewhere(
     }))
   )
 }
+
+/** One Caught Encounter for {@link recordCatchesElsewhere}. */
+export type CatchElsewhere = {
+  placeId: string
+  species: string
+  nickname: string
+  inParty: boolean
+}
+
+/**
+ * Records a Caught Encounter and its Pokémon at each Place for a Player,
+ * behind the app's back, a minute apart and in the order given, the last
+ * one a minute ago.
+ */
+export async function recordCatchesElsewhere(
+  runId: string,
+  playerId: string,
+  catches: CatchElsewhere[]
+): Promise<void> {
+  const [journey] = await testDb
+    .select({ id: journeys.id })
+    .from(journeys)
+    .where(and(eq(journeys.runId, runId), eq(journeys.playerId, playerId)))
+  const minute = 60_000
+  const start = Date.now() - catches.length * minute
+
+  for (const [index, caught] of catches.entries()) {
+    const encounterId = uuidv7()
+
+    await testDb.insert(encounters).values({
+      id: encounterId,
+      runId,
+      journeyId: journey!.id,
+      placeId: caught.placeId,
+      slotOrdinal: 1,
+      origin: "wild",
+      outcome: "caught",
+      speciesId: caught.species,
+      formId: "base",
+      enteredAt: new Date(start + index * minute),
+    })
+    await testDb.insert(pokemon).values({
+      id: uuidv7(),
+      journeyId: journey!.id,
+      encounterId,
+      speciesId: caught.species,
+      formId: "base",
+      nickname: caught.nickname,
+      inParty: caught.inParty,
+    })
+  }
+}

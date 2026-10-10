@@ -1,9 +1,11 @@
 "use client"
 
 import {
+  ArrowCounterClockwiseIcon,
   CaretLeftIcon,
   CaretRightIcon,
   PencilSimpleIcon,
+  SkullIcon,
 } from "@phosphor-icons/react"
 import {
   getForm,
@@ -11,8 +13,22 @@ import {
   placeName,
   type LoadedMap,
 } from "@workspace/game-data"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@workspace/ui/components/alert-dialog"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button, buttonVariants } from "@workspace/ui/components/button"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@workspace/ui/components/toggle-group"
 import { cn } from "@workspace/ui/lib/utils"
 import Link from "next/link"
 import { useState, useSyncExternalStore, type ReactNode } from "react"
@@ -20,9 +36,13 @@ import { useState, useSyncExternalStore, type ReactNode } from "react"
 import { speciesName } from "@/components/species-name"
 import { Sprite } from "@/components/sprite"
 import { admitsChanges } from "@/lib/runs/can-change"
+import { returnsToParty } from "@/lib/runs/changes/undo-death"
 import { historyOf } from "@/lib/runs/history"
+import { movePokemon, removePokemon, undoDeath } from "@/lib/runs/mutations"
 import {
   findViewerPokemon,
+  partyOf,
+  PARTY_SIZE,
   type EncounterState,
   type PokemonState,
   type ViewerPokemon,
@@ -30,7 +50,7 @@ import {
 
 import { CorrectDrawer } from "../../correct-drawer"
 import { originNames } from "../../record-steps"
-import { useRun } from "../../run-root"
+import { useRun, useRunChange } from "../../run-root"
 import { useRunTab } from "../../run-tab"
 import { useLoadedMap } from "../../use-map"
 import { historyDate, historyText, type HistoryNames } from "./history-text"
@@ -38,7 +58,8 @@ import { PokemonDrawer, pokemonName, type PokemonSheet } from "./pokemon-drawer"
 
 /**
  * The Pokémon screen: one of the viewer's Pokémon with its header, its
- * Pokémon section (nickname, Species, Form), its Encounter, and its History.
+ * Pokémon section (nickname, Species, Form), where it is or its death, its
+ * Encounter, its History, and the actions Record death and Remove Pokémon.
  */
 export function PokemonScreen({ pokemonId }: { pokemonId: string }) {
   const { value: run } = useRun()
@@ -113,13 +134,16 @@ type PokemonDetailsProps = {
 
 function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
   const { value: run } = useRun()
+  const change = useRunChange()
   const { journey, pokemon } = shown
   const [sheet, setSheet] = useState<PokemonSheet>("rename")
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [correctOpen, setCorrectOpen] = useState(false)
+  const [removeOpen, setRemoveOpen] = useState(false)
   const runAdmits = admitsChanges(run)
   // A removed Pokémon keeps its Encounter actions but has no Pokémon ones.
-  const editable = runAdmits && pokemon.removedAt === null
+  const removed = pokemon.removedAt !== null
+  const editable = runAdmits && !removed
   const dead = pokemon.diedAt !== null
   const current = speciesName(map, pokemon.species.species)
   const formName = hasFormChoice(map, pokemon.species.species)
@@ -186,6 +210,37 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
         ) : null}
       </Section>
 
+      {editable && !dead ? (
+        <WhereSection
+          shown={shown}
+          onMove={(to) =>
+            change(
+              movePokemon({
+                runId: run.id,
+                moves: [{ pokemonId: pokemon.id, to }],
+              }),
+              "Move"
+            )
+          }
+          onSwap={() => open("swap")}
+        />
+      ) : null}
+
+      {dead && !removed ? (
+        <GraveyardSection
+          name={name}
+          shown={shown}
+          editable={editable}
+          onEdit={() => open("death")}
+          onUndo={() =>
+            change(
+              undoDeath({ runId: run.id, pokemonId: pokemon.id }),
+              "Undo death"
+            )
+          }
+        />
+      ) : null}
+
       <Section title="Encounter">
         <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1.5 rounded-2xl bg-muted/60 px-4 py-3">
           <EncounterFact label="Location">
@@ -230,6 +285,36 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
         </ol>
       </Section>
 
+      {editable && !dead ? (
+        <section
+          aria-label="Actions"
+          className="flex flex-col gap-2 border-t pt-4"
+        >
+          <Button
+            type="button"
+            variant="destructive"
+            size="lg"
+            className="h-11"
+            onClick={() => open("death")}
+          >
+            <SkullIcon aria-hidden />
+            Record death
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="lg"
+            className="h-11"
+            onClick={() => setRemoveOpen(true)}
+          >
+            Remove Pokémon
+          </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            Remove is for a trade or a release. The encounter stays.
+          </p>
+        </section>
+      ) : null}
+
       <PokemonDrawer
         map={map}
         shown={shown}
@@ -242,7 +327,183 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
         open={correctOpen}
         onOpenChange={setCorrectOpen}
       />
+      <RemovePokemonDialog
+        name={name}
+        where={where}
+        open={removeOpen}
+        onOpenChange={setRemoveOpen}
+        onRemove={() => {
+          change(
+            removePokemon({
+              runId: run.id,
+              pokemonId: pokemon.id,
+              removedAt: Date.now(),
+            }),
+            "Removal"
+          )
+          setRemoveOpen(false)
+        }}
+      />
     </main>
+  )
+}
+
+type WhereSectionProps = {
+  shown: ViewerPokemon
+  /** Saves a move to where the player chose. */
+  onMove: (to: "party" | "box") => void
+  /** Opens the swap Drawer, for the Party when it is full. */
+  onSwap: () => void
+}
+
+/** Party or Box for a living Pokémon, saved as soon as the player picks. */
+function WhereSection({ shown, onMove, onSwap }: WhereSectionProps) {
+  const { journey, pokemon } = shown
+  const partyCount = partyOf(journey).length
+
+  function choose(to: "party" | "box") {
+    if (to === "party" && partyCount >= PARTY_SIZE) onSwap()
+    else onMove(to)
+  }
+
+  return (
+    <Section title="Where">
+      <ToggleGroup
+        aria-label="Where it is"
+        variant="outline"
+        spacing={0}
+        className="w-full"
+        value={[pokemon.inParty ? "party" : "box"]}
+        onValueChange={([next]) => {
+          // Pressing the pressed item empties the group; it stays where it is.
+          if (next === "party" || next === "box") choose(next)
+        }}
+      >
+        <ToggleGroupItem value="party" className="h-11 flex-1">
+          Party
+        </ToggleGroupItem>
+        <ToggleGroupItem value="box" className="h-11 flex-1">
+          Box
+        </ToggleGroupItem>
+      </ToggleGroup>
+      <p className="px-1 text-xs text-muted-foreground">
+        Your party, {partyCount} of {PARTY_SIZE}
+      </p>
+    </Section>
+  )
+}
+
+type GraveyardSectionProps = {
+  name: string
+  shown: ViewerPokemon
+  /** Shows Edit and Undo death. */
+  editable: boolean
+  onEdit: () => void
+  onUndo: () => void
+}
+
+/** The death of a dead Pokémon, with Edit and Undo death for its player. */
+function GraveyardSection({
+  name,
+  shown,
+  editable,
+  onEdit,
+  onUndo,
+}: GraveyardSectionProps) {
+  const { journey, pokemon } = shown
+  const undoHelp = returnsToParty(journey, pokemon)
+    ? `For a mistake. ${name} goes back to the party.`
+    : pokemon.inParty
+      ? `For a mistake. ${name} goes back to the box, because your party is full.`
+      : `For a mistake. ${name} goes back to the box.`
+
+  return (
+    <Section title="Graveyard">
+      <div className="flex flex-col rounded-2xl border px-4 py-2.5">
+        <span className="font-medium">
+          {pokemon.deathLevel === null
+            ? "Died"
+            : `Died at level ${pokemon.deathLevel}`}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {pokemon.deathCause
+            ? `Cause: ${pokemon.deathCause}`
+            : "No cause recorded"}
+        </span>
+      </div>
+      {editable ? (
+        <>
+          <div className="flex gap-2 pt-1">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 flex-1"
+              aria-label={`Edit the death of ${name}`}
+              onClick={onEdit}
+            >
+              <PencilSimpleIcon aria-hidden />
+              Edit
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 flex-1"
+              onClick={onUndo}
+            >
+              <ArrowCounterClockwiseIcon aria-hidden />
+              Undo death
+            </Button>
+          </div>
+          <p className="px-1 text-xs text-muted-foreground">{undoHelp}</p>
+        </>
+      ) : null}
+    </Section>
+  )
+}
+
+type RemovePokemonDialogProps = {
+  name: string
+  /** The location of its Encounter. */
+  where: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onRemove: () => void
+}
+
+/** Confirms Remove a Pokémon, for a trade or a release. */
+function RemovePokemonDialog({
+  name,
+  where,
+  open,
+  onOpenChange,
+  onRemove,
+}: RemovePokemonDialogProps) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove {name}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Do this when you traded {name} away or released it. Its encounter at{" "}
+            {where} and its history stay. If {name} died, record a death
+            instead.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel size="lg" className="h-11">
+            Keep {name}
+          </AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            size="lg"
+            className="h-11"
+            onClick={onRemove}
+          >
+            Remove {name}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
