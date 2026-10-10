@@ -3,14 +3,7 @@ import { z } from "zod"
 
 import { admitsChanges } from "../can-change"
 import { refusal, type RunRefusal } from "../refusals"
-import {
-  findViewerPokemon,
-  partyOf,
-  PARTY_SIZE,
-  type JourneyState,
-  type PokemonState,
-  type RunState,
-} from "../state"
+import { findViewerPokemon, returnsToParty, type RunState } from "../state"
 import { withPokemon } from "./with-pokemon"
 
 /** The arguments of Undo a death. */
@@ -60,17 +53,6 @@ export function check(
     pokemonId: pokemon.id,
     inParty: returnsToParty(journey, pokemon),
   })
-}
-
-/**
- * Whether Undo a death puts the Pokémon in the Party: it died there, and the
- * Party has room for it now.
- */
-export function returnsToParty(
-  journey: JourneyState,
-  pokemon: PokemonState
-): boolean {
-  return pokemon.inParty && partyOf(journey).length < PARTY_SIZE
 }
 
 /** Clears the death and puts the Pokémon in the Party or the Box. */

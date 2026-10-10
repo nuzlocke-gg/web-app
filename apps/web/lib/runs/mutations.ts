@@ -10,6 +10,7 @@ import * as recordEncounterChange from "./changes/record-encounter"
 import * as removeEncounterChange from "./changes/remove-encounter"
 import * as removePokemonChange from "./changes/remove-pokemon"
 import * as renamePokemonChange from "./changes/rename-pokemon"
+import * as restorePokemonChange from "./changes/restore-pokemon"
 import * as undoDeathChange from "./changes/undo-death"
 import { refusalSchema } from "./refusals"
 
@@ -136,4 +137,16 @@ export const changeForm = defineMutation({
   refusal: refusalSchema("run-not-active", "gone", "unknown-entry"),
   check: changeFormChange.check,
   apply: changeFormChange.apply,
+})
+
+/**
+ * Change 16, Restore a Pokémon removed by mistake: it is back where it was
+ * removed from, or in the Box when the Party is full.
+ */
+export const restorePokemon = defineMutation({
+  name: "run.restore-pokemon.v1",
+  args: restorePokemonChange.restorePokemonArgs,
+  refusal: refusalSchema("run-not-active", "gone"),
+  check: restorePokemonChange.check,
+  apply: restorePokemonChange.apply,
 })

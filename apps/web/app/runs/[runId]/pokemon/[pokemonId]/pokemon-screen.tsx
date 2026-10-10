@@ -36,13 +36,18 @@ import { useState, useSyncExternalStore, type ReactNode } from "react"
 import { speciesName } from "@/components/species-name"
 import { Sprite } from "@/components/sprite"
 import { admitsChanges } from "@/lib/runs/can-change"
-import { returnsToParty } from "@/lib/runs/changes/undo-death"
 import { historyOf } from "@/lib/runs/history"
-import { movePokemon, removePokemon, undoDeath } from "@/lib/runs/mutations"
+import {
+  movePokemon,
+  removePokemon,
+  restorePokemon,
+  undoDeath,
+} from "@/lib/runs/mutations"
 import {
   findViewerPokemon,
   partyOf,
   PARTY_SIZE,
+  returnsToParty,
   type EncounterState,
   type PokemonState,
   type ViewerPokemon,
@@ -315,6 +320,32 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
         </section>
       ) : null}
 
+      {runAdmits && removed ? (
+        <section
+          aria-label="Actions"
+          className="flex flex-col gap-2 border-t pt-4"
+        >
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="h-11"
+            onClick={() =>
+              change(
+                restorePokemon({ runId: run.id, pokemonId: pokemon.id }),
+                "Restore"
+              )
+            }
+          >
+            <ArrowCounterClockwiseIcon aria-hidden />
+            Restore Pokémon
+          </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            For a mistake. {goesBackText(name, shown)}
+          </p>
+        </section>
+      ) : null}
+
       <PokemonDrawer
         map={map}
         shown={shown}
@@ -412,13 +443,9 @@ function GraveyardSection({
   onEdit,
   onUndo,
 }: GraveyardSectionProps) {
-  const { journey, pokemon } = shown
+  const { pokemon } = shown
   const [undoOpen, setUndoOpen] = useState(false)
-  const goesBack = returnsToParty(journey, pokemon)
-    ? `${name} goes back to the party.`
-    : pokemon.inParty
-      ? `${name} goes back to the box, because your party is full.`
-      : `${name} goes back to the box.`
+  const goesBack = goesBackText(name, shown)
 
   return (
     <Section title="Graveyard">
@@ -473,6 +500,18 @@ function GraveyardSection({
       ) : null}
     </Section>
   )
+}
+
+/**
+ * Where a Pokémon goes when it comes back by Undo a death or Restore a
+ * Pokémon, such as "Spore goes back to the party."
+ */
+function goesBackText(name: string, { journey, pokemon }: ViewerPokemon) {
+  if (returnsToParty(journey, pokemon)) return `${name} goes back to the party.`
+
+  return pokemon.inParty
+    ? `${name} goes back to the box, because your party is full.`
+    : `${name} goes back to the box.`
 }
 
 type ConfirmDialogProps = {

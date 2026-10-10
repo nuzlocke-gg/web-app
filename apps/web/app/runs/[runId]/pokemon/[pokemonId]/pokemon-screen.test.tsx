@@ -17,6 +17,7 @@ import {
   movePokemon,
   recordDeath,
   removePokemon,
+  restorePokemon,
   undoDeath,
 } from "@/lib/runs/mutations"
 import type { PokemonState, RunState } from "@/lib/runs/state"
@@ -417,5 +418,23 @@ describe("the Pokémon screen", () => {
     expect(screen.queryByRole("button", { name: "Record death" })).toBeNull()
     expect(screen.queryByRole("button", { name: "Remove Pokémon" })).toBeNull()
     expect(screen.queryByRole("button", { name: "Rename Buzz" })).toBeNull()
+  })
+
+  test("Restore Pokémon brings a removed Pokémon back", async () => {
+    const { run, pokemon } = await renderPokemon({
+      nickname: "Buzz",
+      removedAt: Date.UTC(2026, 9, 3),
+    })
+
+    expect(
+      screen.getByText("For a mistake. Buzz goes back to the party.")
+    ).toBeTruthy()
+
+    fireEvent.click(screen.getByRole("button", { name: "Restore Pokémon" }))
+
+    expect(change).toHaveBeenCalledWith(
+      restorePokemon({ runId: run.id, pokemonId: pokemon.id }),
+      "Restore"
+    )
   })
 })

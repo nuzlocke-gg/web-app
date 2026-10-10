@@ -17,6 +17,7 @@ import { recordEncounterBinding } from "@/lib/runs/commands/record-encounter"
 import { removeEncounterBinding } from "@/lib/runs/commands/remove-encounter"
 import { removePokemonBinding } from "@/lib/runs/commands/remove-pokemon"
 import { renamePokemonBinding } from "@/lib/runs/commands/rename-pokemon"
+import { restorePokemonBinding } from "@/lib/runs/commands/restore-pokemon"
 import { undoDeathBinding } from "@/lib/runs/commands/undo-death"
 import { runProtocol } from "@/lib/runs/protocol"
 
@@ -36,6 +37,7 @@ export const runAction = createNextMutationAction({
     undoDeathBinding,
     removePokemonBinding,
     changeFormBinding,
+    restorePokemonBinding,
   ],
 })
 

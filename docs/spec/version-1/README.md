@@ -8,7 +8,7 @@ nuzlocke.gg is a public, phone-first web app where a player with a Google accoun
 | --- | --- |
 | [product.md](product.md) | The problem, the user stories, the domain model, the product rules (Rules and Warnings, Soul Link, shared fate, Run lifecycle, Player identity, visibility and the Reader), and what is out of scope. |
 | [screens.md](screens.md) | Each screen, its decided UI copy, the design system, and accessibility. |
-| [technical-design.md](technical-design.md) | The platform, the game data, the 15 named changes (`run.v1`), access and Slots, storage, and the headcanon integration. |
+| [technical-design.md](technical-design.md) | The platform, the game data, the 16 named changes (`run.v1`), access and Slots, storage, and the headcanon integration. |
 | [testing.md](testing.md) | The test seams, what makes a good test, and what is tested. |
 
 The glossary ([`apps/web/CONTEXT.md`](../../../apps/web/CONTEXT.md)) is the authority for every term. Glossary terms are capitalized (Run, Journey, Place, Slot, Link, Warning). UI copy uses the words the tickets decided ("location", "Encounters", never "Place").

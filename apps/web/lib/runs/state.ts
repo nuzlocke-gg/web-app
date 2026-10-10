@@ -197,6 +197,17 @@ export function partyOf(journey: JourneyState): PokemonState[] {
   )
 }
 
+/**
+ * Whether a Pokémon that comes back, by Undo a death or Restore a Pokémon,
+ * goes to the Party: it was there, and the Party has room for it now.
+ */
+export function returnsToParty(
+  journey: JourneyState,
+  pokemon: PokemonState
+): boolean {
+  return pokemon.inParty && partyOf(journey).length < PARTY_SIZE
+}
+
 /** The living Pokémon of a Journey that are not in the Party. */
 export function boxOf(journey: JourneyState): PokemonState[] {
   return journey.pokemon.filter(

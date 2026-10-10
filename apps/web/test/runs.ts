@@ -22,6 +22,7 @@ import type { RecordEncounterArgs } from "@/lib/runs/changes/record-encounter"
 import type { RemoveEncounterArgs } from "@/lib/runs/changes/remove-encounter"
 import type { RemovePokemonArgs } from "@/lib/runs/changes/remove-pokemon"
 import type { RenamePokemonArgs } from "@/lib/runs/changes/rename-pokemon"
+import type { RestorePokemonArgs } from "@/lib/runs/changes/restore-pokemon"
 import type { UndoDeathArgs } from "@/lib/runs/changes/undo-death"
 import {
   changeForm,
@@ -34,6 +35,7 @@ import {
   removeEncounter,
   removePokemon,
   renamePokemon,
+  restorePokemon,
   undoDeath,
 } from "@/lib/runs/mutations"
 import { createRun } from "@/lib/runs/operations"
@@ -214,6 +216,11 @@ export function undoDeathOf(args: UndoDeathArgs) {
 /** Sends Remove a Pokémon as the signed-in Player and returns the outcome. */
 export function removePokemonOf(args: RemovePokemonArgs) {
   return runAction(runEnvelope(removePokemon(args)))
+}
+
+/** Sends Restore a Pokémon as the signed-in Player and returns the outcome. */
+export function restorePokemonOf(args: RestorePokemonArgs) {
+  return runAction(runEnvelope(restorePokemon(args)))
 }
 
 /**
