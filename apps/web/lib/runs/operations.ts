@@ -32,7 +32,7 @@ export const setHouseRules = defineOperation({
   args: z.object({ runId: z.uuid(), houseRules }),
   // Spelled out because headcanon does not export the default no-result and
   // no-refusal schema types, which an exported operation's declaration names
-  // (NUZ headcanon gap filed with this ticket).
+  // (NUZ-72).
   result: z.undefined(),
   refusal: z.never(),
 })

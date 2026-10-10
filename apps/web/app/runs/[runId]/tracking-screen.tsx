@@ -56,6 +56,7 @@ import {
   type ProgressCell,
 } from "./encounter-list"
 import { Dock } from "./dock"
+import { RunMenu } from "./run-menu"
 import { useRun } from "./run-root"
 import { useRunTab, type RunTab } from "./run-tab"
 import { useLoadedMap } from "./use-map"
@@ -148,6 +149,7 @@ export function TrackingScreen() {
             {gameName} · {run.kind ? kindNames[run.kind] : "Unknown kind"}
           </p>
         </div>
+        <RunMenu progress={progress} />
       </header>
 
       <Tabs
