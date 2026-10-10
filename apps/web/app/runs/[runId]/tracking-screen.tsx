@@ -6,7 +6,9 @@ import {
   getSpecies,
   placeName,
   placesOf,
+  progressTotal,
   type LoadedMap,
+  type PlaceId,
   type PlaceRow,
 } from "@workspace/game-data"
 import { Badge } from "@workspace/ui/components/badge"
@@ -28,10 +30,10 @@ import {
 } from "@workspace/ui/components/tabs"
 import { cn } from "@workspace/ui/lib/utils"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { Sprite, UnknownSprite } from "@/components/sprite"
-import { nextSlot } from "@/lib/runs/changes/record-encounter"
+import { admitsChanges } from "@/lib/runs/can-change"
 import {
   boxOf,
   graveyardOf,
@@ -43,7 +45,13 @@ import {
   type RunKind,
 } from "@/lib/runs/state"
 
-import { RecordDrawer } from "./record-drawer"
+import { EncounterDrawer, recordSheet, type Sheet } from "./encounter-drawer"
+import {
+  listedPlaces,
+  progressOf,
+  type Progress,
+  type ProgressCell,
+} from "./encounter-list"
 import { useRun } from "./run-root"
 import { useLoadedMap } from "./use-map"
 
@@ -52,19 +60,59 @@ const kindNames: Record<RunKind, string> = {
   soul_link: "Soul Link",
 }
 
+type Tab = "encounters" | "pokemon"
+
 /**
- * The tracking screen of a Run: its header and the Encounters and Pokémon
- * tabs. A new Run lists only the Starter location, with "Record your
- * starter" until the player has an Encounter there.
+ * The tracking screen of a Run: its header, the Encounters and Pokémon tabs,
+ * and the dock that adds a location. The Encounters list grows as the player
+ * goes and ends with the Run's Progress.
  */
 export function TrackingScreen() {
   const { value: run } = useRun()
   const map = useLoadedMap()
   const journey = viewerJourney(run)
   const gameName = (map && getGame(map, journey.gameId)?.name) ?? "Unknown game"
-  const starter = map
-    ? placesOf(map, journey.gameId).find((place) => place.kind === "starter")
-    : undefined
+  const places = map ? placesOf(map, journey.gameId) : []
+  const listed = listedPlaces(places, run)
+  const progress = progressOf(listed, run, map ? progressTotal(map) : 0)
+  const canAdd = map !== undefined && admitsChanges(run)
+  const [tab, setTab] = useState<Tab>("encounters")
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [sheet, setSheet] = useState<Sheet>({ step: "places" })
+  const [justAdded, setJustAdded] = useState<PlaceId | null>(null)
+  const savedAt = useRef<PlaceId | null>(null)
+
+  // The screen opens on the newest location, at the end of the list.
+  useEffect(() => {
+    window.scrollTo({ top: document.documentElement.scrollHeight })
+  }, [])
+
+  function openDrawer(next: Sheet) {
+    setSheet(next)
+    setDrawerOpen(true)
+  }
+
+  function saved(place: PlaceRow) {
+    if (!listed.some((listedPlace) => listedPlace.id === place.id)) {
+      setJustAdded(place.id)
+    }
+
+    savedAt.current = place.id
+    setTab("encounters")
+  }
+
+  // Scrolls once the Drawer has closed: the modal scroll lock is gone by then.
+  function scrollToSaved() {
+    const placeId = savedAt.current
+
+    savedAt.current = null
+
+    if (placeId) {
+      document
+        .getElementById(placeSectionId(placeId))
+        ?.scrollIntoView({ block: "nearest" })
+    }
+  }
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-md flex-col">
@@ -87,7 +135,11 @@ export function TrackingScreen() {
         </div>
       </header>
 
-      <Tabs defaultValue="encounters" className="flex-1 px-4">
+      <Tabs
+        value={tab}
+        onValueChange={(next) => setTab(next as Tab)}
+        className="flex-1 px-4"
+      >
         {/* Each tab is a 44 px tap target; the list grows around them. */}
         <TabsList className="w-full group-data-horizontal/tabs:h-auto!">
           <TabsTrigger value="encounters" className="h-11!">
@@ -98,17 +150,32 @@ export function TrackingScreen() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="encounters" className="pb-10">
-          {map && starter ? (
-            <StarterSection map={map} starter={starter} />
+        {/* The bottom padding keeps the end of each tab clear of the dock. */}
+        <TabsContent value="encounters" className="pb-28">
+          {map && listed.length > 0 ? (
+            listed.map((place) => (
+              <PlaceSection
+                key={place.id}
+                map={map}
+                place={place}
+                justAdded={place.id === justAdded}
+                onRecordStarter={() =>
+                  openDrawer(recordSheet(run, place, false))
+                }
+              />
+            ))
           ) : (
             <section className="flex min-h-12 items-center border-b py-2.5">
               <h2 className="text-sm font-medium">Unknown location</h2>
             </section>
           )}
+          <ProgressBlock
+            progress={progress}
+            onOpen={canAdd ? () => openDrawer({ step: "places" }) : undefined}
+          />
         </TabsContent>
 
-        <TabsContent value="pokemon" className="flex flex-col gap-1 pb-10">
+        <TabsContent value="pokemon" className="flex flex-col gap-1 pb-28">
           <PokemonGroup
             map={map}
             title="Party"
@@ -129,35 +196,67 @@ export function TrackingScreen() {
           />
         </TabsContent>
       </Tabs>
+
+      {canAdd ? (
+        <Dock
+          remaining={progress.remaining}
+          onAdd={() => openDrawer({ step: "places" })}
+        />
+      ) : null}
+      <EncounterDrawer
+        open={drawerOpen}
+        sheet={sheet}
+        onSheetChange={setSheet}
+        onOpenChange={setDrawerOpen}
+        onSaved={saved}
+        onClosed={scrollToSaved}
+      />
     </div>
   )
 }
 
-type StarterSectionProps = {
-  map: LoadedMap
-  starter: PlaceRow
+function placeSectionId(placeId: PlaceId): string {
+  return `place-${placeId}`
 }
 
-function StarterSection({ map, starter }: StarterSectionProps) {
+type PlaceSectionProps = {
+  map: LoadedMap
+  place: PlaceRow
+  /** Whether the last save made this location join the list. */
+  justAdded: boolean
+  onRecordStarter: () => void
+}
+
+function PlaceSection({
+  map,
+  place,
+  justAdded,
+  onRecordStarter,
+}: PlaceSectionProps) {
   const { value: run } = useRun()
-  const [recording, setRecording] = useState(false)
   const journey = viewerJourney(run)
   const encounters = journey.encounters.filter(
-    (encounter) => encounter.placeId === starter.id
+    (encounter) => encounter.placeId === place.id
   )
+  const recordStarter = place.kind === "starter" && encounters.length === 0
 
   return (
     <section
-      aria-label={starter.name}
-      className="flex flex-col gap-1.5 border-b py-2.5"
+      id={placeSectionId(place.id)}
+      aria-label={place.name}
+      // Scrolled to after a save; the margin keeps it clear of the dock.
+      className="flex scroll-mt-4 scroll-mb-28 flex-col gap-1.5 border-b py-2.5"
     >
-      <h2 className="text-sm font-medium">{starter.name}</h2>
-      {encounters.length === 0 ? (
+      <div className="flex items-center gap-2">
+        <h2 className="min-w-0 flex-1 text-sm font-medium">{place.name}</h2>
+        {justAdded ? <Badge variant="secondary">Just added</Badge> : null}
+      </div>
+      {recordStarter ? (
         <Button
           type="button"
           size="lg"
           className="h-11 w-full"
-          onClick={() => setRecording(true)}
+          onClick={onRecordStarter}
         >
           <PlusIcon aria-hidden />
           Record your starter
@@ -176,14 +275,129 @@ function StarterSection({ map, starter }: StarterSectionProps) {
           ))}
         </ItemGroup>
       )}
-      <RecordDrawer
-        placeId={starter.id}
-        placeName={starter.name}
-        slot={nextSlot(run, starter.id)}
-        open={recording}
-        onOpenChange={setRecording}
-      />
     </section>
+  )
+}
+
+/** The fill of each kind of Progress cell, and of a location with none. */
+const cellFills: Record<ProgressCell | "remaining", string> = {
+  caught: "bg-primary",
+  failed: "bg-destructive",
+  unknown: "bg-muted-foreground",
+  remaining: "bg-foreground/12",
+}
+
+/** One kind of cell in the Progress legend, with how many there are. */
+type LegendEntry = {
+  cell: ProgressCell | "remaining"
+  name: string
+  count: number
+}
+
+type ProgressBlockProps = {
+  progress: Progress
+  /** Opens the Add a location Drawer; absent when the Run admits no change. */
+  onOpen?: () => void
+}
+
+function ProgressBlock({ progress, onOpen }: ProgressBlockProps) {
+  const cells = [
+    ...progress.cells,
+    ...Array.from({ length: progress.remaining }, () => "remaining" as const),
+  ]
+  const legend: LegendEntry[] = [
+    { cell: "caught", name: "Caught", count: progress.caught },
+    { cell: "failed", name: "Failed", count: progress.failed },
+    ...(progress.unknown > 0
+      ? [
+          {
+            cell: "unknown",
+            name: "Unknown",
+            count: progress.unknown,
+          } satisfies LegendEntry,
+        ]
+      : []),
+    { cell: "remaining", name: "Remaining", count: progress.remaining },
+  ]
+  const summary = legend
+    .map((entry) =>
+      entry.cell === "remaining"
+        ? `${entry.count} with no encounter yet.`
+        : `${entry.count} ${entry.name.toLowerCase()}`
+    )
+    .join(", ")
+  const content = (
+    <>
+      <span className="font-medium">
+        {progress.done}/{progress.total} encounters
+      </span>
+      <span className="sr-only">
+        {summary}
+        {onOpen ? " Show them." : null}
+      </span>
+      <span
+        aria-hidden
+        className="grid w-full grid-cols-[repeat(auto-fill,minmax(6px,1fr))] gap-x-0.5 gap-y-[3px]"
+      >
+        {cells.map((cell, index) => (
+          <span
+            key={index}
+            className={cn("h-2 rounded-[2px]", cellFills[cell])}
+          />
+        ))}
+      </span>
+      <span
+        aria-hidden
+        className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground"
+      >
+        {legend.map((entry) => (
+          <span key={entry.cell} className="inline-flex items-center gap-1.5">
+            <span
+              className={cn("size-2 rounded-[2px]", cellFills[entry.cell])}
+            />
+            {entry.name} {entry.count}
+          </span>
+        ))}
+      </span>
+    </>
+  )
+  const className = "mt-3 flex w-full flex-col gap-2 rounded-2xl p-3 text-left"
+
+  return onOpen ? (
+    <button
+      type="button"
+      className={cn(className, "transition-colors hover:bg-muted")}
+      onClick={onOpen}
+    >
+      {content}
+    </button>
+  ) : (
+    <div className={className}>{content}</div>
+  )
+}
+
+type DockProps = {
+  /** Locations with no Encounter yet; hidden at 0. */
+  remaining: number
+  onAdd: () => void
+}
+
+/** The floating bar at the bottom of both tabs that adds a location. */
+function Dock({ remaining, onAdd }: DockProps) {
+  return (
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-md px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="pointer-events-auto flex items-center gap-2.5 rounded-3xl border bg-popover p-1.5 shadow-lg">
+        <Button type="button" size="lg" className="h-11" onClick={onAdd}>
+          <PlusIcon aria-hidden />
+          Add a location
+        </Button>
+        {remaining > 0 ? (
+          <span className="min-w-0 flex-1 truncate pr-2 text-right text-xs text-muted-foreground">
+            {remaining} remaining
+          </span>
+        ) : null}
+      </div>
+    </div>
   )
 }
 

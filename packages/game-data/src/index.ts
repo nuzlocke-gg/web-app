@@ -25,6 +25,7 @@ export {
   placesOf,
   primaryType,
   progressTotal,
+  searchPlaces,
   searchSpecies,
   spriteUrl,
   suggestions,

@@ -272,6 +272,22 @@ export function searchSpecies(map: LoadedMap, query: string): Species[] {
 }
 
 /**
+ * The Places whose name contains the query, in the order given. Case,
+ * accents, and punctuation are ignored, as in {@link searchSpecies}, so
+ * "mt chimney" finds "Mt. Chimney". An empty query gives every Place.
+ */
+export function searchPlaces<Row extends { name: string }>(
+  places: Row[],
+  query: string
+): Row[] {
+  const folded = fold(query)
+
+  if (!folded) return places
+
+  return places.filter((place) => fold(place.name).includes(folded))
+}
+
+/**
  * What a Species evolves into in this Map. With a Form, each target keeps
  * that Form id when it has it, else takes its first Form. Empty when the
  * Species does not evolve, or when the Species or the Form is unknown.

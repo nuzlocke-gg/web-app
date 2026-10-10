@@ -141,11 +141,15 @@ function withEffect(
   return { ...journey, encounters, pokemon }
 }
 
-// Postgres orders UUIDs by their bytes, which is the order of their lowercase
-// text, so this matches the loader's `ORDER BY entered_at, id`.
-function byTimeOfEntry(a: EncounterState, b: EncounterState): number {
+/**
+ * Compares Encounters by time of entry, then id: the order of a Journey's
+ * Encounters in the canon.
+ */
+export function byTimeOfEntry(a: EncounterState, b: EncounterState): number {
   if (a.enteredAt !== b.enteredAt) return a.enteredAt - b.enteredAt
 
+  // Postgres orders UUIDs by their bytes, which is the order of their
+  // lowercase text, so this matches the loader's `ORDER BY entered_at, id`.
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0
 }
 
