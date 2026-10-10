@@ -75,7 +75,7 @@ The list grows as the player goes, because Pokémon games are not linear. The [R
 - Every other location joins the list when it gets its first Encounter, in the order of that Encounter (its time of entry). A Custom location joins when it is added, with a dashed "Record an encounter" until it has one. There is no section at the end and no end line.
 - Rows with the met Species sprite and the fate line, a Slot count on a location with two or more.
 - No "+" on a location: a second Encounter is recorded by picking the location again in the [Add a location Drawer](#add-a-location-drawer).
-- After a save the new location is at the end with "Just added" in the primary color, and the list scrolls to it. The screen opens scrolled to the end.
+- After a save the new location is at the end with a "Just added" Badge, and the list scrolls to it (a save from the Pokémon tab switches to Encounters first). A second Encounter at a listed location scrolls to it without the Badge. The screen opens scrolled to the end.
 - The list ends with the **Progress** block: "11/64 encounters", one cell per location (filled primary for Caught, destructive for Failed, and an amber `warning` cell for Missing in a Soul Link, in the order of the list, then grey for each remaining location; the cells wrap onto more rows when a Map has more locations than fit), and the legend "Caught 10 · Failed 1 · Remaining 53" (in a Soul Link "Missing 2" joins it before Remaining when there is one). The legend word always accompanies the amber. A tap opens the Add a location Drawer on Remaining. For a Reader and on a Finished Run it is not a button.
 
 #### The **Pokémon** tab
@@ -105,13 +105,13 @@ One floating dock at the bottom of both tabs with one shadow:
 
 - Opened by "Add a location" in the dock and by the Progress block.
 - Title "Add a location", description "Where did you meet it?".
-- Search "Search 68 locations" over every location of the Map in the player's Game.
+- Search "Search 68 locations" over every location of the Map in the player's Game, whatever the view, so a location with an Encounter is found from Remaining too.
 - A joined ToggleGroup: "Remaining 53" (default) | "All 68".
-- Remaining: one plain list "No encounter yet", A to Z with numbers in order (Route 9 before Route 10). No play order and no grouping by progress, because no order fits every game. Event locations are in the list like the others.
+- Remaining: one plain list "No encounter yet", A to Z with numbers in order (Route 9 before Route 10). No play order and no grouping by progress, because no order fits every game. The Event locations with no Encounter follow in their own group, "Event locations · Not counted"; the Remaining count leaves them out, as Progress does.
 - All: every location A to Z; a location with Encounters shows the Species met under its name and their sprites on the right.
 - The Run's Custom locations in a group of their own at the end of both views, with rename and remove (remove refused while the location has Encounters).
 - At the end: "Not listed? Add a custom location" with an Input and "Add location". Adding saves the Custom location, which joins the list at once, and opens the Species step for it.
-- A tap on a location goes straight to step 1 of the record Drawer, which then has a back control to this Drawer. Closing adds nothing.
+- A tap on a location goes straight to step 1 of the record Drawer, which then has a back control to this Drawer. Closing adds nothing. The record Drawer keeps its choices for the location and Slot, so opening them again after a close or a refused save shows the same draft.
 - A location that already has an Encounter opens in a new Slot, and step 1 shows the First Encounter Rule Alert.
 
 ### Record Drawer

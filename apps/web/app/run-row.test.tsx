@@ -1,6 +1,6 @@
 import type { MapSummary } from "@workspace/game-data"
-import { render, screen } from "@testing-library/react"
-import { describe, expect, test } from "vitest"
+import { cleanup, render, screen } from "@testing-library/react"
+import { afterEach, describe, expect, test } from "vitest"
 
 import { RunRow } from "./run-row"
 
@@ -19,6 +19,8 @@ const run = {
   mapId: "emerald",
   gameId: "emerald",
 }
+
+afterEach(cleanup)
 
 describe("RunRow", () => {
   test("links to the Run with its name and Game", () => {

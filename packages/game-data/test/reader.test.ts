@@ -15,6 +15,7 @@ import {
   placesOf,
   primaryType,
   progressTotal,
+  searchPlaces,
   searchSpecies,
   spriteUrl,
   suggestions,
@@ -227,6 +228,27 @@ describe("Species", () => {
 
   it("gives every Species for an empty search", () => {
     expect(searchSpecies(map, " ")).toHaveLength(map.data.species.length)
+  })
+})
+
+describe("searchPlaces", () => {
+  const places = [
+    { name: "Route 10" },
+    { name: "Mt. Chimney" },
+    { name: "Route 9" },
+  ]
+  const names = (query: string) =>
+    searchPlaces(places, query).map((place) => place.name)
+
+  it("searches by name, ignoring case, accents, and punctuation, in the order given", () => {
+    expect(names("mt chimney")).toEqual(["Mt. Chimney"])
+    expect(names("MT. CHÍMNEY")).toEqual(["Mt. Chimney"])
+    expect(names("route")).toEqual(["Route 10", "Route 9"])
+    expect(names("route1")).toEqual(["Route 10"])
+  })
+
+  it("gives every Place for an empty search", () => {
+    expect(names(" ")).toEqual(["Route 10", "Mt. Chimney", "Route 9"])
   })
 })
 

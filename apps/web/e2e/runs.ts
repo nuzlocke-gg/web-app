@@ -1,5 +1,6 @@
 import { and, eq, sql } from "drizzle-orm"
 import { randomUUID } from "node:crypto"
+import { v7 as uuidv7 } from "uuid"
 
 import {
   encounters,
@@ -91,4 +92,35 @@ export async function deleteReceipt(mutationId: string): Promise<void> {
   await testDb
     .delete(headcanonMutationReceipts)
     .where(eq(headcanonMutationReceipts.mutationId, mutationId))
+}
+
+/**
+ * Records a Failed Encounter with no Species at each Place for a Player,
+ * behind the app's back, a minute apart and in the order given, the last
+ * one a minute ago.
+ */
+export async function recordFailedEncountersElsewhere(
+  runId: string,
+  playerId: string,
+  placeIds: string[]
+): Promise<void> {
+  const [journey] = await testDb
+    .select({ id: journeys.id })
+    .from(journeys)
+    .where(and(eq(journeys.runId, runId), eq(journeys.playerId, playerId)))
+  const minute = 60_000
+  const start = Date.now() - placeIds.length * minute
+
+  await testDb.insert(encounters).values(
+    placeIds.map((placeId, index) => ({
+      id: uuidv7(),
+      runId,
+      journeyId: journey!.id,
+      placeId,
+      slotOrdinal: 1,
+      origin: "wild" as const,
+      outcome: "failed" as const,
+      enteredAt: new Date(start + index * minute),
+    }))
+  )
 }

@@ -1,6 +1,5 @@
 "use client"
 
-import { CaretLeftIcon, XIcon } from "@phosphor-icons/react"
 import {
   getSpecies,
   hasFormChoice,
@@ -13,15 +12,7 @@ import {
   type PlaceId,
 } from "@workspace/game-data"
 import { Button } from "@workspace/ui/components/button"
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@workspace/ui/components/drawer"
+import { DrawerFooter } from "@workspace/ui/components/drawer"
 import {
   Field,
   FieldDescription,
@@ -58,6 +49,7 @@ import {
   type EncounterOutcome,
 } from "@/lib/runs/state"
 
+import { DrawerHeaderRow, type Back } from "./drawer-header-row"
 import { useRun, useRunChange } from "./run-root"
 import {
   searchChoices,
@@ -67,19 +59,26 @@ import {
 } from "./species-choices"
 import { useLoadedMap } from "./use-map"
 
-type RecordDrawerProps = {
+type RecordStepsProps = {
   placeId: PlaceId
   placeName: string
   /** The Slot the Encounter goes in. */
   slot: number
+  /** Whether the Drawer that holds the steps is open. */
   open: boolean
-  onOpenChange: (open: boolean) => void
+  /** The choices so far; null on step 1. */
+  draft: RecordDraft | null
+  onDraftChange: (draft: RecordDraft | null) => void
+  /** Shown on step 1 as "Back to locations" when given. */
+  onBackToPlaces?: () => void
+  /** Called after "Save encounter" sends the Encounter; close the Drawer then. */
+  onSaved: () => void
 }
 
 type Destination = "party" | "box"
 
-/** What the player has chosen in the Drawer so far. */
-type Draft = {
+/** What the player has chosen in the record Drawer so far. */
+export type RecordDraft = {
   /** Null for "Species unknown". */
   met: FormRef | null
   /** The method group the Species was picked from, if any. */
@@ -97,33 +96,31 @@ const originNames: Record<Origin, string> = {
 }
 
 /**
- * The record Drawer: step 1 picks a Species (or "Species unknown"), step 2
- * fills in the details, and "Save encounter" records it at once, predicted.
+ * The content of the record Drawer: step 1 picks a Species (or "Species
+ * unknown"), step 2 fills in the details, and "Save encounter" records it at
+ * once, predicted. Render it inside a `DrawerContent`; the caller keeps the
+ * draft, so it outlives the Drawer's content.
  */
-export function RecordDrawer({
+export function RecordSteps({
   placeId,
   placeName,
   slot,
   open,
-  onOpenChange,
-}: RecordDrawerProps) {
+  draft,
+  onDraftChange: setDraft,
+  onBackToPlaces,
+  onSaved,
+}: RecordStepsProps) {
   const { value: run } = useRun()
   const change = useRunChange()
   const map = useLoadedMap()
   const journey = viewerJourney(run)
   const partyCount = partyOf(journey).length
   const partyFull = partyCount >= PARTY_SIZE
-  const [draft, setDraft] = useState<Draft | null>(null)
   const where = slot > 1 ? `${placeName} · slot ${slot}` : placeName
 
   // Choices made in the details step are lost if the page unloads.
   useLeavePrompt(open && draft !== null)
-
-  function changeOpen(next: boolean) {
-    if (next) setDraft(null)
-
-    onOpenChange(next)
-  }
 
   function pick(choice: SpeciesChoice | null) {
     setDraft({
@@ -136,7 +133,7 @@ export function RecordDrawer({
     })
   }
 
-  function save(details: Draft) {
+  function save(details: RecordDraft) {
     change(
       recordEncounter({
         runId: run.id,
@@ -152,42 +149,45 @@ export function RecordDrawer({
 
     // The Drawer closes either way: it would cover a refusal's toast, and
     // nothing in it can fix a refusal.
-    onOpenChange(false)
+    onSaved()
   }
 
+  const back: Back | undefined = draft
+    ? { label: "Back to species", onClick: () => setDraft(null) }
+    : onBackToPlaces && { label: "Back to locations", onClick: onBackToPlaces }
+
   return (
-    <Drawer open={open} onOpenChange={changeOpen} showSwipeHandle>
-      <DrawerContent>
-        <RecordHeader
-          description={where}
-          onBack={draft ? () => setDraft(null) : undefined}
+    <>
+      <DrawerHeaderRow
+        title="Record an encounter"
+        description={where}
+        back={back}
+      />
+      {!map ? null : draft ? (
+        <DetailsStep
+          map={map}
+          placeName={placeName}
+          draft={draft}
+          partyCount={partyCount}
+          onChange={setDraft}
+          onChangeSpecies={() => setDraft(null)}
+          onSave={save}
         />
-        {!map ? null : draft ? (
-          <DetailsStep
-            map={map}
-            placeName={placeName}
-            draft={draft}
-            partyCount={partyCount}
-            onChange={setDraft}
-            onChangeSpecies={() => setDraft(null)}
-            onSave={save}
-          />
-        ) : (
-          <SpeciesStep
-            map={map}
-            placeId={placeId}
-            gameId={journey.gameId}
-            onPick={pick}
-          />
-        )}
-      </DrawerContent>
-    </Drawer>
+      ) : (
+        <SpeciesStep
+          map={map}
+          placeId={placeId}
+          gameId={journey.gameId}
+          onPick={pick}
+        />
+      )}
+    </>
   )
 }
 
 /** The outcome arguments of a draft, with no key for an absent value. */
 function outcomeArgs(
-  draft: Draft,
+  draft: RecordDraft,
   pokemonId: string,
   partyFull: boolean
 ): RecordEncounterArgs["outcome"] {
@@ -204,52 +204,6 @@ function outcomeArgs(
     goesTo: partyFull ? "box" : draft.goesTo,
     ...(nickname ? { nickname } : {}),
   }
-}
-
-type RecordHeaderProps = {
-  description: string
-  /** Shown as "Back to species" when given. */
-  onBack?: () => void
-}
-
-function RecordHeader({ description, onBack }: RecordHeaderProps) {
-  return (
-    <div className="flex items-start gap-1 px-2">
-      <div className="w-11 shrink-0 pt-2">
-        {onBack ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="size-11"
-            aria-label="Back to species"
-            onClick={onBack}
-          >
-            <CaretLeftIcon />
-          </Button>
-        ) : null}
-      </div>
-      <DrawerHeader className="flex-1 px-0">
-        <DrawerTitle>Record an encounter</DrawerTitle>
-        <DrawerDescription>{description}</DrawerDescription>
-      </DrawerHeader>
-      <div className="w-11 shrink-0 pt-2">
-        <DrawerClose
-          render={
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="size-11"
-              aria-label="Close"
-            />
-          }
-        >
-          <XIcon />
-        </DrawerClose>
-      </div>
-    </div>
-  )
 }
 
 type SpeciesStepProps = {
@@ -375,11 +329,11 @@ function ChoiceGrid({ map, choices, onPick }: ChoiceGridProps) {
 type DetailsStepProps = {
   map: LoadedMap
   placeName: string
-  draft: Draft
+  draft: RecordDraft
   partyCount: number
-  onChange: (draft: Draft) => void
+  onChange: (draft: RecordDraft) => void
   onChangeSpecies: () => void
-  onSave: (draft: Draft) => void
+  onSave: (draft: RecordDraft) => void
 }
 
 function DetailsStep({
