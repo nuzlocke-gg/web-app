@@ -159,7 +159,8 @@ export function HouseRulesField({ houseRules }: { houseRules: HouseRules }) {
         type="button"
         size="lg"
         className="h-11 self-end"
-        disabled={!houseRules.dirty || refusal !== null || houseRules.locked}
+        // House rules are optional: an empty field saves as none.
+        disabled={refusal !== null || houseRules.locked}
         aria-busy={houseRules.sending}
         onClick={houseRules.save}
       >

@@ -125,6 +125,31 @@ describe("the Rules screen", () => {
     })
   })
 
+  test("Save is enabled with no House rules, which are optional", async () => {
+    await renderRules()
+
+    expect(
+      (screen.getByRole("button", { name: "Save" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(false)
+  })
+
+  test("clearing the House rules saves none", async () => {
+    const run = await renderRules({ houseRules: "Set mode" })
+
+    fireEvent.change(screen.getByLabelText("House rules"), {
+      target: { value: "  \n" },
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Save" }))
+    })
+
+    expect(saveHouseRules).toHaveBeenCalledWith({
+      runId: run.id,
+      houseRules: null,
+    })
+  })
+
   test("Back with unsaved House rules asks to discard them", async () => {
     const run = await renderRules()
 

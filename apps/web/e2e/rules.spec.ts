@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test"
 
+import { isServerAction } from "./network"
 import { signInNamedPlayer } from "./players"
 
 /** Adds a location from the dock and records a Caught Species there, named. */
@@ -121,10 +122,10 @@ test("a player chooses the Rules, sees the Warnings follow them, and writes Hous
   await page
     .getByRole("textbox", { name: "House rules" })
     .fill("Level caps:\n  Roxanne 15")
-  await page.getByRole("button", { name: "Save" }).click()
-  // Saved: the field is unlocked again, with nothing left to save.
-  await expect(page.getByRole("textbox", { name: "House rules" })).toBeEnabled()
-  await expect(page.getByRole("button", { name: "Save" })).toBeDisabled()
+  await Promise.all([
+    page.waitForResponse((response) => isServerAction(response.request())),
+    page.getByRole("button", { name: "Save" }).click(),
+  ])
 
   await page.getByRole("link", { name: "Back to the run" }).click()
   await expect(page.getByRole("button", { name: "1 warning" })).toBeVisible()
