@@ -10,6 +10,7 @@
     "typecheck": "turbo typecheck",
     "claude-design": "npm run generate -w @workspace/claude-design",
     "test": "turbo test",
+    "db:migrate": "npm run db:migrate -w web",
     "prepare": "husky"
   },
   "devDependencies": {

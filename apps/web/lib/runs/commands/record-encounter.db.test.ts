@@ -1,5 +1,5 @@
 import { and, eq, sql } from "drizzle-orm"
-import { defineMutation, defineProtocol, revisionAt } from "headcanon"
+import { defineMutation, defineProtocol } from "headcanon"
 import { createNextMutationAction } from "headcanon/next/server"
 import {
   allowAdmission,
@@ -16,18 +16,24 @@ import { runAction } from "@/app/runs/actions"
 import { db } from "@/lib/db"
 import { encounters, journeys, pokemon, runs } from "@/lib/db/schema"
 import {
+  accepted,
+  canonOf,
   caughtMudkipArgs,
+  denied,
   insertJourney,
   insertRun,
+  journeyOf,
   makeRun,
   record,
-  recordEncounterEnvelope,
+  runEnvelope,
+  refused,
+  revisionOf,
 } from "@/test/runs"
 import { signedInScope, signIn } from "@/test/session"
 
 import { runAxis } from "../axis"
 import { runsBinder, type RunTransaction } from "../binder"
-import { loadRunCanon, readRunState } from "../canon"
+import { readRunState } from "../canon"
 import { bumpRevision, lockRun } from "../lock"
 import { recordEncounter } from "../mutations"
 import { refusal, refusalSchema } from "../refusals"
@@ -94,32 +100,6 @@ const probeAction = createNextMutationAction({
     }),
   ],
 })
-
-const accepted = {
-  ok: true,
-  value: { kind: "accepted", stamp: expect.anything() },
-}
-const denied = { ok: true, value: { kind: "denied" } }
-
-function refused(kind: string) {
-  return { ok: true, value: { kind: "refused", error: { kind } } }
-}
-
-async function canonOf(runId: string) {
-  const canon = await loadRunCanon(runId)
-
-  if (!canon) throw new Error(`Run ${runId} has no canon for this Player`)
-
-  return canon
-}
-
-async function journeyOf(runId: string) {
-  return viewerJourney((await canonOf(runId)).value)
-}
-
-async function revisionOf(runId: string) {
-  return revisionAt((await canonOf(runId)).revisions, runAxis.of(runId))
-}
 
 /** Records Caught Mudkips at the Starter location in Slots 1 to `count`. */
 async function catchMudkips(runId: string, count: number) {
@@ -247,7 +227,7 @@ describe("Record an Encounter", () => {
   test("the same envelope retried commits once", async () => {
     await signIn()
     const runId = await makeRun()
-    const envelope = recordEncounterEnvelope(caughtMudkipArgs(runId))
+    const envelope = runEnvelope(recordEncounter(caughtMudkipArgs(runId)))
 
     const first = await runAction(envelope)
     const second = await runAction(envelope)
@@ -286,7 +266,7 @@ describe("access", () => {
   test("a resent envelope is denied once its Player has no Journey in the Run", async () => {
     const playerId = await signIn()
     const runId = await makeRun()
-    const envelope = recordEncounterEnvelope(caughtMudkipArgs(runId))
+    const envelope = runEnvelope(recordEncounter(caughtMudkipArgs(runId)))
 
     await expect(runAction(envelope)).resolves.toEqual(accepted)
     await db
@@ -300,7 +280,7 @@ describe("access", () => {
     const ashId = await signIn()
     const runId = await insertRun()
     await insertJourney(runId, ashId)
-    const ashEnvelope = recordEncounterEnvelope(caughtMudkipArgs(runId))
+    const ashEnvelope = runEnvelope(recordEncounter(caughtMudkipArgs(runId)))
 
     const mistyId = await signIn({ displayName: "Misty" })
     await insertJourney(runId, mistyId)

@@ -85,6 +85,7 @@ describe("Record an Encounter", () => {
         nickname: "Muddy",
         inParty: true,
         diedAt: null,
+        deathLevel: null,
         removedAt: null,
       },
     ])
@@ -168,6 +169,7 @@ describe("Record an Encounter", () => {
               nickname: null,
               inParty: true,
               diedAt: null,
+              deathLevel: null,
               removedAt: null,
             },
           ],

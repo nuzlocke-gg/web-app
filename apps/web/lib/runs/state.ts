@@ -69,6 +69,8 @@ export type PokemonState = {
   inParty: boolean
   /** Epoch milliseconds, or null while it lives. */
   diedAt: number | null
+  /** The level it died at, when the player gave one. */
+  deathLevel: number | null
   /** Epoch milliseconds when traded away or released, or null. */
   removedAt: number | null
 }
@@ -113,6 +115,28 @@ export function viewerJourney(run: RunState): JourneyState {
   if (!journey) throw new Error(`Run ${run.id} has no Journey for its viewer`)
 
   return journey
+}
+
+/** One Encounter of the viewer's Journey, with that Journey. */
+export type ViewerEncounter = {
+  journey: JourneyState
+  encounter: EncounterState
+}
+
+/**
+ * The viewer's Encounter with this id, or undefined when the viewer's Journey
+ * has none: it was removed, or it is a partner's.
+ */
+export function findViewerEncounter(
+  run: RunState,
+  encounterId: string
+): ViewerEncounter | undefined {
+  const journey = viewerJourney(run)
+  const encounter = journey.encounters.find(
+    (candidate) => candidate.id === encounterId
+  )
+
+  return encounter && { journey, encounter }
 }
 
 /** The living Pokémon of a Journey that the player carries. */

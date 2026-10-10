@@ -15,11 +15,7 @@ import {
   type PokemonState,
   type RunState,
 } from "../state"
-
-const formRef = z.object({
-  species: z.string().min(1),
-  form: z.string().min(1),
-})
+import { formRefArgs } from "./form-ref"
 
 /**
  * The arguments of Record an Encounter, in parsed form. Everything random or
@@ -38,13 +34,13 @@ export const recordEncounterArgs = z.object({
   outcome: z.discriminatedUnion("kind", [
     z.object({
       kind: z.literal("caught"),
-      met: formRef,
+      met: formRefArgs,
       pokemonId: z.uuidv7(),
       nickname: nickname.optional(),
       /** The Box when the Party is full, whatever this says. */
       goesTo: z.enum(["party", "box"]),
     }),
-    z.object({ kind: z.literal("failed"), met: formRef.optional() }),
+    z.object({ kind: z.literal("failed"), met: formRefArgs.optional() }),
   ]),
 })
 
@@ -108,6 +104,7 @@ export function check(
       nickname: outcome.nickname ?? null,
       inParty: outcome.goesTo === "party" && partyHasRoom,
       diedAt: null,
+      deathLevel: null,
       removedAt: null,
     },
   })

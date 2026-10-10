@@ -1,26 +1,19 @@
 import "server-only"
 
-import { and, eq, sql } from "drizzle-orm"
+import { sql } from "drizzle-orm"
 import { matchesPostgresError } from "headcanon/drizzle"
-import {
-  acceptMutation,
-  allowAdmission,
-  allowScreening,
-  denyMutation,
-  refuseMutation,
-} from "headcanon/server"
+import { acceptMutation, refuseMutation } from "headcanon/server"
 
-import { db } from "@/lib/db"
-import { encounters, journeys, pokemon } from "@/lib/db/schema"
+import { encounters, pokemon } from "@/lib/db/schema"
 
 import { runAxis } from "../axis"
 import { runsBinder, type RunTransaction } from "../binder"
-import { readRunState } from "../canon"
 import * as recordEncounterChange from "../changes/record-encounter"
 import { passesGameDataGate } from "../game-data-gate"
-import { bumpRevision, lockRun } from "../lock"
+import { bumpRevision } from "../lock"
 import { recordEncounter } from "../mutations"
 import { refusal } from "../refusals"
+import { admitPlayer, screenPlayer } from "./player-access"
 
 /**
  * Whether a database error is the unique violation of one Encounter per
@@ -40,20 +33,8 @@ export function isSlotTaken(error: unknown): boolean {
  * Place and Species, and the rows are written from the Effect.
  */
 export const recordEncounterBinding = runsBinder.bind(recordEncounter, {
-  screen: async ({ actor, args }) => {
-    const [membership] = await db
-      .select({ id: journeys.id })
-      .from(journeys)
-      .where(and(eq(journeys.runId, args.runId), eq(journeys.playerId, actor)))
-
-    return membership ? allowScreening() : denyMutation()
-  },
-  admit: async ({ tx, actor, args }) => {
-    const row = await lockRun(tx, args.runId)
-    const run = row && (await readRunState(tx, row, actor))
-
-    return run ? allowAdmission({ run }) : denyMutation()
-  },
+  screen: screenPlayer,
+  admit: admitPlayer,
   execute: async ({ tx, args, evidence, stamp }) => {
     const { run } = evidence
     const checked = recordEncounterChange.check(run, args)

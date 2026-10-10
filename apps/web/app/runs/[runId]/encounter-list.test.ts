@@ -1,10 +1,21 @@
-import type { PlaceRow } from "@workspace/game-data"
-import { describe, expect, test } from "vitest"
+import { loadMap, type LoadedMap, type PlaceRow } from "@workspace/game-data"
+import { beforeAll, describe, expect, test } from "vitest"
 
 import type { EncounterState } from "@/lib/runs/state"
-import { encounterState, journeyState, runState } from "@/test/run-state"
+import {
+  encounterState,
+  journeyState,
+  pokemonState,
+  runState,
+} from "@/test/run-state"
 
-import { listedPlaces, placeChoices, progressOf } from "./encounter-list"
+import {
+  fateLine,
+  listedPlaces,
+  placeChoices,
+  progressOf,
+  slotCount,
+} from "./encounter-list"
 
 const starter: PlaceRow = { id: "starter", kind: "starter", name: "Starter" }
 const route9: PlaceRow = { id: "route-9", kind: "standard", name: "Route 9" }
@@ -209,5 +220,95 @@ describe("placeChoices", () => {
 
   test("a search with no match gives no groups", () => {
     expect(groups(runWith(), "all", "viridian")).toEqual([])
+  })
+})
+
+describe("slotCount", () => {
+  test("is the number of Slots the viewer has at a location", () => {
+    const run = runWith(
+      at("route-9", 1, { slot: 1 }),
+      at("route-9", 2, { slot: 2 }),
+      at("route-10", 3)
+    )
+
+    expect(slotCount(run, "route-9")).toBe(2)
+    expect(slotCount(run, "route-10")).toBe(1)
+    expect(slotCount(run, "cave")).toBe(0)
+  })
+
+  test("counts a Slot that partners share once", () => {
+    const run = runState({
+      kind: "soul_link",
+      journeys: [
+        journeyState({ encounters: [at("route-9", 1)] }),
+        journeyState({
+          id: "0199c4a0-0000-7000-8000-00000000000a",
+          playerId: partnerId,
+          encounters: [at("route-9", 2), at("route-9", 3, { slot: 2 })],
+        }),
+      ],
+    })
+
+    expect(slotCount(run, "route-9")).toBe(2)
+  })
+
+  test("counts the Slots left after a removal leaves a gap", () => {
+    const run = runWith(at("route-9", 2, { slot: 2 }))
+
+    expect(slotCount(run, "route-9")).toBe(1)
+  })
+})
+
+describe("fateLine", () => {
+  let map: LoadedMap
+
+  beforeAll(async () => {
+    map = (await loadMap("emerald"))!
+  })
+
+  const treecko = encounterState({ met: { species: "treecko", form: "base" } })
+  const grovyle = { species: "grovyle", form: "base" }
+
+  test.each([
+    ["the nickname and the Party", { nickname: "Leafy" }, "Leafy · Party"],
+    ["no nickname and the Box", { inParty: false }, "No nickname · Box"],
+    [
+      "the current Species once it differs from the met one",
+      { nickname: "Leafy", species: grovyle },
+      "Leafy · now Grovyle · Party",
+    ],
+    [
+      "the level of a death",
+      { nickname: "Leafy", diedAt: Date.UTC(2026, 9, 3), deathLevel: 24 },
+      "Leafy · died at Lv 24",
+    ],
+    [
+      "a death with no level",
+      { nickname: "Leafy", diedAt: Date.UTC(2026, 9, 3) },
+      "Leafy · died",
+    ],
+    [
+      "a removed Pokémon",
+      { nickname: "Leafy", removedAt: Date.UTC(2026, 9, 4) },
+      "Leafy · Removed",
+    ],
+    [
+      "an evolved Pokémon that died",
+      {
+        nickname: "Leafy",
+        species: grovyle,
+        diedAt: Date.UTC(2026, 9, 3),
+        deathLevel: 24,
+      },
+      "Leafy · now Grovyle · died at Lv 24",
+    ],
+  ])("says %s", (_, overrides, line) => {
+    expect(fateLine(map, treecko, pokemonState(treecko, overrides))).toBe(line)
+  })
+
+  test("says Failed for a Failed Encounter", () => {
+    const failed = encounterState({ outcome: "failed", met: null })
+
+    expect(fateLine(map, failed, undefined)).toBe("Failed")
   })
 })

@@ -1,6 +1,6 @@
 "use client"
 
-import { CaretLeftIcon, PlusIcon } from "@phosphor-icons/react"
+import { CaretLeftIcon, CaretRightIcon, PlusIcon } from "@phosphor-icons/react"
 import {
   getGame,
   getSpecies,
@@ -45,10 +45,13 @@ import {
   type RunKind,
 } from "@/lib/runs/state"
 
+import { CorrectDrawer } from "./correct-drawer"
 import { EncounterDrawer, recordSheet, type Sheet } from "./encounter-drawer"
 import {
+  fateLine,
   listedPlaces,
   progressOf,
+  slotCount,
   type Progress,
   type ProgressCell,
 } from "./encounter-list"
@@ -81,6 +84,8 @@ export function TrackingScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [sheet, setSheet] = useState<Sheet>({ step: "places" })
   const [justAdded, setJustAdded] = useState<PlaceId | null>(null)
+  const [correcting, setCorrecting] = useState<string | null>(null)
+  const [correctOpen, setCorrectOpen] = useState(false)
   const savedAt = useRef<PlaceId | null>(null)
 
   // The screen opens on the newest location, at the end of the list.
@@ -91,6 +96,11 @@ export function TrackingScreen() {
   function openDrawer(next: Sheet) {
     setSheet(next)
     setDrawerOpen(true)
+  }
+
+  function openCorrect(encounterId: string) {
+    setCorrecting(encounterId)
+    setCorrectOpen(true)
   }
 
   function saved(place: PlaceRow) {
@@ -164,6 +174,7 @@ export function TrackingScreen() {
                 onRecordStarter={() =>
                   openDrawer(recordSheet(run, place, false))
                 }
+                onCorrect={canAdd ? openCorrect : undefined}
               />
             ))
           ) : (
@@ -213,6 +224,11 @@ export function TrackingScreen() {
         onSaved={saved}
         onClosed={scrollToSaved}
       />
+      <CorrectDrawer
+        encounterId={correcting}
+        open={correctOpen}
+        onOpenChange={setCorrectOpen}
+      />
     </div>
   )
 }
@@ -227,6 +243,8 @@ type PlaceSectionProps = {
   /** Whether the last save made this location join the list. */
   justAdded: boolean
   onRecordStarter: () => void
+  /** Opens the Correct Drawer from a Failed row; absent when nothing can change. */
+  onCorrect?: (encounterId: string) => void
 }
 
 function PlaceSection({
@@ -234,6 +252,7 @@ function PlaceSection({
   place,
   justAdded,
   onRecordStarter,
+  onCorrect,
 }: PlaceSectionProps) {
   const { value: run } = useRun()
   const journey = viewerJourney(run)
@@ -241,6 +260,7 @@ function PlaceSection({
     (encounter) => encounter.placeId === place.id
   )
   const recordStarter = place.kind === "starter" && encounters.length === 0
+  const slots = slotCount(run, place.id)
 
   return (
     <section
@@ -251,6 +271,9 @@ function PlaceSection({
     >
       <div className="flex items-center gap-2">
         <h2 className="min-w-0 flex-1 text-sm font-medium">{place.name}</h2>
+        {slots > 1 ? (
+          <span className="text-xs text-muted-foreground">{slots} slots</span>
+        ) : null}
         {justAdded ? <Badge variant="secondary">Just added</Badge> : null}
       </div>
       {recordStarter ? (
@@ -266,14 +289,16 @@ function PlaceSection({
       ) : (
         <ItemGroup className="gap-1.5">
           {encounters.map((encounter) => (
-            <EncounterRow
-              key={encounter.id}
-              map={map}
-              encounter={encounter}
-              pokemon={journey.pokemon.find(
-                (mon) => mon.encounterId === encounter.id
-              )}
-            />
+            <div key={encounter.id} role="listitem">
+              <EncounterRow
+                map={map}
+                encounter={encounter}
+                pokemon={journey.pokemon.find(
+                  (mon) => mon.encounterId === encounter.id
+                )}
+                onCorrect={onCorrect}
+              />
+            </div>
           ))}
         </ItemGroup>
       )}
@@ -383,17 +408,38 @@ type EncounterRowProps = {
   encounter: EncounterState
   /** The Encounter's Pokémon; none for a Failed Encounter. */
   pokemon: PokemonState | undefined
+  /** Makes a Failed row open the Correct Drawer. */
+  onCorrect?: (encounterId: string) => void
 }
 
-function EncounterRow({ map, encounter, pokemon }: EncounterRowProps) {
+function EncounterRow({
+  map,
+  encounter,
+  pokemon,
+  onCorrect,
+}: EncounterRowProps) {
   const failed = encounter.outcome === "failed"
+  const dimmed = failed || (pokemon !== undefined && pokemon.diedAt !== null)
   const speciesName = encounter.met
     ? (getSpecies(map, encounter.met.species)?.name ?? "Unknown Pokémon")
     : "Species unknown"
+  const correctable = failed && onCorrect !== undefined
 
   return (
-    <Item role="listitem" variant="muted" size="sm">
-      <ItemMedia className={cn(failed && "opacity-60")}>
+    <Item
+      variant="muted"
+      size="sm"
+      render={
+        correctable ? (
+          <button
+            type="button"
+            className="text-left hover:bg-muted"
+            onClick={() => onCorrect(encounter.id)}
+          />
+        ) : undefined
+      }
+    >
+      <ItemMedia className={cn(dimmed && "opacity-60")}>
         {encounter.met ? (
           <Sprite
             map={map}
@@ -407,24 +453,16 @@ function EncounterRow({ map, encounter, pokemon }: EncounterRowProps) {
       </ItemMedia>
       <ItemContent className="min-w-0">
         <ItemTitle>{speciesName}</ItemTitle>
-        <ItemDescription>
-          {pokemon ? fateLine(pokemon) : failed ? "Failed" : "Unknown outcome"}
-        </ItemDescription>
+        <ItemDescription>{fateLine(map, encounter, pokemon)}</ItemDescription>
       </ItemContent>
       {failed ? (
         <ItemActions>
           <Badge variant="outline">Failed</Badge>
+          {correctable ? <CaretRightIcon aria-hidden /> : null}
         </ItemActions>
       ) : null}
     </Item>
   )
-}
-
-/** What became of an Encounter's Pokémon, under the Species met. */
-function fateLine(pokemon: PokemonState): string {
-  const where = pokemon.inParty ? "Party" : "Box"
-
-  return `${pokemon.nickname ?? "No nickname"} · ${where}`
 }
 
 type PokemonGroupProps = {

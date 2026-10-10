@@ -210,10 +210,22 @@ type SpeciesStepProps = {
   map: LoadedMap
   placeId: PlaceId
   gameId: string
+  /** Whether the list ends with "Species unknown", which picks null. */
+  allowUnknown?: boolean
   onPick: (choice: SpeciesChoice | null) => void
 }
 
-function SpeciesStep({ map, placeId, gameId, onPick }: SpeciesStepProps) {
+/**
+ * Step 1 of the record Drawer: the location's Species by method group, every
+ * other Species, and a search over all of them.
+ */
+export function SpeciesStep({
+  map,
+  placeId,
+  gameId,
+  allowUnknown = true,
+  onPick,
+}: SpeciesStepProps) {
   const [query, setQuery] = useState("")
   const searching = query.trim() !== ""
   const suggested = suggestions(map, placeId, gameId)
@@ -247,25 +259,27 @@ function SpeciesStep({ map, placeId, gameId, onPick }: SpeciesStepProps) {
             </SpeciesSection>
           ))
         )}
-        <Item
-          variant="muted"
-          size="xs"
-          className="mt-4"
-          render={
-            <button
-              type="button"
-              className="min-h-11 text-left"
-              onClick={() => onPick(null)}
-            />
-          }
-        >
-          <ItemMedia>
-            <UnknownSprite size={32} />
-          </ItemMedia>
-          <ItemContent>
-            <ItemTitle>Species unknown</ItemTitle>
-          </ItemContent>
-        </Item>
+        {allowUnknown ? (
+          <Item
+            variant="muted"
+            size="xs"
+            className="mt-4"
+            render={
+              <button
+                type="button"
+                className="min-h-11 text-left"
+                onClick={() => onPick(null)}
+              />
+            }
+          >
+            <ItemMedia>
+              <UnknownSprite size={32} />
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle>Species unknown</ItemTitle>
+            </ItemContent>
+          </Item>
+        ) : null}
       </div>
     </>
   )
@@ -346,7 +360,6 @@ function DetailsStep({
   onSave,
 }: DetailsStepProps) {
   const id = useId()
-  const species = draft.met ? getSpecies(map, draft.met.species) : undefined
   const caught = draft.outcome === "caught"
   const partyFull = partyCount >= PARTY_SIZE
   const goesTo = partyFull ? "box" : draft.goesTo
@@ -355,41 +368,15 @@ function DetailsStep({
   return (
     <>
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pt-3 pb-4">
-        <Field>
-          <FieldTitle>Species</FieldTitle>
-          <Item variant="muted" size="xs">
-            <ItemMedia>
-              {draft.met ? (
-                <Sprite
-                  map={map}
-                  species={draft.met.species}
-                  form={draft.met.form}
-                  size={32}
-                />
-              ) : (
-                <UnknownSprite size={32} />
-              )}
-            </ItemMedia>
-            <ItemContent>
-              <ItemTitle>{species?.name ?? "Unknown"}</ItemTitle>
-              {draft.met ? (
-                <ItemDescription>
-                  {pickedFrom(draft.group, placeName)}
-                </ItemDescription>
-              ) : null}
-            </ItemContent>
-            <ItemActions>
-              <Button
-                type="button"
-                variant="ghost"
-                className="h-11"
-                onClick={onChangeSpecies}
-              >
-                Change
-              </Button>
-            </ItemActions>
-          </Item>
-        </Field>
+        <SpeciesField
+          map={map}
+          title="Species"
+          met={draft.met}
+          description={
+            draft.met ? pickedFrom(draft.group, placeName) : undefined
+          }
+          onChange={onChangeSpecies}
+        />
 
         <Choice
           id={`${id}-outcome`}
@@ -402,33 +389,19 @@ function DetailsStep({
           onChange={(outcome) => onChange({ ...draft, outcome })}
         />
 
-        <Choice
+        <OriginChoice
           id={`${id}-origin`}
-          title="Origin"
           value={draft.origin}
-          options={ORIGINS.map((origin) => ({
-            value: origin,
-            label: originNames[origin],
-          }))}
           description={originHelp(draft.group)}
           onChange={(origin) => onChange({ ...draft, origin })}
         />
 
-        {species && draft.met && hasFormChoice(map, species.id) ? (
-          <Choice
-            id={`${id}-form`}
-            title="Form"
-            value={draft.met.form}
-            vertical={species.forms.length > 3}
-            options={species.forms.map((form) => ({
-              value: form.id,
-              label: form.name,
-            }))}
-            onChange={(form) =>
-              onChange({ ...draft, met: { species: species.id, form } })
-            }
-          />
-        ) : null}
+        <FormChoice
+          id={`${id}-form`}
+          map={map}
+          met={draft.met}
+          onChange={(met) => onChange({ ...draft, met })}
+        />
 
         {caught ? (
           <>
@@ -485,6 +458,115 @@ function DetailsStep({
   )
 }
 
+type SpeciesFieldProps = {
+  map: LoadedMap
+  title: string
+  /** Null shows "Unknown". */
+  met: FormRef | null
+  description?: string
+  onChange: () => void
+}
+
+/** A chosen Species with its sprite and a Change button. */
+export function SpeciesField({
+  map,
+  title,
+  met,
+  description,
+  onChange,
+}: SpeciesFieldProps) {
+  const species = met ? getSpecies(map, met.species) : undefined
+
+  return (
+    <Field>
+      <FieldTitle>{title}</FieldTitle>
+      <Item variant="muted" size="xs">
+        <ItemMedia>
+          {met ? (
+            <Sprite map={map} species={met.species} form={met.form} size={32} />
+          ) : (
+            <UnknownSprite size={32} />
+          )}
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>{species?.name ?? "Unknown"}</ItemTitle>
+          {description ? (
+            <ItemDescription>{description}</ItemDescription>
+          ) : null}
+        </ItemContent>
+        <ItemActions>
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-11"
+            onClick={onChange}
+          >
+            Change
+          </Button>
+        </ItemActions>
+      </Item>
+    </Field>
+  )
+}
+
+type OriginChoiceProps = {
+  id: string
+  /** Null presses nothing, for an origin this build does not know. */
+  value: Origin | null
+  description?: string
+  onChange: (origin: Origin) => void
+}
+
+/** The Origin of an Encounter: Wild, Gift, or Trade. */
+export function OriginChoice({
+  id,
+  value,
+  description,
+  onChange,
+}: OriginChoiceProps) {
+  return (
+    <Choice
+      id={id}
+      title="Origin"
+      value={value}
+      options={ORIGINS.map((origin) => ({
+        value: origin,
+        label: originNames[origin],
+      }))}
+      description={description}
+      onChange={onChange}
+    />
+  )
+}
+
+type FormChoiceProps = {
+  id: string
+  map: LoadedMap
+  met: FormRef | null
+  onChange: (met: FormRef) => void
+}
+
+/** The Form of the Species met; nothing when the Species has one Form. */
+export function FormChoice({ id, map, met, onChange }: FormChoiceProps) {
+  const species = met ? getSpecies(map, met.species) : undefined
+
+  if (!met || !species || !hasFormChoice(map, species.id)) return null
+
+  return (
+    <Choice
+      id={id}
+      title="Form"
+      value={met.form}
+      vertical={species.forms.length > 3}
+      options={species.forms.map((form) => ({
+        value: form.id,
+        label: form.name,
+      }))}
+      onChange={(form) => onChange({ species: species.id, form })}
+    />
+  )
+}
+
 /** Where step 1 found the Species, under its name in step 2. */
 function pickedFrom(group: SuggestedGroup | null, placeName: string): string {
   return group
@@ -502,7 +584,8 @@ function originHelp(group: SuggestedGroup | null): string {
 type ChoiceProps<Value extends string> = {
   id: string
   title: string
-  value: Value
+  /** Null presses nothing. */
+  value: Value | null
   options: { value: Value; label: string; disabled?: boolean }[]
   description?: string
   vertical?: boolean
@@ -528,7 +611,7 @@ function Choice<Value extends string>({
         spacing={0}
         orientation={vertical ? "vertical" : "horizontal"}
         className="w-full"
-        value={[value]}
+        value={value ? [value] : []}
         onValueChange={([next]) => {
           // Pressing the pressed item empties the group; keep the value.
           if (next) onChange(next as Value)
