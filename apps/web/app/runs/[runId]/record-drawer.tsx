@@ -39,16 +39,15 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@workspace/ui/components/item"
-import { toast } from "@workspace/ui/components/toast"
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
-import type { MutationErrorOf } from "headcanon"
 import { useId, useState, type ReactNode } from "react"
 import { v7 as uuidv7 } from "uuid"
 
 import { Sprite, UnknownSprite } from "@/components/sprite"
+import { useLeavePrompt } from "@/components/use-leave-prompt"
 import type { RecordEncounterArgs } from "@/lib/runs/changes/record-encounter"
 import { recordEncounter } from "@/lib/runs/mutations"
 import { nicknameRefusal, nicknameRefusalMessages } from "@/lib/runs/nickname"
@@ -59,7 +58,7 @@ import {
   type EncounterOutcome,
 } from "@/lib/runs/state"
 
-import { useRun } from "./run-root"
+import { useRun, useRunChange } from "./run-root"
 import {
   searchChoices,
   speciesGroups,
@@ -79,8 +78,6 @@ type RecordDrawerProps = {
 
 type Destination = "party" | "box"
 
-type RecordRefusal = MutationErrorOf<typeof recordEncounter>
-
 /** What the player has chosen in the Drawer so far. */
 type Draft = {
   /** Null for "Species unknown". */
@@ -99,12 +96,6 @@ const originNames: Record<Origin, string> = {
   trade: "Trade",
 }
 
-const refusalMessages: Record<RecordRefusal["kind"], string> = {
-  "run-not-active": "This run is not active, so nothing can be recorded.",
-  "slot-taken": "You already have an encounter in this slot.",
-  "unknown-entry": "Your game does not have this species or location.",
-}
-
 /**
  * The record Drawer: step 1 picks a Species (or "Species unknown"), step 2
  * fills in the details, and "Save encounter" records it at once, predicted.
@@ -116,13 +107,17 @@ export function RecordDrawer({
   open,
   onOpenChange,
 }: RecordDrawerProps) {
-  const { value: run, mutate } = useRun()
+  const { value: run } = useRun()
+  const change = useRunChange()
   const map = useLoadedMap()
   const journey = viewerJourney(run)
   const partyCount = partyOf(journey).length
   const partyFull = partyCount >= PARTY_SIZE
   const [draft, setDraft] = useState<Draft | null>(null)
   const where = slot > 1 ? `${placeName} · slot ${slot}` : placeName
+
+  // Choices made in the details step are lost if the page unloads.
+  useLeavePrompt(open && draft !== null)
 
   function changeOpen(next: boolean) {
     if (next) setDraft(null)
@@ -142,34 +137,22 @@ export function RecordDrawer({
   }
 
   function save(details: Draft) {
-    const invocation = recordEncounter({
-      runId: run.id,
-      encounterId: uuidv7(),
-      placeId,
-      slot,
-      origin: details.origin,
-      enteredAt: Date.now(),
-      outcome: outcomeArgs(details, uuidv7(), partyFull),
-    })
-    const result = mutate(invocation, {
-      // A refusal that comes after the Drawer closed: the server's, or a
-      // replay over newer canon (another tab took the Slot first).
-      onAcceptance: (accepted) => {
-        if (accepted.ok) return
+    change(
+      recordEncounter({
+        runId: run.id,
+        encounterId: uuidv7(),
+        placeId,
+        slot,
+        origin: details.origin,
+        enteredAt: Date.now(),
+        outcome: outcomeArgs(details, uuidv7(), partyFull),
+      }),
+      "Encounter"
+    )
 
-        const failure = accepted.error
-
-        if (failure.kind === "domain" || failure.kind === "replay-refused") {
-          toastNotSaved(failure.error)
-        }
-      },
-    })
-
-    // The Drawer closes either way: it would cover the toast, and nothing in
-    // it can fix a refusal.
+    // The Drawer closes either way: it would cover a refusal's toast, and
+    // nothing in it can fix a refusal.
     onOpenChange(false)
-
-    if (!result.ok) toastNotSaved(result.error)
   }
 
   return (
@@ -200,15 +183,6 @@ export function RecordDrawer({
       </DrawerContent>
     </Drawer>
   )
-}
-
-/** Tells the player that the encounter was not saved, and why. */
-function toastNotSaved(refusal: RecordRefusal) {
-  toast.add({
-    type: "error",
-    title: "Encounter not saved",
-    description: refusalMessages[refusal.kind],
-  })
 }
 
 /** The outcome arguments of a draft, with no key for an absent value. */

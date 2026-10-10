@@ -4,7 +4,7 @@ import { Suspense, type ReactNode } from "react"
 import { loadRunCanon } from "@/lib/runs/canon"
 
 import { PrivateRun } from "./private-run"
-import { RunRootProvider } from "./run-root"
+import { RunRoot } from "./run-root"
 
 type RunLayoutProps = {
   children: ReactNode
@@ -26,9 +26,9 @@ async function RunCanon({ children, params }: RunLayoutProps) {
   if (!canon) return <PrivateRun />
 
   return (
-    <RunRootProvider key={`${canon.value.viewerId}:${runId}`} canon={canon}>
+    <RunRoot key={`${canon.value.viewerId}:${runId}`} canon={canon}>
       {children}
-    </RunRootProvider>
+    </RunRoot>
   )
 }
 

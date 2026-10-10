@@ -10,7 +10,7 @@ import { loadRunCanon } from "@/lib/runs/canon"
 import { createRun } from "@/lib/runs/operations"
 import { redirectOf } from "@/test/redirect"
 import { makeRun } from "@/test/runs"
-import { signIn } from "@/test/session"
+import { signedInScope, signIn } from "@/test/session"
 
 import { createRunAction } from "./actions"
 
@@ -90,7 +90,9 @@ describe("createRunAction", () => {
 
   test("one submission delivered twice makes one Run and answers with it both times", async () => {
     const playerId = await signIn()
-    const envelope = createOperationEnvelope(createRun, emerald)
+    const envelope = createOperationEnvelope(createRun, emerald, {
+      scope: signedInScope(),
+    })
 
     const first = await createRunAction(envelope)
     const second = await createRunAction(envelope)
@@ -101,7 +103,9 @@ describe("createRunAction", () => {
 
   test("a submission's id with other arguments is refused and makes nothing", async () => {
     const playerId = await signIn()
-    const envelope = createOperationEnvelope(createRun, emerald)
+    const envelope = createOperationEnvelope(createRun, emerald, {
+      scope: signedInScope(),
+    })
     await createRunAction(envelope)
 
     const reused = await createRunAction({
@@ -125,7 +129,13 @@ describe("createRunAction", () => {
     const playerId = await signIn({ tombstone: true })
 
     await expect(
-      redirectOf(createRunAction(createOperationEnvelope(createRun, emerald)))
+      redirectOf(
+        createRunAction(
+          createOperationEnvelope(createRun, emerald, {
+            scope: signedInScope(),
+          })
+        )
+      )
     ).resolves.toBe("/sign-in")
     await expect(journeyCountOf(playerId)).resolves.toBe(0)
   })
@@ -138,7 +148,11 @@ describe("createRunAction", () => {
     const playerId = await signIn()
 
     const outcome = await createRunAction(
-      createOperationEnvelope(createRun, { ...emerald, name })
+      createOperationEnvelope(
+        createRun,
+        { ...emerald, name },
+        { scope: signedInScope() }
+      )
     )
 
     expect(outcome).toEqual(
@@ -157,7 +171,11 @@ describe("createRunAction", () => {
     const playerId = await signIn()
 
     const outcome = await createRunAction(
-      createOperationEnvelope(createRun, { ...emerald, ...place })
+      createOperationEnvelope(
+        createRun,
+        { ...emerald, ...place },
+        { scope: signedInScope() }
+      )
     )
 
     expect(outcome).toEqual(

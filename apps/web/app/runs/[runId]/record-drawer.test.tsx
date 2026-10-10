@@ -1,6 +1,5 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { loadMap } from "@workspace/game-data"
-import { toast } from "@workspace/ui/components/toast"
 import { Suspense } from "react"
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest"
 
@@ -8,32 +7,27 @@ import type { RunState } from "@/lib/runs/state"
 import { journeyWithPokemon, runState } from "@/test/run-state"
 
 import { RecordDrawer } from "./record-drawer"
-import { useRun } from "./run-root"
+import { useRun, useRunChange } from "./run-root"
 
 // The real root needs the Server Action; the Drawer needs only the Run and
-// `mutate`.
-vi.mock("./run-root", () => ({ useRun: vi.fn() }))
+// the function that sends a change.
+vi.mock("./run-root", () => ({ useRun: vi.fn(), useRunChange: vi.fn() }))
 
-type Listeners = { onAcceptance: (result: unknown) => void }
-
-const mutate = vi.fn<(invocation: unknown, listeners: Listeners) => unknown>(
-  () => ({ ok: true, value: {} })
-)
+const change = vi.fn<(invocation: unknown, label: string) => void>()
 const onOpenChange = vi.fn()
-const addToast = vi.spyOn(toast, "add")
 
 // The first load of the Map takes longer than a query waits.
 beforeAll(() => loadMap("emerald"))
 
 afterEach(() => {
   cleanup()
-  mutate.mockClear()
+  change.mockClear()
   onOpenChange.mockClear()
-  addToast.mockClear()
 })
 
 async function renderDrawer(run: RunState) {
-  vi.mocked(useRun).mockReturnValue({ value: run, mutate } as never)
+  vi.mocked(useRun).mockReturnValue({ value: run } as never)
+  vi.mocked(useRunChange).mockReturnValue(change)
 
   await act(async () => {
     render(
@@ -103,7 +97,7 @@ describe("RecordDrawer", () => {
     expect(toggle("Party").getAttribute("aria-pressed")).toBe("true")
   })
 
-  test("Save encounter records the details with the nickname trimmed", async () => {
+  test("Save encounter sends the details as an Encounter, trimmed, and closes the Drawer", async () => {
     await renderDrawer(runState())
 
     fireEvent.click(await screen.findByRole("button", { name: /Mudkip/ }))
@@ -112,7 +106,7 @@ describe("RecordDrawer", () => {
     })
     fireEvent.click(screen.getByRole("button", { name: "Save encounter" }))
 
-    expect(mutate).toHaveBeenCalledWith(
+    expect(change).toHaveBeenCalledWith(
       expect.objectContaining({
         name: "run.record-encounter.v1",
         args: expect.objectContaining({
@@ -127,66 +121,23 @@ describe("RecordDrawer", () => {
           }),
         }),
       }),
-      expect.anything()
+      "Encounter"
     )
-  })
-
-  test("a refused prediction closes the Drawer and says why in a toast", async () => {
-    mutate.mockReturnValueOnce({ ok: false, error: { kind: "slot-taken" } })
-    await renderDrawer(runState())
-
-    fireEvent.click(await screen.findByRole("button", { name: /Mudkip/ }))
-    fireEvent.click(screen.getByRole("button", { name: "Save encounter" }))
-
     expect(onOpenChange).toHaveBeenCalledWith(false)
-    expect(addToast).toHaveBeenCalledWith({
-      type: "error",
-      title: "Encounter not saved",
-      description: "You already have an encounter in this slot.",
-    })
   })
 
-  test("a refusal from the server says why in a toast", async () => {
+  test("a picked Species asks before the page unloads", async () => {
     await renderDrawer(runState())
 
-    fireEvent.click(await screen.findByRole("button", { name: /Mudkip/ }))
-    fireEvent.click(screen.getByRole("button", { name: "Save encounter" }))
-
-    expect(addToast).not.toHaveBeenCalled()
-
-    const [, listeners] = mutate.mock.calls[0]!
-
-    listeners.onAcceptance({
-      ok: false,
-      error: { kind: "domain", error: { kind: "unknown-entry" } },
-    })
-
-    expect(addToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: "Encounter not saved",
-        description: "Your game does not have this species or location.",
-      })
-    )
-  })
-
-  test("a prediction withdrawn over newer canon says why in a toast", async () => {
-    await renderDrawer(runState())
+    expect(window.dispatchEvent(unloadEvent())).toBe(true)
 
     fireEvent.click(await screen.findByRole("button", { name: /Mudkip/ }))
-    fireEvent.click(screen.getByRole("button", { name: "Save encounter" }))
 
-    const [, listeners] = mutate.mock.calls[0]!
-
-    listeners.onAcceptance({
-      ok: false,
-      error: { kind: "replay-refused", error: { kind: "slot-taken" } },
-    })
-
-    expect(addToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: "Encounter not saved",
-        description: "You already have an encounter in this slot.",
-      })
-    )
+    expect(window.dispatchEvent(unloadEvent())).toBe(false)
   })
 })
+
+/** A cancelable `beforeunload`; a listener that asks cancels it. */
+function unloadEvent() {
+  return new Event("beforeunload", { cancelable: true })
+}

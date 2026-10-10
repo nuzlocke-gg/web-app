@@ -53,11 +53,24 @@ export async function signInNamedPlayer(
   context: BrowserContext,
   displayName: string
 ): Promise<string> {
-  const { id, email } = await signInNewPlayer(context, displayName)
-
-  await db.update(users).set({ displayName }).where(eq(users.id, id))
+  const { email } = await signInNamed(context, displayName)
 
   return email
+}
+
+/**
+ * Signs in a Player who chose their Display Name at an earlier sign-in.
+ * Returns their id and Google email.
+ */
+export async function signInNamed(
+  context: BrowserContext,
+  displayName: string
+): Promise<{ id: string; email: string }> {
+  const player = await signInNewPlayer(context, displayName)
+
+  await db.update(users).set({ displayName }).where(eq(users.id, player.id))
+
+  return player
 }
 
 /**
@@ -73,7 +86,11 @@ export async function signInTombstone(context: BrowserContext): Promise<void> {
   await startSession(context, row!.id)
 }
 
-async function startSession(context: BrowserContext, userId: string) {
+/**
+ * Starts a session for an existing Player in `context`, in place of whoever
+ * was signed in there, as a sign-in in another tab of the same browser would.
+ */
+export async function startSession(context: BrowserContext, userId: string) {
   const sessionToken = randomBytes(32).toString("hex")
 
   await adapter.createSession!({
