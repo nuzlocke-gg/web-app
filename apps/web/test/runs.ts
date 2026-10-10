@@ -10,6 +10,8 @@ import { recordEncounter } from "@/lib/runs/mutations"
 import { createRun } from "@/lib/runs/operations"
 import { runProtocol } from "@/lib/runs/protocol"
 
+import { signedInScope } from "./session"
+
 /** The columns of a valid solo Run, for tests that write rows directly. */
 export function soloRunValues(
   overrides: Partial<typeof runs.$inferInsert> = {}
@@ -58,11 +60,11 @@ export async function insertJourney(
 /** Makes a solo Emerald Run for the signed-in Player through its action. */
 export async function makeRun(): Promise<string> {
   const outcome = await createRunAction(
-    createOperationEnvelope(createRun, {
-      mapId: "emerald",
-      gameId: "emerald",
-      name: "Emerald Hardcore",
-    })
+    createOperationEnvelope(
+      createRun,
+      { mapId: "emerald", gameId: "emerald", name: "Emerald Hardcore" },
+      { scope: signedInScope() }
+    )
   )
 
   if (!outcome.ok || outcome.value.kind !== "accepted") {
@@ -97,12 +99,16 @@ export function caughtMudkipArgs(
   }
 }
 
-/** A `run.v1` envelope for Record an Encounter, as a Run root sends it. */
+/**
+ * A `run.v1` envelope for Record an Encounter, as the signed-in Player's Run
+ * root sends it.
+ */
 export function recordEncounterEnvelope(
   args: RecordEncounterArgs
 ): MutationEnvelope<ReturnType<typeof recordEncounter>> {
   return {
     protocol: runProtocol.id,
+    scope: signedInScope(),
     mutationId: randomUUID(),
     createdAt: Date.now(),
     invocation: recordEncounter(args),

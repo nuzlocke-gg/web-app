@@ -1,23 +1,8 @@
 import { expect, test, type Page } from "@playwright/test"
 
+import { setVisibility } from "./page"
 import { signInNamedPlayer } from "./players"
 import { renameRunElsewhere } from "./runs"
-
-// Headless Chromium keeps every page visible, so the flow switches the
-// document's visibility by hand, as a return to the tab would.
-async function setVisibility(page: Page, state: "hidden" | "visible") {
-  await page.evaluate((visibility) => {
-    Object.defineProperty(document, "visibilityState", {
-      configurable: true,
-      get: () => visibility,
-    })
-    Object.defineProperty(document, "hidden", {
-      configurable: true,
-      get: () => visibility === "hidden",
-    })
-    document.dispatchEvent(new Event("visibilitychange"))
-  }, state)
-}
 
 function runIdOf(page: Page) {
   return new URL(page.url()).pathname.split("/").at(-1)!

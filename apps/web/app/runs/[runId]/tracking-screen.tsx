@@ -82,7 +82,7 @@ export function TrackingScreen() {
         <div className="flex min-w-0 flex-1 flex-col pl-1">
           <h1 className="truncate text-base font-medium">{run.name}</h1>
           <p className="text-xs text-muted-foreground">
-            {gameName} · {kindNames[run.kind]}
+            {gameName} · {run.kind ? kindNames[run.kind] : "Unknown kind"}
           </p>
         </div>
       </header>
@@ -217,7 +217,7 @@ function EncounterRow({ map, encounter, pokemon }: EncounterRowProps) {
       <ItemContent className="min-w-0">
         <ItemTitle>{speciesName}</ItemTitle>
         <ItemDescription>
-          {pokemon ? fateLine(pokemon) : "Failed"}
+          {pokemon ? fateLine(pokemon) : failed ? "Failed" : "Unknown outcome"}
         </ItemDescription>
       </ItemContent>
       {failed ? (

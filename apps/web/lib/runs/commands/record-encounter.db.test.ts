@@ -23,7 +23,7 @@ import {
   record,
   recordEncounterEnvelope,
 } from "@/test/runs"
-import { signIn } from "@/test/session"
+import { signedInScope, signIn } from "@/test/session"
 
 import { runAxis } from "../axis"
 import { runsBinder, type RunTransaction } from "../binder"
@@ -296,6 +296,20 @@ describe("access", () => {
     await expect(runAction(envelope)).resolves.toEqual(denied)
   })
 
+  test("an envelope made for another Player of the Run is denied and writes nothing", async () => {
+    const ashId = await signIn()
+    const runId = await insertRun()
+    await insertJourney(runId, ashId)
+    const ashEnvelope = recordEncounterEnvelope(caughtMudkipArgs(runId))
+
+    const mistyId = await signIn({ displayName: "Misty" })
+    await insertJourney(runId, mistyId)
+
+    await expect(runAction(ashEnvelope)).resolves.toEqual(denied)
+    expect((await journeyOf(runId)).encounters).toHaveLength(0)
+    await expect(revisionOf(runId)).resolves.toBe(1)
+  })
+
   test("a Journey that goes after screening is denied under the Run lock", async () => {
     const playerId = await signIn()
     const runId = await makeRun()
@@ -385,6 +399,7 @@ describe("concurrency", () => {
     const runId = await makeRun()
     const envelope = {
       protocol: probeProtocol.id,
+      scope: signedInScope(),
       mutationId: randomUUID(),
       createdAt: Date.now(),
       invocation: writeThenRefuse({ runId }),

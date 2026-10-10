@@ -1,4 +1,4 @@
-import { ORIGINS, type PlaceId } from "@workspace/game-data"
+import { ORIGINS, type Origin, type PlaceId } from "@workspace/game-data"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
@@ -9,6 +9,7 @@ import {
   partyOf,
   PARTY_SIZE,
   viewerJourney,
+  type EncounterOutcome,
   type EncounterState,
   type JourneyState,
   type PokemonState,
@@ -56,7 +57,8 @@ export type RecordEncounterRefusal = RunRefusal<"run-not-active" | "slot-taken">
 /** What Record an Encounter adds: the Encounter and, when Caught, its Pokémon. */
 export type RecordEncounterEffect = {
   journeyId: string
-  encounter: EncounterState
+  /** Every value comes from the parsed args, so the command writes no null. */
+  encounter: EncounterState & { origin: Origin; outcome: EncounterOutcome }
   pokemon: PokemonState | null
 }
 
@@ -80,7 +82,7 @@ export function check(
   if (slotTaken) return err(refusal("slot-taken"))
 
   const { outcome } = args
-  const encounter: EncounterState = {
+  const encounter: RecordEncounterEffect["encounter"] = {
     id: args.encounterId,
     placeId: args.placeId,
     slot: args.slot,

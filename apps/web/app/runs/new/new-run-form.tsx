@@ -71,6 +71,7 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
   )
   const [failure, setFailure] = useState<CreateRunFailure | null>(null)
   const createRun = useCreateRun({
+    scope: playerId,
     persistence,
     // Navigates from the answer, not a server redirect, so the answer of a
     // submission the player discarded never opens its Run.

@@ -1,7 +1,9 @@
 import type { FormRef, Origin, PlaceId } from "@workspace/game-data"
 
 // The alternatives are the database enums too (lib/db/schema.ts), so each list
-// has one home. Values are only ever added.
+// has one home. Values are only ever added, so a row can hold a value that a
+// build older than its writer does not know (ADR 0003); the state reads it as
+// null, and nothing writes a null back.
 
 /** Solo or Soul Link, fixed at creation (ADR 0004). */
 export const runKinds = ["solo", "soul_link"] as const
@@ -24,6 +26,19 @@ export type RunVisibility = (typeof runVisibilities)[number]
 export const encounterOutcomes = ["caught", "failed"] as const
 export type EncounterOutcome = (typeof encounterOutcomes)[number]
 
+/**
+ * Reads a stored enum value leniently: the value when this build knows it,
+ * else null, so the screen shows it as unknown instead of failing.
+ * @example
+ * parseKnown(runKinds, row.kind) // "solo", or null for a newer kind
+ */
+export function parseKnown<const Values extends readonly string[]>(
+  values: Values,
+  stored: string
+): Values[number] | null {
+  return values.find((value) => value === stored) ?? null
+}
+
 /** The most Pokémon a Party holds. */
 export const PARTY_SIZE = 6
 
@@ -33,8 +48,10 @@ export type EncounterState = {
   placeId: PlaceId
   /** The Slot's ordinal at its Place, from 1. */
   slot: number
-  origin: Origin
-  outcome: EncounterOutcome
+  /** Null when a newer build stored it. */
+  origin: Origin | null
+  /** Null when a newer build stored it. */
+  outcome: EncounterOutcome | null
   /** The Species and Form met. Null only on a Failed Encounter. */
   met: FormRef | null
   /** When the player recorded it, in epoch milliseconds. */
@@ -76,9 +93,11 @@ export type RunState = {
   viewerId: string
   name: string
   mapId: string
-  kind: RunKind
-  state: RunLifeState
-  visibility: RunVisibility
+  /** Null when a newer build stored it; so are `state` and `visibility`. */
+  kind: RunKind | null
+  /** Null reads as a Run that admits no change. */
+  state: RunLifeState | null
+  visibility: RunVisibility | null
   attemptNumber: number
   /** `{ ruleId: on }`; an absent key is Off. */
   rules: Record<string, boolean>

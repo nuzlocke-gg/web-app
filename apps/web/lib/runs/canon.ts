@@ -1,5 +1,6 @@
 import "server-only"
 
+import { ORIGINS } from "@workspace/game-data"
 import { asc, eq } from "drizzle-orm"
 import { defineCanon, type Canon } from "headcanon"
 import { cache } from "react"
@@ -10,7 +11,16 @@ import { encounters, journeys, pokemon, runs } from "@/lib/db/schema"
 
 import { isRunId, runAxis } from "./axis"
 import type { RunTransaction } from "./binder"
-import type { EncounterState, PokemonState, RunState } from "./state"
+import {
+  encounterOutcomes,
+  parseKnown,
+  runKinds,
+  runLifeStates,
+  runVisibilities,
+  type EncounterState,
+  type PokemonState,
+  type RunState,
+} from "./state"
 
 /** A Run row as the database returns it. */
 export type RunRow = typeof runs.$inferSelect
@@ -101,9 +111,9 @@ export async function readRunState(
     viewerId,
     name: run.name,
     mapId: run.mapId,
-    kind: run.kind,
-    state: run.state,
-    visibility: run.visibility,
+    kind: parseKnown(runKinds, run.kind),
+    state: parseKnown(runLifeStates, run.state),
+    visibility: parseKnown(runVisibilities, run.visibility),
     attemptNumber: run.attemptNumber,
     rules: run.rules,
     journeys: runJourneys.map((journey) => ({
@@ -129,8 +139,8 @@ function toEncounterState(row: typeof encounters.$inferSelect): EncounterState {
     id: row.id,
     placeId: row.placeId,
     slot: row.slotOrdinal,
-    origin: row.origin,
-    outcome: row.outcome,
+    origin: parseKnown(ORIGINS, row.origin),
+    outcome: parseKnown(encounterOutcomes, row.outcome),
     met:
       row.speciesId !== null && row.formId !== null
         ? { species: row.speciesId, form: row.formId }
