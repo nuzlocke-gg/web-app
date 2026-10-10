@@ -6,8 +6,8 @@ import {
   type PlaceRow,
 } from "@workspace/game-data"
 
-import { byTimeOfEntry } from "@/lib/runs/changes/record-encounter"
 import {
+  byTimeOfEntry,
   viewerJourney,
   type EncounterState,
   type PokemonState,

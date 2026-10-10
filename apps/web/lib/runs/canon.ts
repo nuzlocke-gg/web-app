@@ -7,7 +7,13 @@ import { cache } from "react"
 
 import { readAccount } from "@/lib/actor"
 import { db } from "@/lib/db"
-import { encounters, journeys, pokemon, runs } from "@/lib/db/schema"
+import {
+  encounters,
+  evolutions,
+  journeys,
+  pokemon,
+  runs,
+} from "@/lib/db/schema"
 
 import { isRunId, runAxis } from "./axis"
 import type { RunTransaction } from "./binder"
@@ -18,6 +24,7 @@ import {
   runLifeStates,
   runVisibilities,
   type EncounterState,
+  type EvolutionState,
   type PokemonState,
   type RunState,
 } from "./state"
@@ -106,6 +113,15 @@ export async function readRunState(
     .where(eq(encounters.runId, run.id))
     .orderBy(asc(encounters.enteredAt), asc(encounters.id))
 
+  // By time of entry, then id, as `apply` keeps them.
+  const evolutionRows = await tx
+    .select({ evolution: evolutions })
+    .from(evolutions)
+    .innerJoin(pokemon, eq(pokemon.id, evolutions.pokemonId))
+    .innerJoin(encounters, eq(encounters.id, pokemon.encounterId))
+    .where(eq(encounters.runId, run.id))
+    .orderBy(asc(evolutions.enteredAt), asc(evolutions.id))
+
   return {
     id: run.id,
     viewerId,
@@ -123,7 +139,14 @@ export async function readRunState(
         .map(toEncounterState),
       pokemon: pokemonRows
         .filter((row) => row.pokemon.journeyId === journey.id)
-        .map((row) => toPokemonState(row.pokemon)),
+        .map((row) =>
+          toPokemonState(
+            row.pokemon,
+            evolutionRows
+              .filter((line) => line.evolution.pokemonId === row.pokemon.id)
+              .map((line) => line.evolution)
+          )
+        ),
     })),
   }
 }
@@ -149,7 +172,10 @@ function toEncounterState(row: typeof encounters.$inferSelect): EncounterState {
   }
 }
 
-function toPokemonState(row: typeof pokemon.$inferSelect): PokemonState {
+function toPokemonState(
+  row: typeof pokemon.$inferSelect,
+  lines: (typeof evolutions.$inferSelect)[]
+): PokemonState {
   return {
     id: row.id,
     encounterId: row.encounterId,
@@ -158,6 +184,17 @@ function toPokemonState(row: typeof pokemon.$inferSelect): PokemonState {
     inParty: row.inParty,
     diedAt: row.diedAt?.getTime() ?? null,
     deathLevel: row.deathLevel,
+    deathCause: row.deathCause,
     removedAt: row.removedAt?.getTime() ?? null,
+    evolutions: lines.map(toEvolutionState),
+  }
+}
+
+function toEvolutionState(row: typeof evolutions.$inferSelect): EvolutionState {
+  return {
+    id: row.id,
+    from: { species: row.speciesFrom, form: row.formFrom },
+    to: { species: row.speciesTo, form: row.formTo },
+    enteredAt: row.enteredAt.getTime(),
   }
 }

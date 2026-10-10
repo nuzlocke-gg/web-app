@@ -58,6 +58,15 @@ export type EncounterState = {
   enteredAt: number
 }
 
+/** One evolution line of a Pokémon's history. */
+export type EvolutionState = {
+  id: string
+  from: FormRef
+  to: FormRef
+  /** When the player recorded it, in epoch milliseconds. */
+  enteredAt: number
+}
+
 /** One Pokémon of a Journey, from one Caught Encounter. */
 export type PokemonState = {
   id: string
@@ -71,8 +80,12 @@ export type PokemonState = {
   diedAt: number | null
   /** The level it died at, when the player gave one. */
   deathLevel: number | null
+  /** What killed it, when the player gave it. */
+  deathCause: string | null
   /** Epoch milliseconds when traded away or released, or null. */
   removedAt: number | null
+  /** Its evolution lines, by time of entry, then id; the last is the latest. */
+  evolutions: EvolutionState[]
 }
 
 /** One Player's part of a Run, with its Encounters in order of entry. */
@@ -137,6 +150,43 @@ export function findViewerEncounter(
   )
 
   return encounter && { journey, encounter }
+}
+
+/** One Pokémon of the viewer's Journey, with that Journey. */
+export type ViewerPokemon = {
+  journey: JourneyState
+  pokemon: PokemonState
+}
+
+/**
+ * The viewer's Pokémon with this id, or undefined when the viewer's Journey
+ * has none: its Encounter was removed, or it is a partner's.
+ */
+export function findViewerPokemon(
+  run: RunState,
+  pokemonId: string
+): ViewerPokemon | undefined {
+  const journey = viewerJourney(run)
+  const pokemon = journey.pokemon.find(
+    (candidate) => candidate.id === pokemonId
+  )
+
+  return pokemon && { journey, pokemon }
+}
+
+/**
+ * Compares by time of entry, then id: the order of a Journey's Encounters and
+ * of a Pokémon's evolution lines in the canon.
+ */
+export function byTimeOfEntry(
+  a: { id: string; enteredAt: number },
+  b: { id: string; enteredAt: number }
+): number {
+  if (a.enteredAt !== b.enteredAt) return a.enteredAt - b.enteredAt
+
+  // Postgres orders UUIDs by their bytes, which is the order of their
+  // lowercase text, so this matches the loader's `ORDER BY entered_at, id`.
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0
 }
 
 /** The living Pokémon of a Journey that the player carries. */

@@ -1,6 +1,13 @@
 import { defineProtocol } from "headcanon"
 
-import { correctEncounter, recordEncounter, removeEncounter } from "./mutations"
+import {
+  changeForm,
+  correctEncounter,
+  evolvePokemon,
+  recordEncounter,
+  removeEncounter,
+  renamePokemon,
+} from "./mutations"
 import type { RunState } from "./state"
 
 /**
@@ -10,5 +17,12 @@ import type { RunState } from "./state"
  */
 export const runProtocol = defineProtocol<RunState>()({
   id: "run.v1",
-  mutations: [recordEncounter, correctEncounter, removeEncounter],
+  mutations: [
+    recordEncounter,
+    correctEncounter,
+    removeEncounter,
+    renamePokemon,
+    evolvePokemon,
+    changeForm,
+  ],
 })

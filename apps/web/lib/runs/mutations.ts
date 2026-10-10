@@ -1,8 +1,11 @@
 import { defineMutation } from "headcanon"
 
+import * as changeFormChange from "./changes/change-form"
 import * as correctEncounterChange from "./changes/correct-encounter"
+import * as evolvePokemonChange from "./changes/evolve-pokemon"
 import * as recordEncounterChange from "./changes/record-encounter"
 import * as removeEncounterChange from "./changes/remove-encounter"
+import * as renamePokemonChange from "./changes/rename-pokemon"
 import { refusalSchema } from "./refusals"
 
 /**
@@ -37,4 +40,38 @@ export const removeEncounter = defineMutation({
   refusal: refusalSchema("run-not-active", "gone"),
   check: removeEncounterChange.check,
   apply: removeEncounterChange.apply,
+})
+
+/** Change 4, Rename a Pokémon, living or dead: its nickname, or none. */
+export const renamePokemon = defineMutation({
+  name: "run.rename-pokemon.v1",
+  args: renamePokemonChange.renamePokemonArgs,
+  refusal: refusalSchema("run-not-active", "gone"),
+  check: renamePokemonChange.check,
+  apply: renamePokemonChange.apply,
+})
+
+/**
+ * Change 5, Evolve a Pokémon: "Next in its line" adds an evolution line;
+ * "Other species" corrects a wrong Species. The server alone refuses
+ * `unknown-entry`.
+ */
+export const evolvePokemon = defineMutation({
+  name: "run.evolve-pokemon.v1",
+  args: evolvePokemonChange.evolvePokemonArgs,
+  refusal: refusalSchema("run-not-active", "gone", "unknown-entry"),
+  check: evolvePokemonChange.check,
+  apply: evolvePokemonChange.apply,
+})
+
+/**
+ * Change 11, Change the Form of a Pokémon, living or dead. The server alone
+ * refuses `unknown-entry`.
+ */
+export const changeForm = defineMutation({
+  name: "run.change-form.v1",
+  args: changeFormChange.changeFormArgs,
+  refusal: refusalSchema("run-not-active", "gone", "unknown-entry"),
+  check: changeFormChange.check,
+  apply: changeFormChange.apply,
 })

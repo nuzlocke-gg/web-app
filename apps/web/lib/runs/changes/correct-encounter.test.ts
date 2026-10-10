@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest"
 
 import {
   encounterState,
+  evolutionState,
   journeyState,
   pokemonState,
   runState,
@@ -88,6 +89,39 @@ describe("Correct an Encounter", () => {
     )
 
     expect(onlyPokemon(after).species).toEqual(grovyle)
+  })
+
+  test("a new Species met leaves an evolved Pokémon that evolved back", () => {
+    const treecko = caught.met!
+    const line = evolutionState(treecko, { species: "grovyle", form: "base" })
+    const run = runWith(
+      [caught],
+      [pokemonState(caught, { species: treecko, evolutions: [line] })]
+    )
+    const after = predicted(
+      run,
+      correction(caught, { met: { species: "mudkip", form: "base" } })
+    )
+
+    expect(onlyPokemon(after).species).toEqual(treecko)
+  })
+
+  test("a new Form met leaves a Pokémon with an evolution line", () => {
+    const west = encounterState({ met: { species: "shellos", form: "west" } })
+    const line = evolutionState(west.met!, {
+      species: "gastrodon",
+      form: "west",
+    })
+    const run = runWith(
+      [west],
+      [pokemonState(west, { species: west.met!, evolutions: [line] })]
+    )
+    const after = predicted(
+      run,
+      correction(west, { met: { species: "shellos", form: "east" } })
+    )
+
+    expect(onlyPokemon(after).species).toEqual(west.met)
   })
 
   test("a new Form met moves a Pokémon with the old Species and Form", () => {

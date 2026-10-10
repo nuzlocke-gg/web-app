@@ -19,6 +19,7 @@ import {
   refused,
   remove,
   revisionOf,
+  runWithMudkip,
 } from "@/test/runs"
 import { signIn } from "@/test/session"
 
@@ -50,17 +51,6 @@ function correction(
     origin: recorded.origin,
     ...overrides,
   }
-}
-
-/** A signed-in Player's new Run with a Caught Mudkip at the Starter location. */
-async function runWithMudkip() {
-  await signIn()
-  const runId = await makeRun()
-  const mudkip = caughtMudkipArgs(runId)
-
-  await expect(record(mudkip)).resolves.toEqual(accepted)
-
-  return { runId, mudkip }
 }
 
 describe("Correct an Encounter", () => {

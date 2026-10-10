@@ -12,19 +12,25 @@ import { db } from "@/lib/db"
 import { journeys, runs } from "@/lib/db/schema"
 import { runAxis } from "@/lib/runs/axis"
 import { loadRunCanon } from "@/lib/runs/canon"
+import type { ChangeFormArgs } from "@/lib/runs/changes/change-form"
 import type { CorrectEncounterArgs } from "@/lib/runs/changes/correct-encounter"
+import type { EvolvePokemonArgs } from "@/lib/runs/changes/evolve-pokemon"
 import type { RecordEncounterArgs } from "@/lib/runs/changes/record-encounter"
 import type { RemoveEncounterArgs } from "@/lib/runs/changes/remove-encounter"
+import type { RenamePokemonArgs } from "@/lib/runs/changes/rename-pokemon"
 import {
+  changeForm,
   correctEncounter,
+  evolvePokemon,
   recordEncounter,
   removeEncounter,
+  renamePokemon,
 } from "@/lib/runs/mutations"
 import { createRun } from "@/lib/runs/operations"
 import { runProtocol } from "@/lib/runs/protocol"
 import { viewerJourney } from "@/lib/runs/state"
 
-import { signedInScope } from "./session"
+import { signedInScope, signIn } from "./session"
 
 /** The columns of a valid solo Run, for tests that write rows directly. */
 export function soloRunValues(
@@ -114,6 +120,20 @@ export function caughtMudkipArgs(
 }
 
 /**
+ * Signs a new Player in and makes their Run with a Caught Mudkip at the
+ * Starter location, from {@link caughtMudkipArgs}.
+ */
+export async function runWithMudkip() {
+  await signIn()
+  const runId = await makeRun()
+  const mudkip = caughtMudkipArgs(runId)
+
+  await expect(record(mudkip)).resolves.toEqual(accepted)
+
+  return { runId, mudkip, pokemonId: (await journeyOf(runId)).pokemon[0]!.id }
+}
+
+/**
  * A `run.v1` envelope for a change, as the signed-in Player's Run root sends
  * it.
  * @example
@@ -144,6 +164,21 @@ export function correct(args: CorrectEncounterArgs) {
 /** Sends Remove an Encounter as the signed-in Player and returns the outcome. */
 export function remove(args: RemoveEncounterArgs) {
   return runAction(runEnvelope(removeEncounter(args)))
+}
+
+/** Sends Rename a Pokémon as the signed-in Player and returns the outcome. */
+export function rename(args: RenamePokemonArgs) {
+  return runAction(runEnvelope(renamePokemon(args)))
+}
+
+/** Sends Evolve a Pokémon as the signed-in Player and returns the outcome. */
+export function evolve(args: EvolvePokemonArgs) {
+  return runAction(runEnvelope(evolvePokemon(args)))
+}
+
+/** Sends Change the Form as the signed-in Player and returns the outcome. */
+export function changeFormOf(args: ChangeFormArgs) {
+  return runAction(runEnvelope(changeForm(args)))
 }
 
 /** The outcome of an accepted change, for `toEqual`. */
