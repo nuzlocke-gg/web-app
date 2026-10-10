@@ -74,8 +74,8 @@ export function recordSheet(
   }
 }
 
-/** A draft and the location and Slot it is for. */
-type KeptDraft = { key: string; draft: RecordDraft | null }
+/** The record drafts by location and Slot, from {@link draftKey}. */
+type KeptDrafts = Record<string, RecordDraft | null>
 
 type EncounterDrawerProps = {
   open: boolean
@@ -104,7 +104,7 @@ export function EncounterDrawer({
   onClosed,
 }: EncounterDrawerProps) {
   const { value: run } = useRun()
-  const [kept, setKept] = useState<KeptDraft>({ key: "", draft: null })
+  const [drafts, setDrafts] = useState<KeptDrafts>({})
 
   return (
     <Drawer
@@ -127,8 +127,10 @@ export function EncounterDrawer({
             placeName={sheet.place.name}
             slot={sheet.slot}
             open={open}
-            draft={kept.key === draftKey(sheet) ? kept.draft : null}
-            onDraftChange={(draft) => setKept({ key: draftKey(sheet), draft })}
+            draft={drafts[draftKey(sheet)] ?? null}
+            onDraftChange={(draft) =>
+              setDrafts((kept) => ({ ...kept, [draftKey(sheet)]: draft }))
+            }
             onBackToPlaces={
               sheet.fromPlaces
                 ? () => onSheetChange({ step: "places" })

@@ -334,6 +334,9 @@ describe("Add a location", () => {
     expect(await screen.findByRole("region", { name: "Walk" })).toBeTruthy()
     expect(screen.queryByLabelText("Nickname")).toBeNull()
 
+    // A draft at Route 102 keeps the one at Route 101.
+    fireEvent.click(screen.getByRole("button", { name: /Wurmple/ }))
+    fireEvent.click(screen.getByRole("button", { name: "Back to species" }))
     fireEvent.click(screen.getByRole("button", { name: "Back to locations" }))
     fireEvent.click(screen.getByRole("button", { name: /^Route 101/ }))
 

@@ -53,6 +53,13 @@ test("a player adds a location from the dock and it joins the end of the list", 
   await expect(page.getByText("2/85 encounters")).toBeVisible()
   await expect(page.getByText("83 remaining")).toBeVisible()
 
+  // A second Encounter there adds no location, so the Badge goes.
+  await addLocation(page, "Route 101", "Species unknown")
+  await expect(
+    page.getByRole("region", { name: "Route 101" })
+  ).not.toContainText("Just added")
+  await expect(page.getByText("2/85 encounters")).toBeVisible()
+
   // The order is computed from the saved Encounters: a reload keeps it.
   await page.reload()
   await expect(listedPlaces(page)).toHaveText(["Starter", "Route 101"])

@@ -93,9 +93,10 @@ export function TrackingScreen() {
   }
 
   function saved(place: PlaceRow) {
-    if (!listed.some((listedPlace) => listedPlace.id === place.id)) {
-      setJustAdded(place.id)
-    }
+    const joined = !listed.some((listedPlace) => listedPlace.id === place.id)
+
+    // The Badge marks only the location the last save added to the list.
+    setJustAdded(joined ? place.id : null)
 
     savedAt.current = place.id
     setTab("encounters")
