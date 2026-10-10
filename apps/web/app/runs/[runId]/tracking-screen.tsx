@@ -52,6 +52,7 @@ import {
   type Progress,
   type ProgressCell,
 } from "./encounter-list"
+import { Dock } from "./dock"
 import { useRun } from "./run-root"
 import { useLoadedMap } from "./use-map"
 
@@ -374,31 +375,6 @@ function ProgressBlock({ progress, onOpen }: ProgressBlockProps) {
     </button>
   ) : (
     <div className={className}>{content}</div>
-  )
-}
-
-type DockProps = {
-  /** Locations with no Encounter yet; hidden at 0. */
-  remaining: number
-  onAdd: () => void
-}
-
-/** The floating bar at the bottom of both tabs that adds a location. */
-function Dock({ remaining, onAdd }: DockProps) {
-  return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-md px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <div className="pointer-events-auto flex items-center gap-2.5 rounded-3xl border bg-popover p-1.5 shadow-lg">
-        <Button type="button" size="lg" className="h-11" onClick={onAdd}>
-          <PlusIcon aria-hidden />
-          Add a location
-        </Button>
-        {remaining > 0 ? (
-          <span className="min-w-0 flex-1 truncate pr-2 text-right text-xs text-muted-foreground">
-            {remaining} remaining
-          </span>
-        ) : null}
-      </div>
-    </div>
   )
 }
 
