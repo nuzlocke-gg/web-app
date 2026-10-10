@@ -1,0 +1,1 @@
+ALTER TABLE "pokemon" ADD CONSTRAINT "pokemon_death_cause_length" CHECK (char_length("pokemon"."death_cause") BETWEEN 1 AND 140);

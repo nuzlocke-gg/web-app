@@ -11,6 +11,8 @@ import { z } from "zod"
  * - `gone`: the target of the change no longer exists, or is in the wrong
  *   life state (a death recorded on a dead Pokémon).
  * - `run-not-active`: the Run is Waiting for players or Finished.
+ * - `level-out-of-range`: a death level above the Map's highest level. The
+ *   server alone decides it.
  */
 export const runRefusalKinds = [
   "party-full",
@@ -19,6 +21,7 @@ export const runRefusalKinds = [
   "unknown-entry",
   "gone",
   "run-not-active",
+  "level-out-of-range",
 ] as const
 
 /** One kind of Refusal of `run.v1`. */

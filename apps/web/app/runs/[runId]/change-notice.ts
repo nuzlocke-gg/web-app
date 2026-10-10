@@ -24,6 +24,7 @@ const refusalReasons: Record<RunRefusalKind, string> = {
   "unknown-entry": "Your game does not have this species or location.",
   gone: "It was removed or changed.",
   "run-not-active": "This run is not active.",
+  "level-out-of-range": "The level is higher than your game allows.",
 }
 
 const unknownRefusalReason = "The change was refused."

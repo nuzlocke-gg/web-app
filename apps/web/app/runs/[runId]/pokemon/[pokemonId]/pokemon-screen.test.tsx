@@ -4,12 +4,22 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
   within,
 } from "@testing-library/react"
 import { loadMap, type LoadedMap } from "@workspace/game-data"
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest"
 
-import { changeForm, evolvePokemon } from "@/lib/runs/mutations"
+import {
+  changeForm,
+  editDeath,
+  evolvePokemon,
+  movePokemon,
+  recordDeath,
+  removePokemon,
+  restorePokemon,
+  undoDeath,
+} from "@/lib/runs/mutations"
 import type { PokemonState, RunState } from "@/lib/runs/state"
 import {
   encounterState,
@@ -58,15 +68,34 @@ afterEach(() => {
   change.mockClear()
 })
 
-/** Renders the screen for one Pokémon of the viewer, met on Route 116. */
-async function renderPokemon(placement: Partial<PokemonState>) {
+/**
+ * Renders the screen for one Pokémon of the viewer, met on Route 116, beside
+ * other Pokémon of the viewer, each a Zigzagoon met on its own Route 1xx.
+ */
+async function renderPokemon(
+  placement: Partial<PokemonState>,
+  others: Partial<PokemonState>[] = []
+) {
   const encounter = encounterState({
     placeId: "route-116",
     met: placement.species ?? { species: "nincada", form: "base" },
   })
   const pokemon = pokemonState(encounter, placement)
+  const otherEncounters = others.map((_, index) =>
+    encounterState({ placeId: `route-${101 + index}` })
+  )
   const run: RunState = runState({
-    journeys: [journeyState({ encounters: [encounter], pokemon: [pokemon] })],
+    journeys: [
+      journeyState({
+        encounters: [encounter, ...otherEncounters],
+        pokemon: [
+          pokemon,
+          ...others.map((other, index) =>
+            pokemonState(otherEncounters[index]!, other)
+          ),
+        ],
+      }),
+    ],
   })
 
   vi.mocked(useRun).mockReturnValue({ value: run } as never)
@@ -170,6 +199,242 @@ describe("the Pokémon screen", () => {
 
     expect(within(history).getByRole("listitem").textContent).toMatch(
       /^Met at Route 116/
+    )
+  })
+
+  test("Box moves a Party Pokémon at once", async () => {
+    const { run, pokemon } = await renderPokemon({ nickname: "Buzz" })
+
+    expect(screen.getByText("Your party, 1 of 6")).toBeTruthy()
+
+    fireEvent.click(screen.getByRole("button", { name: "Box" }))
+
+    expect(change).toHaveBeenCalledWith(
+      movePokemon({
+        runId: run.id,
+        moves: [{ pokemonId: pokemon.id, to: "box" }],
+      }),
+      "Move"
+    )
+  })
+
+  test("Party on a full Party opens the swap and saves two moves", async () => {
+    const { run, pokemon } = await renderPokemon(
+      { nickname: "Buzz", inParty: false },
+      [{ nickname: "Fang" }, {}, {}, {}, {}, {}]
+    )
+    const fang = run.journeys[0]!.pokemon.find(
+      (candidate) => candidate.nickname === "Fang"
+    )!
+
+    fireEvent.click(screen.getByRole("button", { name: "Party" }))
+
+    const drawer = await screen.findByRole("dialog", {
+      name: "Your party is full",
+    })
+
+    expect(change).not.toHaveBeenCalled()
+
+    fireEvent.click(within(drawer).getByRole("radio", { name: /Fang/ }))
+    fireEvent.click(
+      within(drawer).getByRole("button", { name: "Send Fang to the box" })
+    )
+
+    expect(change).toHaveBeenCalledWith(
+      movePokemon({
+        runId: run.id,
+        moves: [
+          { pokemonId: fang.id, to: "box" },
+          { pokemonId: pokemon.id, to: "party" },
+        ],
+      }),
+      "Party swap"
+    )
+  })
+
+  test("Record death saves the level and cause typed", async () => {
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 3))
+    const { run, pokemon } = await renderPokemon({ nickname: "Buzz" })
+
+    fireEvent.click(screen.getByRole("button", { name: "Record death" }))
+
+    const drawer = await screen.findByRole("dialog", {
+      name: "Record a death",
+    })
+
+    fireEvent.change(within(drawer).getByLabelText("Level (optional)"), {
+      target: { value: "24" },
+    })
+    fireEvent.change(within(drawer).getByLabelText("Cause (optional)"), {
+      target: { value: " Roxanne's Nosepass " },
+    })
+    fireEvent.click(
+      within(drawer).getByRole("button", { name: "Record death" })
+    )
+
+    expect(change).toHaveBeenCalledWith(
+      recordDeath({
+        runId: run.id,
+        pokemonId: pokemon.id,
+        diedAt: Date.UTC(2026, 9, 3),
+        level: 24,
+        cause: "Roxanne's Nosepass",
+      }),
+      "Death"
+    )
+    vi.mocked(Date.now).mockRestore()
+  })
+
+  test("a level above the Map's highest level is refused in the Drawer", async () => {
+    await renderPokemon({ nickname: "Buzz" })
+
+    fireEvent.click(screen.getByRole("button", { name: "Record death" }))
+
+    const drawer = await screen.findByRole("dialog", {
+      name: "Record a death",
+    })
+
+    fireEvent.change(within(drawer).getByLabelText("Level (optional)"), {
+      target: { value: "101" },
+    })
+
+    expect(drawer.textContent).toContain("Use a level from 1 to 100.")
+    expect(
+      within(drawer).getByRole("button", { name: "Record death" })
+    ).toHaveProperty("disabled", true)
+  })
+
+  test("a dead Pokémon shows its Graveyard box, and Edit opens the death prefilled", async () => {
+    const { run, pokemon } = await renderPokemon({
+      nickname: "Spore",
+      diedAt: Date.UTC(2026, 9, 3),
+      deathLevel: 14,
+    })
+    const graveyard = screen.getByRole("region", { name: "Graveyard" })
+
+    expect(graveyard.textContent).toContain("Died at level 14")
+    expect(graveyard.textContent).toContain("No cause recorded")
+    expect(screen.queryByRole("region", { name: "Where" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "Record death" })).toBeNull()
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Edit the death of Spore" })
+    )
+
+    const drawer = await screen.findByRole("dialog", {
+      name: "Edit the death of Spore",
+    })
+
+    expect(
+      within(drawer).getByLabelText<HTMLInputElement>("Level (optional)").value
+    ).toBe("14")
+
+    fireEvent.change(within(drawer).getByLabelText("Cause (optional)"), {
+      target: { value: "Crit" },
+    })
+    fireEvent.click(within(drawer).getByRole("button", { name: "Save death" }))
+
+    expect(change).toHaveBeenCalledWith(
+      editDeath({
+        runId: run.id,
+        pokemonId: pokemon.id,
+        level: 14,
+        cause: "Crit",
+      }),
+      "Death edit"
+    )
+  })
+
+  test("Undo death confirms where it goes, then saves the undo", async () => {
+    const { run, pokemon } = await renderPokemon(
+      { nickname: "Spore", diedAt: Date.UTC(2026, 9, 3) },
+      [{}, {}, {}, {}, {}, {}]
+    )
+
+    expect(
+      screen.getByText(
+        "For a mistake. Spore goes back to the box, because your party is full."
+      )
+    ).toBeTruthy()
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo death" }))
+
+    const dialog = await screen.findByRole("alertdialog", {
+      name: "Undo the death of Spore?",
+    })
+
+    expect(change).not.toHaveBeenCalled()
+    expect(dialog.textContent).toContain(
+      "Spore goes back to the box, because your party is full."
+    )
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Undo death" }))
+
+    expect(change).toHaveBeenCalledWith(
+      undoDeath({ runId: run.id, pokemonId: pokemon.id }),
+      "Undo death"
+    )
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull())
+  })
+
+  test("Remove Pokémon confirms, then saves the removal", async () => {
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 3))
+    const { run, pokemon } = await renderPokemon({ nickname: "Buzz" })
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove Pokémon" }))
+
+    const dialog = await screen.findByRole("alertdialog", {
+      name: "Remove Buzz?",
+    })
+
+    expect(dialog.textContent).toContain(
+      "Its encounter at Route 116 and its history stay."
+    )
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Remove Buzz" }))
+
+    expect(change).toHaveBeenCalledWith(
+      removePokemon({
+        runId: run.id,
+        pokemonId: pokemon.id,
+        removedAt: Date.UTC(2026, 9, 3),
+      }),
+      "Removal"
+    )
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull())
+    vi.mocked(Date.now).mockRestore()
+  })
+
+  test("a removed Pokémon has no Pokémon actions but keeps Correct encounter", async () => {
+    await renderPokemon({
+      nickname: "Buzz",
+      removedAt: Date.UTC(2026, 9, 3),
+    })
+
+    screen.getByText("Removed")
+    screen.getByRole("region", { name: "History" })
+    screen.getByRole("button", { name: "Correct encounter" })
+    expect(screen.queryByRole("region", { name: "Where" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "Record death" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "Remove Pokémon" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "Rename Buzz" })).toBeNull()
+  })
+
+  test("Restore Pokémon brings a removed Pokémon back", async () => {
+    const { run, pokemon } = await renderPokemon({
+      nickname: "Buzz",
+      removedAt: Date.UTC(2026, 9, 3),
+    })
+
+    expect(
+      screen.getByText("For a mistake. Buzz goes back to the party.")
+    ).toBeTruthy()
+
+    fireEvent.click(screen.getByRole("button", { name: "Restore Pokémon" }))
+
+    expect(change).toHaveBeenCalledWith(
+      restorePokemon({ runId: run.id, pokemonId: pokemon.id }),
+      "Restore"
     )
   })
 })

@@ -4,6 +4,7 @@ name: Fixture X
 region: Testland
 generation: 6
 releaseOrder: 2
+maxLevel: 250
 games:
   - { id: fixture-x, name: Fixture X, monogram: X }
 places:

@@ -36,6 +36,13 @@
       "when": 1791662250880,
       "tag": "0004_evolutions",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791667316855,
+      "tag": "0005_death_cause_length",
+      "breakpoints": true
     }
   ]
 }

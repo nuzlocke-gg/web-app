@@ -67,6 +67,7 @@ const handMap: z.ZodType<HandMap> = z.strictObject({
   region: z.string(),
   generation: z.int().positive(),
   releaseOrder: z.int(),
+  maxLevel: z.int().positive().optional(),
   games: z.array(game).min(1),
   places: z.array(
     z.strictObject({

@@ -26,6 +26,22 @@ describe("compile", () => {
     expect(await problemsAfter(() => {})).toEqual([])
   })
 
+  it("gives a Map with no maxLevel the main-series 100", async () => {
+    const result = compileMap(await fixtureSources())
+
+    expect(result.ok && result.value.maxLevel).toBe(100)
+  })
+
+  it("keeps the maxLevel a Map names", async () => {
+    const sources = await fixtureSources()
+
+    sources.map.maxLevel = 250
+
+    const result = compileMap(sources)
+
+    expect(result.ok && result.value.maxLevel).toBe(250)
+  })
+
   it("accepts a ROM hack prefix on a new Species", async () => {
     const problems = await problemsAfter((s) => {
       s.corrections.push({

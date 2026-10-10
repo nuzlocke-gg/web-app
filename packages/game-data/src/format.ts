@@ -70,6 +70,9 @@ export type Type = (typeof TYPES)[number]
 // 2. The compiled Map: one JSON file per Map, `dist/<map>.json`
 // ---------------------------------------------------------------------------
 
+/** The highest level of a main-series game, for a Map that names none. */
+export const DEFAULT_MAX_LEVEL = 100
+
 /** One Map as the compile writes it and the reader loads it. */
 export interface CompiledMap {
   id: MapId
@@ -81,6 +84,8 @@ export interface CompiledMap {
   generation: number
   /** Sorts Maps inside a region. */
   releaseOrder: number
+  /** The highest level a Pokémon reaches in this Map's Games. */
+  maxLevel: number
   /** Display order. */
   games: Game[]
   /** Only the groups this Map uses, in record Drawer order. */
@@ -220,6 +225,8 @@ export interface HandMap {
   region: string
   generation: number
   releaseOrder: number
+  /** Default {@link DEFAULT_MAX_LEVEL}; a ROM hack can raise it. */
+  maxLevel?: number
   games: Game[]
   /** The play order. */
   places: HandPlace[]

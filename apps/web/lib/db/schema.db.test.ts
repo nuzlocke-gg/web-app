@@ -266,6 +266,11 @@ describe("pokemon", () => {
     ["an empty nickname", { nickname: "" }],
     ["a death level on a living Pokémon", { deathLevel: 24 }],
     ["a death cause on a living Pokémon", { deathCause: "Crit" }],
+    [
+      "a 141-character death cause",
+      { diedAt: new Date(), deathCause: "a".repeat(141) },
+    ],
+    ["an empty death cause", { diedAt: new Date(), deathCause: "" }],
   ])("the CHECKs refuse %s", async (_, overrides) => {
     const pokemonValues = await pokemonValuesWithInsertedEncounter()
 
@@ -284,6 +289,20 @@ describe("pokemon", () => {
         db
           .insert(pokemon)
           .values({ ...pokemonValues, nickname: "🐉".repeat(12) })
+      )
+    ).resolves.toBe("inserted")
+  })
+
+  test("the death cause CHECK counts code points, as the screen does", async () => {
+    const pokemonValues = await pokemonValuesWithInsertedEncounter()
+
+    await expect(
+      insertOutcome(
+        db.insert(pokemon).values({
+          ...pokemonValues,
+          diedAt: new Date(),
+          deathCause: "🐉".repeat(140),
+        })
       )
     ).resolves.toBe("inserted")
   })

@@ -169,8 +169,8 @@ Then "Save encounter".
 
 ##### Where
 
-- Party | Box ToggleGroup with "Your party, 6 of 6".
-- A full Party opens "Your party is full. Pick one to send to the box." and swaps as two moves.
+- Party | Box ToggleGroup with "Your party, 6 of 6", saved at once, for a living Pokémon of the owner on an Active Run.
+- A full Party opens "Your party is full. Pick one to send to the box." with the Party as a list of choices and "Send Fang to the box", and swaps as two moves in one change.
 
 ##### Link
 
@@ -197,11 +197,11 @@ Lines with dates ("Oct 2", with the year when it is not this year):
 
 #### Actions
 
-- A Graveyard box (level and cause, "No cause recorded") with "Edit" (opens the death Drawer prefilled; saving is Edit a death) and "Undo death" for a dead Pokémon.
-- A removed Pokémon shows a "Removed" Badge in the header, its Encounter and History sections, and no Pokémon actions, while the Encounter section keeps "Correct encounter" and "Remove encounter" for the owner on an Active Run.
-- "Record death" (destructive) opening a Drawer with "Level (optional)" and "Cause (optional)".
+- A Graveyard box ("Died at level 14", "Cause: Roxanne's Nosepass" or "No cause recorded") with "Edit" (opens the death Drawer prefilled, titled "Edit the death of Spore"; "Save death" is Edit a death) and "Undo death" for a dead Pokémon, with "For a mistake. Spore goes back to the party." (or "to the box", with ", because your party is full." when so). "Undo death" opens an AlertDialog, "Undo the death of Spore?", that says where it goes and that its level, its cause, and the death line in its history are cleared, with "Keep death" and "Undo death".
+- A removed Pokémon shows a "Removed" Badge in the header, its Encounter and History sections, and no Pokémon actions, while the Encounter section keeps "Correct encounter" and "Remove encounter" for the owner on an Active Run. Its one action is "Restore Pokémon" with "For a mistake. Spore goes back to the party." (or "to the box"), with no confirm, as Remove undoes it.
+- "Record death" (destructive) opening a Drawer with "Level (optional)" (1 to the Map's highest level, "Use a level from 1 to 100.") and "Cause (optional)" (up to 140 characters).
 - In a Soul Link the Drawer names the linked Pokémon whose players will see a Shared Fate Warning ("Riley and Sam will be asked to mark Treecko and Torchic as dead").
-- "Remove Pokémon" as a quiet ghost button ("Remove is for a trade or a release. The encounter stays.") with an AlertDialog that names the Encounter and history that stay and says to record a death instead if it died.
+- "Remove Pokémon" as a quiet ghost button ("Remove is for a trade or a release. The encounter stays.") with an AlertDialog that names the Encounter and history that stay and says to record a death instead if it died ("Remove Spore?", "Keep Spore", "Remove Spore"). A dead Pokémon has neither "Record death" nor "Remove Pokémon".
 - "Correct encounter" opens the Correct Drawer.
 - "Remove encounter" is in that Drawer with an AlertDialog that names the Pokémon that goes with it ("The slot is empty again.").
 - A partner's Pokémon and every Reader view open read only with "Read only. Riley records this Pokémon."
