@@ -222,6 +222,13 @@ test("a player records, edits, and undoes a death, then removes the Pokémon", a
     .click()
 
   await page.getByRole("button", { name: "Undo death" }).click()
+
+  const undo = page.getByRole("alertdialog", {
+    name: "Undo the death of Spore?",
+  })
+
+  await undo.getByRole("button", { name: "Undo death" }).click()
+  await expect(undo).toBeHidden()
   await expect(graveyard).toBeHidden()
   await expect(
     page

@@ -327,12 +327,15 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
         open={correctOpen}
         onOpenChange={setCorrectOpen}
       />
-      <RemovePokemonDialog
-        name={name}
-        where={where}
+      <ConfirmDialog
         open={removeOpen}
         onOpenChange={setRemoveOpen}
-        onRemove={() => {
+        title={`Remove ${name}?`}
+        description={`Do this when you traded ${name} away or released it. Its encounter at ${where} and its history stay. If ${name} died, record a death instead.`}
+        cancel={`Keep ${name}`}
+        action={`Remove ${name}`}
+        destructive
+        onConfirm={() =>
           change(
             removePokemon({
               runId: run.id,
@@ -341,8 +344,7 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
             }),
             "Removal"
           )
-          setRemoveOpen(false)
-        }}
+        }
       />
     </main>
   )
@@ -411,11 +413,12 @@ function GraveyardSection({
   onUndo,
 }: GraveyardSectionProps) {
   const { journey, pokemon } = shown
-  const undoHelp = returnsToParty(journey, pokemon)
-    ? `For a mistake. ${name} goes back to the party.`
+  const [undoOpen, setUndoOpen] = useState(false)
+  const goesBack = returnsToParty(journey, pokemon)
+    ? `${name} goes back to the party.`
     : pokemon.inParty
-      ? `For a mistake. ${name} goes back to the box, because your party is full.`
-      : `For a mistake. ${name} goes back to the box.`
+      ? `${name} goes back to the box, because your party is full.`
+      : `${name} goes back to the box.`
 
   return (
     <Section title="Graveyard">
@@ -448,58 +451,78 @@ function GraveyardSection({
               type="button"
               variant="outline"
               className="h-11 flex-1"
-              onClick={onUndo}
+              onClick={() => setUndoOpen(true)}
             >
               <ArrowCounterClockwiseIcon aria-hidden />
               Undo death
             </Button>
           </div>
-          <p className="px-1 text-xs text-muted-foreground">{undoHelp}</p>
+          <p className="px-1 text-xs text-muted-foreground">
+            For a mistake. {goesBack}
+          </p>
+          <ConfirmDialog
+            open={undoOpen}
+            onOpenChange={setUndoOpen}
+            title={`Undo the death of ${name}?`}
+            description={`Do this for a mistake only. ${goesBack} Its level, its cause, and the death line in its history are cleared.`}
+            cancel="Keep death"
+            action="Undo death"
+            onConfirm={onUndo}
+          />
         </>
       ) : null}
     </Section>
   )
 }
 
-type RemovePokemonDialogProps = {
-  name: string
-  /** The location of its Encounter. */
-  where: string
+type ConfirmDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onRemove: () => void
+  title: string
+  description: string
+  /** The label of the button that closes it with no change. */
+  cancel: string
+  /** The label of the button that confirms. */
+  action: string
+  /** Shows the confirm button as destructive. */
+  destructive?: boolean
+  /** Saves the change; the dialog then closes. */
+  onConfirm: () => void
 }
 
-/** Confirms Remove a Pokémon, for a trade or a release. */
-function RemovePokemonDialog({
-  name,
-  where,
+/** A confirm for one change of the Pokémon screen. */
+function ConfirmDialog({
   open,
   onOpenChange,
-  onRemove,
-}: RemovePokemonDialogProps) {
+  title,
+  description,
+  cancel,
+  action,
+  destructive = false,
+  onConfirm,
+}: ConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Remove {name}?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Do this when you traded {name} away or released it. Its encounter at{" "}
-            {where} and its history stay. If {name} died, record a death
-            instead.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel size="lg" className="h-11">
-            Keep {name}
+            {cancel}
           </AlertDialogCancel>
           <AlertDialogAction
-            variant="destructive"
+            variant={destructive ? "destructive" : "default"}
             size="lg"
             className="h-11"
-            onClick={onRemove}
+            onClick={() => {
+              onConfirm()
+              // AlertDialogAction is a plain Button, not a Close.
+              onOpenChange(false)
+            }}
           >
-            Remove {name}
+            {action}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

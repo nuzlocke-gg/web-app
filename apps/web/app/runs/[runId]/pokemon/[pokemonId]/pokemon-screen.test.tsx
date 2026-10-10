@@ -344,7 +344,7 @@ describe("the Pokémon screen", () => {
     )
   })
 
-  test("Undo death says where it goes and saves the undo", async () => {
+  test("Undo death confirms where it goes, then saves the undo", async () => {
     const { run, pokemon } = await renderPokemon(
       { nickname: "Spore", diedAt: Date.UTC(2026, 9, 3) },
       [{}, {}, {}, {}, {}, {}]
@@ -358,10 +358,22 @@ describe("the Pokémon screen", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Undo death" }))
 
+    const dialog = await screen.findByRole("alertdialog", {
+      name: "Undo the death of Spore?",
+    })
+
+    expect(change).not.toHaveBeenCalled()
+    expect(dialog.textContent).toContain(
+      "Spore goes back to the box, because your party is full."
+    )
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Undo death" }))
+
     expect(change).toHaveBeenCalledWith(
       undoDeath({ runId: run.id, pokemonId: pokemon.id }),
       "Undo death"
     )
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull())
   })
 
   test("Remove Pokémon confirms, then saves the removal", async () => {

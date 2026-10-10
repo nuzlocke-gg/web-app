@@ -197,7 +197,7 @@ Lines with dates ("Oct 2", with the year when it is not this year):
 
 #### Actions
 
-- A Graveyard box ("Died at level 14", "Cause: Roxanne's Nosepass" or "No cause recorded") with "Edit" (opens the death Drawer prefilled, titled "Edit the death of Spore"; "Save death" is Edit a death) and "Undo death" for a dead Pokémon, with "For a mistake. Spore goes back to the party." (or "to the box", with ", because your party is full." when so).
+- A Graveyard box ("Died at level 14", "Cause: Roxanne's Nosepass" or "No cause recorded") with "Edit" (opens the death Drawer prefilled, titled "Edit the death of Spore"; "Save death" is Edit a death) and "Undo death" for a dead Pokémon, with "For a mistake. Spore goes back to the party." (or "to the box", with ", because your party is full." when so). "Undo death" opens an AlertDialog, "Undo the death of Spore?", that says where it goes and that its level, its cause, and the death line in its history are cleared, with "Keep death" and "Undo death".
 - A removed Pokémon shows a "Removed" Badge in the header, its Encounter and History sections, and no Pokémon actions, while the Encounter section keeps "Correct encounter" and "Remove encounter" for the owner on an Active Run.
 - "Record death" (destructive) opening a Drawer with "Level (optional)" (1 to the Map's highest level, "Use a level from 1 to 100.") and "Cause (optional)" (up to 140 characters).
 - In a Soul Link the Drawer names the linked Pokémon whose players will see a Shared Fate Warning ("Riley and Sam will be asked to mark Treecko and Torchic as dead").
