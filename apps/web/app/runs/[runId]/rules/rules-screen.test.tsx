@@ -85,7 +85,7 @@ describe("the Rules screen", () => {
   test("a Soul Link shows the Soul Link rules in a group of their own", async () => {
     await renderRules({ kind: "soul_link" })
 
-    const group = screen.getByRole("region", { name: "Soul Link rules" })
+    const group = screen.getByRole("group", { name: "Soul Link rules" })
 
     expect(within(group).getAllByRole("switch")).toHaveLength(5)
   })

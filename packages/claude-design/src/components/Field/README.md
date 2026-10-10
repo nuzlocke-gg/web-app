@@ -7,6 +7,7 @@ A set of layout parts that put a label, control, help text and error together in
 - Any form: new run setup, encounter details, rule settings.
 - `orientation="horizontal"` for a checkbox, radio or switch next to its label.
 - `FieldSet` with `FieldLegend` for a group of related choices, such as run rules.
+- `FieldGroup variant="joined"` around choice cards (a `FieldLabel` that wraps a `Field`) for a settings list: one rounded card with a divider between rows, each row toggling its control.
 
 ## What you provide
 
@@ -20,6 +21,7 @@ A set of layout parts that put a label, control, help text and error together in
 | Part | Prop | Values | Default |
 | --- | --- | --- | --- |
 | `Field` | `orientation` | `vertical` `horizontal` `responsive` | `vertical` |
+| `FieldGroup` | `variant` | `default` (fields `gap-7` apart) `joined` (choice cards as rows of one `muted/50` `rounded-2xl` card) | `default` |
 | `FieldLegend` | `variant` | `legend` (`text-base`) `label` (`text-sm`) | `legend` |
 | `FieldError` | `errors` | `Array<{ message?: string } \| undefined>` — duplicates removed, several shown as a list | — |
 | `FieldSeparator` | `children` | optional text shown on the line | — |
@@ -30,7 +32,7 @@ A set of layout parts that put a label, control, help text and error together in
 
 - `FieldSet` — a `<fieldset>`, `flex-col gap-6`.
 - `FieldLegend` — the `<legend>` for a `FieldSet`.
-- `FieldGroup` — stacks fields with `gap-7`; also the container for `responsive` fields.
+- `FieldGroup` — stacks fields with `gap-7`; also the container for `responsive` fields. `joined` drops the gap and each choice card's border and radius, and puts a divider between them.
 - `FieldContent` — stacks a label and description next to a horizontal control.
 - `FieldLabel` — a `Label` for the control. Wrap a whole `Field` in it to make a selectable card (`rounded-2xl border`).
 - `FieldTitle` — label-styled text that is not a `<label>`.

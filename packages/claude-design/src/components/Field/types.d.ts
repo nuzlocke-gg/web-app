@@ -16,7 +16,10 @@ export declare function FieldLegend(
   }
 ): React.ReactElement
 export declare function FieldGroup(
-  props: React.HTMLAttributes<HTMLDivElement>
+  props: React.HTMLAttributes<HTMLDivElement> & {
+    /** `joined` makes its choice cards the rows of one card. */
+    variant?: "default" | "joined"
+  }
 ): React.ReactElement
 export declare function FieldContent(
   props: React.HTMLAttributes<HTMLDivElement>

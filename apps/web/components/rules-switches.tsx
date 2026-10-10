@@ -1,16 +1,17 @@
 "use client"
 
 import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemSeparator,
-  ItemTitle,
-} from "@workspace/ui/components/item"
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+  FieldTitle,
+} from "@workspace/ui/components/field"
 import { Switch } from "@workspace/ui/components/switch"
-import { Fragment, useId } from "react"
+import { useId } from "react"
 
 import { rulesShown, type Rule, type RulePatch } from "@/lib/runs/rules"
 import type { RunKind } from "@/lib/runs/state"
@@ -27,7 +28,7 @@ type RulesSwitchesProps = {
 
 /**
  * A switch per Rule with its description, in two groups: the Rules of every
- * Run, then the Soul Link rules on a Soul Link.
+ * Run, then the Soul Link rules on a Soul Link. A whole row toggles its Rule.
  */
 export function RulesSwitches({
   kind,
@@ -47,42 +48,27 @@ export function RulesSwitches({
   return (
     <div className="flex flex-col gap-6">
       {groups.map((group) => (
-        <RuleGroup key={group.title} title={group.title}>
-          {group.rules.map((rule, index) => (
-            <Fragment key={rule.id}>
-              {index > 0 ? <ItemSeparator className="my-0" /> : null}
+        <FieldSet key={group.title} className="gap-0">
+          <FieldLegend
+            variant="label"
+            className="mb-1.5 px-1 font-normal text-muted-foreground"
+          >
+            {group.title}
+          </FieldLegend>
+          <FieldGroup variant="joined">
+            {group.rules.map((rule) => (
               <RuleSwitch
+                key={rule.id}
                 rule={rule}
                 on={rules[rule.id] === true}
                 disabled={disabled}
                 onChange={(on) => onChange({ [rule.id]: on })}
               />
-            </Fragment>
-          ))}
-        </RuleGroup>
+            ))}
+          </FieldGroup>
+        </FieldSet>
       ))}
     </div>
-  )
-}
-
-function RuleGroup({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  const id = useId()
-
-  return (
-    <section aria-labelledby={id} className="flex flex-col gap-1.5">
-      <h2 id={id} className="px-1 text-sm text-muted-foreground">
-        {title}
-      </h2>
-      <ItemGroup className="gap-0 rounded-2xl bg-muted/50">
-        {children}
-      </ItemGroup>
-    </section>
   )
 }
 
@@ -97,22 +83,25 @@ function RuleSwitch({ rule, on, disabled, onChange }: RuleSwitchProps) {
   const id = useId()
 
   return (
-    <Item role="listitem" className="items-start">
-      <ItemContent>
-        <ItemTitle id={`${id}-title`}>{rule.name}</ItemTitle>
-        <ItemDescription id={`${id}-description`} className="line-clamp-none">
-          {rule.description}
-        </ItemDescription>
-      </ItemContent>
-      <ItemActions className="pt-0.5">
+    <FieldLabel htmlFor={id}>
+      <Field orientation="horizontal" data-disabled={disabled || undefined}>
+        <FieldContent>
+          <FieldTitle id={`${id}-title`}>{rule.name}</FieldTitle>
+          <FieldDescription id={`${id}-description`}>
+            {rule.description}
+          </FieldDescription>
+        </FieldContent>
+        {/* Named by its title alone; the label around the row would add
+            the description to its name. */}
         <Switch
+          id={id}
           checked={on}
           disabled={disabled}
           aria-labelledby={`${id}-title`}
           aria-describedby={`${id}-description`}
           onCheckedChange={onChange}
         />
-      </ItemActions>
-    </Item>
+      </Field>
+    </FieldLabel>
   )
 }
