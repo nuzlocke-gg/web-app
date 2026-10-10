@@ -1,4 +1,5 @@
 import { unchanged, type Unchanged } from "headcanon"
+import { produce } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
@@ -6,7 +7,7 @@ import { admitsChanges } from "../can-change"
 import { nickname } from "../nickname"
 import { refusal, type RunRefusal } from "../refusals"
 import { findViewerPokemon, type RunState } from "../state"
-import { withPokemon } from "./with-pokemon"
+import { pokemonOf } from "./drafts"
 
 /** The arguments of Rename a Pokémon. */
 export const renamePokemonArgs = z.object({
@@ -55,8 +56,7 @@ export function check(
 
 /** Sets the Pokémon's nickname. */
 export function apply(run: RunState, effect: RenamePokemonEffect): RunState {
-  return withPokemon(run, effect, (pokemon) => ({
-    ...pokemon,
-    nickname: effect.nickname,
-  }))
+  return produce(run, (draft) => {
+    pokemonOf(draft, effect).nickname = effect.nickname
+  })
 }

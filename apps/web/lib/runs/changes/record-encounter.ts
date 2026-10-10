@@ -1,4 +1,5 @@
 import { ORIGINS, type Origin, type PlaceId } from "@workspace/game-data"
+import { produce, type Draft } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
@@ -16,6 +17,7 @@ import {
   type PokemonState,
   type RunState,
 } from "../state"
+import { journeyOf } from "./drafts"
 import { formRefArgs } from "./form-ref"
 
 /**
@@ -119,37 +121,25 @@ export function check(
  * the order of their Encounters.
  */
 export function apply(run: RunState, effect: RecordEncounterEffect): RunState {
-  return {
-    ...run,
-    journeys: run.journeys.map((journey) =>
-      journey.id === effect.journeyId ? withEffect(journey, effect) : journey
-    ),
-  }
+  return produce(run, (draft) => {
+    const journey = journeyOf(draft, effect.journeyId)
+
+    journey.encounters.push(effect.encounter)
+    journey.encounters.sort(byTimeOfEntry)
+
+    if (!effect.pokemon) return
+
+    journey.pokemon.push(effect.pokemon)
+    sortInEncounterOrder(journey)
+  })
 }
 
-function withEffect(
-  journey: JourneyState,
-  effect: RecordEncounterEffect
-): JourneyState {
-  const encounters = [...journey.encounters, effect.encounter].sort(
-    byTimeOfEntry
-  )
-  const pokemon = effect.pokemon
-    ? inEncounterOrder([...journey.pokemon, effect.pokemon], encounters)
-    : journey.pokemon
-
-  return { ...journey, encounters, pokemon }
-}
-
-function inEncounterOrder(
-  pokemon: PokemonState[],
-  encounters: EncounterState[]
-): PokemonState[] {
+function sortInEncounterOrder(journey: Draft<JourneyState>): void {
   const position = new Map(
-    encounters.map((encounter, index) => [encounter.id, index])
+    journey.encounters.map((encounter, index) => [encounter.id, index])
   )
 
-  return pokemon.sort(
+  journey.pokemon.sort(
     (a, b) => position.get(a.encounterId)! - position.get(b.encounterId)!
   )
 }

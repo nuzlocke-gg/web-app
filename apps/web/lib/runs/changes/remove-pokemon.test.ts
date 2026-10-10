@@ -1,7 +1,7 @@
 import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
-import { journeyWithPokemon, runState } from "@/test/run-state"
+import { deepFrozen, journeyWithPokemon, runState } from "@/test/run-state"
 
 import { historyOf } from "../history"
 import { removeEncounter, removePokemon } from "../mutations"
@@ -110,4 +110,13 @@ describe("Remove a Pokémon", () => {
       })
     }
   )
+
+  test("leaves a frozen Run as it was", () => {
+    const run = deepFrozen(runWith())
+    const before = structuredClone(run)
+
+    predicted(run, removal(run))
+
+    expect(run).toEqual(before)
+  })
 })

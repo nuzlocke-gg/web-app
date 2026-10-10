@@ -4,6 +4,7 @@ import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
 import {
+  deepFrozen,
   journeyState,
   journeyWithPokemon,
   runState,
@@ -124,4 +125,13 @@ describe("Rename a Pokémon", () => {
       })
     }
   )
+
+  test("leaves a frozen Run as it was", () => {
+    const run = deepFrozen(runWith())
+    const before = structuredClone(run)
+
+    predicted(run, rename(run, "Zig"))
+
+    expect(run).toEqual(before)
+  })
 })

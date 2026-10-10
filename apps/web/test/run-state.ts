@@ -119,3 +119,18 @@ export function journeyWithPokemon(
     ),
   })
 }
+
+/**
+ * Freezes the value and everything in it, in place, and returns it, for a
+ * predictor test: a change that writes to its input throws instead of passing
+ * unseen.
+ */
+export function deepFrozen<Value>(value: Value): Value {
+  if (typeof value === "object" && value !== null) {
+    for (const child of Object.values(value)) deepFrozen(child)
+
+    Object.freeze(value)
+  }
+
+  return value
+}

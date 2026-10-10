@@ -2,6 +2,7 @@ import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
 import {
+  deepFrozen,
   encounterState,
   journeyState,
   journeyWithPokemon,
@@ -176,6 +177,16 @@ describe("Record an Encounter", () => {
       args.encounterId,
       later.id,
     ])
+  })
+
+  test("leaves a frozen Run as it was", () => {
+    const run = deepFrozen(runState({ journeys: [journeyWithPokemon([{}])] }))
+    const before = structuredClone(run)
+
+    // Backdated, so it sorts before the Encounter the Run holds.
+    predicted(run, caughtMudkip({ enteredAt: Date.UTC(2026, 8, 30) }))
+
+    expect(run).toEqual(before)
   })
 })
 

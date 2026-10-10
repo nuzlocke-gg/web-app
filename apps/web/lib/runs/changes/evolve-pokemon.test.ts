@@ -4,7 +4,12 @@ import { ok } from "serializable-result"
 import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
-import { evolutionState, journeyWithPokemon, runState } from "@/test/run-state"
+import {
+  deepFrozen,
+  evolutionState,
+  journeyWithPokemon,
+  runState,
+} from "@/test/run-state"
 
 import { evolvePokemon } from "../mutations"
 import { viewerJourney, type PokemonState, type RunState } from "../state"
@@ -198,5 +203,21 @@ describe("Evolve a Pokémon", () => {
       ok: false,
       error: { kind: "run-not-active" },
     })
+  })
+
+  test("leaves a frozen Run as it was", () => {
+    const run = deepFrozen(
+      runWith({
+        species: grovyle,
+        evolutions: [
+          evolutionState(treecko, grovyle, { enteredAt: Date.UTC(2026, 9, 5) }),
+        ],
+      })
+    )
+    const before = structuredClone(run)
+
+    predicted(run, next(run, sceptile, Date.UTC(2026, 9, 4)))
+
+    expect(run).toEqual(before)
   })
 })

@@ -1,5 +1,6 @@
 import type { FormRef } from "@workspace/game-data"
 import { unchanged, type Unchanged } from "headcanon"
+import { produce, type Draft } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
@@ -13,7 +14,7 @@ import {
   type RunState,
 } from "../state"
 import { formRefArgs, sameForm } from "./form-ref"
-import { withPokemon } from "./with-pokemon"
+import { pokemonOf } from "./drafts"
 
 /**
  * The arguments of Evolve a Pokémon, in parsed form: the Species and Form the
@@ -141,27 +142,33 @@ function lineChange(
  * stay in the order the canon loader reads them: by time of entry, then id.
  */
 export function apply(run: RunState, effect: EvolvePokemonEffect): RunState {
-  return withPokemon(run, effect, (pokemon) => ({
-    ...pokemon,
-    species: effect.species,
-    evolutions: withLineChange(pokemon.evolutions, effect),
-  }))
+  return produce(run, (draft) => {
+    const pokemon = pokemonOf(draft, effect)
+
+    pokemon.species = effect.species
+    changeLine(pokemon, effect)
+  })
 }
 
-function withLineChange(
-  lines: EvolutionState[],
+function changeLine(
+  pokemon: Draft<PokemonState>,
   { line, species }: EvolvePokemonEffect
-): EvolutionState[] {
+): void {
   switch (line?.kind) {
     case undefined:
-      return lines
+      return
     case "add":
-      return [...lines, line.line].sort(byTimeOfEntry)
+      pokemon.evolutions.push(line.line)
+      pokemon.evolutions.sort(byTimeOfEntry)
+      return
     case "retarget":
-      return lines.map((candidate) =>
-        candidate.id === line.id ? { ...candidate, to: species } : candidate
-      )
+      pokemon.evolutions.find((candidate) => candidate.id === line.id)!.to =
+        species
+      return
     case "remove":
-      return lines.filter((candidate) => candidate.id !== line.id)
+      pokemon.evolutions = pokemon.evolutions.filter(
+        (candidate) => candidate.id !== line.id
+      )
+      return
   }
 }

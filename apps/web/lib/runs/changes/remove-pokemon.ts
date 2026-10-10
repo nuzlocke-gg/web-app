@@ -1,10 +1,11 @@
+import { produce } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
 import { admitsChanges } from "../can-change"
 import { refusal, type RunRefusal } from "../refusals"
 import { findViewerPokemon, type RunState } from "../state"
-import { withPokemon } from "./with-pokemon"
+import { pokemonOf } from "./drafts"
 
 /**
  * The arguments of Remove a Pokémon, for a trade or a release. `removedAt` is
@@ -63,8 +64,7 @@ export function check(
  * keeps its Encounter and history.
  */
 export function apply(run: RunState, effect: RemovePokemonEffect): RunState {
-  return withPokemon(run, effect, (pokemon) => ({
-    ...pokemon,
-    removedAt: effect.removedAt,
-  }))
+  return produce(run, (draft) => {
+    pokemonOf(draft, effect).removedAt = effect.removedAt
+  })
 }

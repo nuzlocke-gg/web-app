@@ -1,5 +1,6 @@
 import { ORIGINS, type FormRef, type Origin } from "@workspace/game-data"
 import { unchanged, type Unchanged } from "headcanon"
+import { produce } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
@@ -8,10 +9,10 @@ import { refusal, type RunRefusal } from "../refusals"
 import {
   findViewerEncounter,
   type EncounterState,
-  type JourneyState,
   type PokemonState,
   type RunState,
 } from "../state"
+import { journeyOf, pokemonOf } from "./drafts"
 import { formRefArgs, sameForm } from "./form-ref"
 
 /**
@@ -108,31 +109,18 @@ function follows(
 
 /** Sets the Encounter's Species, Form, and origin met, and its Pokémon's when it follows. */
 export function apply(run: RunState, effect: CorrectEncounterEffect): RunState {
-  return {
-    ...run,
-    journeys: run.journeys.map((journey) =>
-      journey.id === effect.journeyId ? withEffect(journey, effect) : journey
-    ),
-  }
-}
+  return produce(run, (draft) => {
+    const { journeyId, pokemon: follower } = effect
+    const encounter = journeyOf(draft, journeyId).encounters.find(
+      (candidate) => candidate.id === effect.encounterId
+    )!
 
-function withEffect(
-  journey: JourneyState,
-  effect: CorrectEncounterEffect
-): JourneyState {
-  const encounters = journey.encounters.map((encounter) =>
-    encounter.id === effect.encounterId
-      ? { ...encounter, met: effect.met, origin: effect.origin }
-      : encounter
-  )
-  const { pokemon: follower } = effect
-  const pokemon = follower
-    ? journey.pokemon.map((candidate) =>
-        candidate.id === follower.id
-          ? { ...candidate, species: follower.species }
-          : candidate
-      )
-    : journey.pokemon
+    encounter.met = effect.met
+    encounter.origin = effect.origin
 
-  return { ...journey, encounters, pokemon }
+    if (follower) {
+      pokemonOf(draft, { journeyId, pokemonId: follower.id }).species =
+        follower.species
+    }
+  })
 }

@@ -1,16 +1,12 @@
 import { unchanged, type Unchanged } from "headcanon"
+import { produce } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
 import { admitsChanges } from "../can-change"
 import { refusal, type RunRefusal } from "../refusals"
-import {
-  partyOf,
-  PARTY_SIZE,
-  viewerJourney,
-  type JourneyState,
-  type RunState,
-} from "../state"
+import { partyOf, PARTY_SIZE, viewerJourney, type RunState } from "../state"
+import { pokemonOf } from "./drafts"
 
 /**
  * The arguments of Move a Pokémon: moves committed together, each Pokémon
@@ -78,7 +74,7 @@ export function check(
 
   const effect = { journeyId: journey.id, moves }
 
-  if (partyOf(withMoves(journey, effect)).length > PARTY_SIZE) {
+  if (partyOf(viewerJourney(apply(run, effect))).length > PARTY_SIZE) {
     return err(refusal("party-full"))
   }
 
@@ -87,28 +83,10 @@ export function check(
 
 /** Puts each moved Pokémon in the Party or the Box. */
 export function apply(run: RunState, effect: MovePokemonEffect): RunState {
-  return {
-    ...run,
-    journeys: run.journeys.map((journey) =>
-      journey.id === effect.journeyId ? withMoves(journey, effect) : journey
-    ),
-  }
-}
-
-function withMoves(
-  journey: JourneyState,
-  effect: MovePokemonEffect
-): JourneyState {
-  const destinations = new Map(
-    effect.moves.map((move) => [move.pokemonId, move.inParty])
-  )
-
-  return {
-    ...journey,
-    pokemon: journey.pokemon.map((pokemon) => {
-      const inParty = destinations.get(pokemon.id)
-
-      return inParty === undefined ? pokemon : { ...pokemon, inParty }
-    }),
-  }
+  return produce(run, (draft) => {
+    for (const { pokemonId, inParty } of effect.moves) {
+      pokemonOf(draft, { journeyId: effect.journeyId, pokemonId }).inParty =
+        inParty
+    }
+  })
 }

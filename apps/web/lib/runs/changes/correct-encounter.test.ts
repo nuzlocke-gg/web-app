@@ -4,6 +4,7 @@ import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
 import {
+  deepFrozen,
   encounterState,
   evolutionState,
   journeyState,
@@ -235,4 +236,16 @@ describe("Correct an Encounter", () => {
       })
     }
   )
+
+  test("leaves a frozen Run as it was", () => {
+    const run = deepFrozen(runWith([caught], [pokemonState(caught)]))
+    const before = structuredClone(run)
+
+    predicted(
+      run,
+      correction(caught, { met: { species: "mudkip", form: "base" } })
+    )
+
+    expect(run).toEqual(before)
+  })
 })
