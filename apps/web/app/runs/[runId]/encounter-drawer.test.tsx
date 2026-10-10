@@ -15,6 +15,7 @@ import {
   encounterState,
   journeyState,
   journeyWithPokemon,
+  pokemonState,
   runState,
 } from "@/test/run-state"
 
@@ -350,3 +351,115 @@ describe("Add a location", () => {
 function unloadEvent() {
   return new Event("beforeunload", { cancelable: true })
 }
+
+describe("the Warnings of a save", () => {
+  const route104: PlaceRow = {
+    id: "route-104",
+    kind: "standard",
+    name: "Route 104",
+  }
+
+  /** Fang the Poochyena on Route 101, then Marill on Route 104. */
+  function runWithFangAndMarill(): RunState {
+    const fangMet = encounterState({
+      placeId: "route-101",
+      met: { species: "poochyena", form: "base" },
+      enteredAt: Date.UTC(2026, 9, 1),
+    })
+    const marillMet = encounterState({
+      placeId: "route-104",
+      met: { species: "marill", form: "base" },
+      enteredAt: Date.UTC(2026, 9, 2),
+    })
+
+    return runState({
+      rules: {
+        "first-encounter": true,
+        "nickname-clause": true,
+        "duplicate-clause": true,
+      },
+      journeys: [
+        journeyState({
+          encounters: [fangMet, marillMet],
+          pokemon: [
+            pokemonState(fangMet, { nickname: "Fang" }),
+            pokemonState(marillMet, { nickname: "Bubbles" }),
+          ],
+        }),
+      ],
+    })
+  }
+
+  test("step 1 shows the First Encounter Rule and the Duplicate mark", async () => {
+    const run = runWithFangAndMarill()
+
+    await renderDrawer(run, recordSheet(run, route104, true))
+
+    const alert = await screen.findByRole("status")
+
+    expect(alert.textContent).toContain(
+      "You already have an encounter at Route 104. You can still record this one."
+    )
+
+    fireEvent.change(screen.getByPlaceholderText("Search all 386 species"), {
+      target: { value: "Mightyena" },
+    })
+
+    expect(
+      screen.getByRole("button", { name: /Mightyena/ }).textContent
+    ).toContain("Same line as Fang")
+  })
+
+  test("the details show every Warning the save will cause, and the save goes through", async () => {
+    const run = runWithFangAndMarill()
+
+    await renderDrawer(run, recordSheet(run, route104, true))
+
+    fireEvent.change(
+      await screen.findByPlaceholderText("Search all 386 species"),
+      { target: { value: "Poochyena" } }
+    )
+    fireEvent.click(screen.getByRole("button", { name: /Poochyena/ }))
+
+    const texts = screen
+      .getAllByRole("status")
+      .map((element) => element.textContent)
+
+    expect(texts).toEqual([
+      expect.stringContaining("Route 104 already has an encounter: Marill."),
+      expect.stringContaining("It has no nickname yet."),
+      expect.stringContaining(
+        "Poochyena is in the same evolution line as Fang (Route 101)."
+      ),
+    ])
+
+    fireEvent.change(screen.getByLabelText("Nickname"), {
+      target: { value: "Shade" },
+    })
+
+    expect(screen.queryByText("It has no nickname yet.")).toBeNull()
+
+    fireEvent.click(screen.getByRole("button", { name: "Save encounter" }))
+
+    expect(change).toHaveBeenCalledOnce()
+  })
+
+  test("a Rule that is off gives no Warning", async () => {
+    const run = { ...runWithFangAndMarill(), rules: {} }
+
+    await renderDrawer(run, recordSheet(run, route104, true))
+
+    fireEvent.change(
+      await screen.findByPlaceholderText("Search all 386 species"),
+      { target: { value: "Poochyena" } }
+    )
+
+    expect(
+      screen.getByRole("button", { name: /Poochyena/ }).textContent
+    ).not.toContain("Same line as")
+
+    fireEvent.click(screen.getByRole("button", { name: /Poochyena/ }))
+
+    expect(screen.queryByRole("status")).toBeNull()
+  })
+})

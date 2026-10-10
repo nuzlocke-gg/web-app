@@ -68,9 +68,7 @@ describe("the Rules screen", () => {
   test("a solo Run shows the Rules with their descriptions and no Soul Link group", async () => {
     await renderRules()
 
-    expect(
-      screen.getByRole("heading", { name: "Set the rules" })
-    ).toBeDefined()
+    expect(screen.getByRole("heading", { name: "Set the rules" })).toBeDefined()
     expect(
       screen.getByText("You must give each Pokémon a nickname.")
     ).toBeDefined()

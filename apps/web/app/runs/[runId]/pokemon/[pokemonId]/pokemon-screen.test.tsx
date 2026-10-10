@@ -74,7 +74,8 @@ afterEach(() => {
  */
 async function renderPokemon(
   placement: Partial<PokemonState>,
-  others: Partial<PokemonState>[] = []
+  others: Partial<PokemonState>[] = [],
+  rules: RunState["rules"] = {}
 ) {
   const encounter = encounterState({
     placeId: "route-116",
@@ -85,6 +86,7 @@ async function renderPokemon(
     encounterState({ placeId: `route-${101 + index}` })
   )
   const run: RunState = runState({
+    rules,
     journeys: [
       journeyState({
         encounters: [encounter, ...otherEncounters],
@@ -108,6 +110,24 @@ async function renderPokemon(
 }
 
 describe("the Pokémon screen", () => {
+  test("shows its Warnings as quiet Alerts under the name", async () => {
+    await renderPokemon({ nickname: null }, [], { "nickname-clause": true })
+
+    const alert = screen.getByRole("status")
+
+    expect(alert.textContent).toContain("Nickname Clause")
+    expect(alert.textContent).toContain("Nincada has no nickname.")
+    expect(
+      screen.getByRole("img", { name: "Warning: Nickname Clause" })
+    ).toBeTruthy()
+  })
+
+  test("shows no Warning while its Rule is off", async () => {
+    await renderPokemon({ nickname: null })
+
+    expect(screen.queryByRole("status")).toBeNull()
+  })
+
   test("shows the Form row only when the Species has more than one Form", async () => {
     await renderPokemon({ species: { species: "ralts", form: "base" } })
 

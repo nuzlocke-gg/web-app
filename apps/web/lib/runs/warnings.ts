@@ -4,7 +4,7 @@ import { v7 as uuidv7 } from "uuid"
 import type { RecordEncounterArgs } from "./changes/record-encounter"
 import { recordEncounter } from "./mutations"
 import type { GameFacts, Warning } from "./rule-checks"
-import { rulesOn } from "./rules"
+import { rulesOn, type Rule, type RuleId } from "./rules"
 import type { RunState } from "./state"
 
 /** The game-data facts of a loaded Map, for {@link computeWarnings}. */
@@ -15,15 +15,23 @@ export function gameFactsOf(map: LoadedMap): GameFacts {
 /**
  * Every Warning of the Run: the checks of the Rules it has on, in the order
  * the screens list the Rules. Pure; pass the displayed Run (canon plus
- * pending predictions). A Run of a kind this build does not know is checked
- * against the Rules of every Run.
+ * pending predictions).
  * @example
  * computeWarnings(run, gameFactsOf(map))
  */
 export function computeWarnings(run: RunState, facts: GameFacts): Warning[] {
-  return rulesOn(run.kind ?? "solo", run.rules).flatMap(
-    (rule) => rule.check?.(run, facts) ?? []
-  )
+  return rulesChecked(run).flatMap((rule) => rule.check?.(run, facts) ?? [])
+}
+
+/** Whether the Run's Warnings include this Rule's. */
+export function checksRule(run: RunState, ruleId: RuleId): boolean {
+  return rulesChecked(run).some((rule) => rule.id === ruleId)
+}
+
+// A Run of a kind this build does not know is checked against the Rules of
+// every Run.
+function rulesChecked(run: RunState): readonly Rule[] {
+  return rulesOn(run.kind ?? "solo", run.rules)
 }
 
 /**

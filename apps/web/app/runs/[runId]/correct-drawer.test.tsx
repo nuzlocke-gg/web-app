@@ -160,6 +160,21 @@ describe("the Correct Drawer", () => {
     expect(screen.queryByRole("button", { name: /Species unknown/ })).toBeNull()
   })
 
+  test("the Species step of a sole catch shows no Warning about itself", async () => {
+    await renderDrawer(
+      {
+        ...runWith([caught]),
+        rules: { "first-encounter": true, "duplicate-clause": true },
+      },
+      caught
+    )
+
+    fireEvent.click(await screen.findByRole("button", { name: "Change" }))
+
+    expect(screen.queryByRole("status")).toBeNull()
+    expect(screen.queryByText(/Same line as/)).toBeNull()
+  })
+
   test("Save changes sends the new origin", async () => {
     await renderDrawer(runWith([caught]), caught)
 
