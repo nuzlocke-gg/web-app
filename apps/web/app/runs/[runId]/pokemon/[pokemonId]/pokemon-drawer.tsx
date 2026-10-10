@@ -4,7 +4,6 @@ import {
   getGame,
   nextInLine,
   searchSpecies,
-  type FormRef,
   type LoadedMap,
 } from "@workspace/game-data"
 import { Button } from "@workspace/ui/components/button"
@@ -15,6 +14,7 @@ import {
 } from "@workspace/ui/components/drawer"
 import { Field, FieldError, FieldLabel } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
+import { RadioGroup } from "@workspace/ui/components/radio-group"
 import { useId, useState } from "react"
 import { v7 as uuidv7 } from "uuid"
 
@@ -27,8 +27,12 @@ import type { ViewerPokemon } from "@/lib/runs/state"
 import { DrawerHeaderRow } from "../../drawer-header-row"
 import { FormChoice } from "../../record-steps"
 import { useRun, useRunChange } from "../../run-root"
-import { evolveGroups } from "../../species-choices"
-import { ChoiceGrid, SpeciesSection } from "../../species-grid"
+import { evolveGroups, type SpeciesChoice } from "../../species-choices"
+import {
+  RadioGrid,
+  SpeciesSection,
+  speciesChoiceValue,
+} from "../../species-grid"
 
 /** Which small Drawer of the Pokémon section is open. */
 export type PokemonSheet = "rename" | "evolve" | "form"
@@ -155,9 +159,7 @@ function EvolveStep({ map, shown, open, onClose }: StepProps) {
   const { journey, pokemon } = shown
   const current = speciesName(map, pokemon.species.species)
   const [query, setQuery] = useState("")
-  const [picked, setPicked] = useState<{ met: FormRef; name: string } | null>(
-    null
-  )
+  const [picked, setPicked] = useState<SpeciesChoice | null>(null)
   const next = nextInLine(map, pokemon.species.species, pokemon.species.form)
   const groups = evolveGroups(
     pokemon.species.species,
@@ -207,15 +209,21 @@ function EvolveStep({ map, shown, open, onClose }: StepProps) {
           onChange={(event) => setQuery(event.target.value)}
         />
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+      <RadioGroup
+        aria-label="New species"
+        className="block min-h-0 flex-1 overflow-y-auto px-4 pb-4"
+        value={picked ? speciesChoiceValue(picked.met) : null}
+        onValueChange={(value) =>
+          setPicked(
+            [...groups.next, ...groups.others].find(
+              (choice) => speciesChoiceValue(choice.met) === value
+            ) ?? null
+          )
+        }
+      >
         <SpeciesSection title="Next in its line">
           {groups.next.length > 0 ? (
-            <ChoiceGrid
-              map={map}
-              choices={groups.next}
-              picked={picked?.met ?? null}
-              onPick={setPicked}
-            />
+            <RadioGrid map={map} choices={groups.next} />
           ) : (
             <p className="text-xs text-muted-foreground">
               {next.length > 0
@@ -228,14 +236,9 @@ function EvolveStep({ map, shown, open, onClose }: StepProps) {
           <p className="-mt-1 text-xs text-muted-foreground">
             To correct a wrong species
           </p>
-          <ChoiceGrid
-            map={map}
-            choices={groups.others}
-            picked={picked?.met ?? null}
-            onPick={setPicked}
-          />
+          <RadioGrid map={map} choices={groups.others} />
         </SpeciesSection>
-      </div>
+      </RadioGroup>
       <DrawerFooter className="pt-3">
         <Button
           type="button"

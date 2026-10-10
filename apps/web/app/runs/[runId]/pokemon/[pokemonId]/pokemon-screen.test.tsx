@@ -146,7 +146,7 @@ describe("the Pokémon screen", () => {
     fireEvent.change(within(drawer).getByLabelText("Search species"), {
       target: { value: "nincada" },
     })
-    fireEvent.click(within(drawer).getByRole("button", { name: /Nincada/ }))
+    fireEvent.click(within(drawer).getByRole("radio", { name: "Nincada" }))
     fireEvent.click(
       within(drawer).getByRole("button", { name: "Change to Nincada" })
     )

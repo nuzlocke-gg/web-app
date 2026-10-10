@@ -43,8 +43,8 @@ test("a player opens a Pokémon, renames it, evolves it, and reads its history",
 
   await evolve
     .getByRole("region", { name: "Next in its line" })
-    .getByRole("button", { name: "Grovyle" })
-    .click()
+    .getByRole("radio", { name: "Grovyle", exact: true })
+    .check()
   await evolve.getByRole("button", { name: "Evolve into Grovyle" }).click()
   await expect(evolve).toBeHidden()
 
