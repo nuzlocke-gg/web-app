@@ -26,7 +26,6 @@ import {
   ItemActions,
   ItemContent,
   ItemDescription,
-  ItemGroup,
   ItemMedia,
   ItemTitle,
 } from "@workspace/ui/components/item"
@@ -34,7 +33,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
-import { useId, useState, type ReactNode } from "react"
+import { useId, useState } from "react"
 import { v7 as uuidv7 } from "uuid"
 
 import { Sprite, UnknownSprite } from "@/components/sprite"
@@ -51,6 +50,7 @@ import {
 
 import { DrawerHeaderRow, type Back } from "./drawer-header-row"
 import { useRun, useRunChange } from "./run-root"
+import { ChoiceGrid, SpeciesSection } from "./species-grid"
 import {
   searchChoices,
   speciesGroups,
@@ -89,7 +89,8 @@ export type RecordDraft = {
   goesTo: Destination
 }
 
-const originNames: Record<Origin, string> = {
+/** The name of each origin, as the screens show it. */
+export const originNames: Record<Origin, string> = {
   wild: "Wild",
   gift: "Gift",
   trade: "Trade",
@@ -282,61 +283,6 @@ export function SpeciesStep({
         ) : null}
       </div>
     </>
-  )
-}
-
-function SpeciesSection({
-  title,
-  children,
-}: {
-  title: string
-  children: ReactNode
-}) {
-  return (
-    <section aria-label={title} className="flex flex-col gap-1.5 pt-3">
-      <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-      {children}
-    </section>
-  )
-}
-
-type ChoiceGridProps = {
-  map: LoadedMap
-  choices: SpeciesChoice[]
-  onPick: (choice: SpeciesChoice) => void
-}
-
-function ChoiceGrid({ map, choices, onPick }: ChoiceGridProps) {
-  return (
-    <ItemGroup className="grid grid-cols-2 gap-1.5">
-      {choices.map((choice) => (
-        <div key={`${choice.met.species}/${choice.met.form}`} role="listitem">
-          <Item
-            variant="muted"
-            size="xs"
-            render={
-              <button
-                type="button"
-                className="min-h-11 text-left"
-                onClick={() => onPick(choice)}
-              />
-            }
-          >
-            <ItemMedia>
-              <Sprite
-                map={map}
-                species={choice.met.species}
-                form={choice.met.form}
-                size={32}
-              />
-            </ItemMedia>
-            <ItemContent className="min-w-0">
-              <ItemTitle>{choice.name}</ItemTitle>
-            </ItemContent>
-          </Item>
-        </div>
-      ))}
-    </ItemGroup>
   )
 }
 

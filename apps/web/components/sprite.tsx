@@ -1,5 +1,4 @@
 import {
-  getSpecies,
   spriteUrl,
   unknownSpriteUrl,
   type FormId,
@@ -7,6 +6,7 @@ import {
   type SpeciesId,
 } from "@workspace/game-data"
 
+import { speciesName, UNKNOWN_SPECIES } from "./species-name"
 import { SpriteImage } from "./sprite-image"
 
 /**
@@ -39,7 +39,7 @@ export interface SpriteProps {
  */
 export function Sprite({ map, species, form, size, className }: SpriteProps) {
   const src = spriteUrl(map, species, form)
-  const label = src ? getSpecies(map, species)!.name : "Unknown Pokémon"
+  const label = src ? speciesName(map, species) : UNKNOWN_SPECIES
 
   return (
     <SpriteImage
@@ -64,7 +64,7 @@ export function UnknownSprite({
     <SpriteImage
       src={unknownSpriteUrl}
       fallbackSrc={unknownSpriteUrl}
-      label="Unknown Pokémon"
+      label={UNKNOWN_SPECIES}
       size={size}
       className={className}
     />

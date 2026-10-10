@@ -85,6 +85,41 @@ function isAnotherPlayersEncounter(
   )
 }
 
+/**
+ * {@link admitPlayer} for a change that names a Pokémon: also denies, with no
+ * public reason, a Pokémon of another Player's Journey. A Pokémon that no
+ * Journey has passes, so the shared `check` refuses it as `gone`.
+ */
+export async function admitPokemonOwner({
+  tx,
+  actor,
+  args,
+}: {
+  tx: RunTransaction
+  actor: string
+  args: { runId: string; pokemonId: string }
+}) {
+  const run = await lockAndRead(tx, actor, args.runId)
+
+  if (!run || isAnotherPlayersPokemon(run, actor, args.pokemonId)) {
+    return denyMutation()
+  }
+
+  return allowAdmission({ state: run })
+}
+
+function isAnotherPlayersPokemon(
+  run: RunState,
+  actor: string,
+  pokemonId: string
+): boolean {
+  return run.journeys.some(
+    (journey) =>
+      journey.playerId !== actor &&
+      journey.pokemon.some((pokemon) => pokemon.id === pokemonId)
+  )
+}
+
 async function lockAndRead(tx: RunTransaction, actor: string, runId: string) {
   const row = await lockRun(tx, runId)
 

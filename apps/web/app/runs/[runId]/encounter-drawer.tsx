@@ -2,7 +2,6 @@
 
 import { CaretRightIcon } from "@phosphor-icons/react"
 import {
-  getSpecies,
   placesOf,
   progressTotal,
   type LoadedMap,
@@ -24,6 +23,7 @@ import {
 } from "@workspace/ui/components/toggle-group"
 import { useState } from "react"
 
+import { speciesName } from "@/components/species-name"
 import { Sprite, UnknownSprite } from "@/components/sprite"
 import { nextSlot } from "@/lib/runs/changes/record-encounter"
 import {
@@ -270,7 +270,7 @@ type PlaceChoiceProps = {
 function PlaceChoice({ map, place, encounters, onPick }: PlaceChoiceProps) {
   const met = encounters.map((encounter) => encounter.met)
   const metNames = met.map((ref) =>
-    ref ? (getSpecies(map, ref.species)?.name ?? "Unknown Pokémon") : "Unknown"
+    ref ? speciesName(map, ref.species) : "Unknown"
   )
 
   return (

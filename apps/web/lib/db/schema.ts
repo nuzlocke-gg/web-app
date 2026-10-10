@@ -332,3 +332,28 @@ export const pokemon = pgTable(
     ),
   ]
 )
+
+/**
+ * One evolution line of a Pokémon's history: the Species and Form it evolved
+ * from and into. A correction edits or deletes the line (ADR 0008).
+ */
+export const evolutions = pgTable(
+  "evolutions",
+  {
+    // A UUID v7 from the client.
+    id: uuid("id").primaryKey(),
+    pokemonId: uuid("pokemon_id")
+      .notNull()
+      .references(() => pokemon.id, { onDelete: "cascade" }),
+    speciesFrom: text("species_from").notNull(),
+    formFrom: text("form_from").notNull(),
+    speciesTo: text("species_to").notNull(),
+    formTo: text("form_to").notNull(),
+    enteredAt: timestamp("entered_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+  },
+  // Serves the Run load and the cascade; a foreign key makes no index.
+  (table) => [index("evolutions_pokemon_id_idx").on(table.pokemonId)]
+)

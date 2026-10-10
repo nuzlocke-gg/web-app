@@ -1,13 +1,13 @@
 import {
-  getSpecies,
   searchPlaces,
   type LoadedMap,
   type PlaceId,
   type PlaceRow,
 } from "@workspace/game-data"
 
-import { byTimeOfEntry } from "@/lib/runs/changes/record-encounter"
+import { speciesName } from "@/components/species-name"
 import {
+  byTimeOfEntry,
   viewerJourney,
   type EncounterState,
   type PokemonState,
@@ -82,7 +82,7 @@ export function fateLine(
 
   const current = pokemon.species.species
   const evolved = encounter.met && current !== encounter.met.species
-  const currentName = getSpecies(map, current)?.name ?? "Unknown Pokémon"
+  const currentName = speciesName(map, current)
 
   return [
     pokemon.nickname ?? "No nickname",

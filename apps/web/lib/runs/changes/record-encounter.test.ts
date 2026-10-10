@@ -80,7 +80,9 @@ describe("Record an Encounter", () => {
         inParty: true,
         diedAt: null,
         deathLevel: null,
+        deathCause: null,
         removedAt: null,
+        evolutions: [],
       },
     ])
   })
@@ -155,7 +157,9 @@ describe("Record an Encounter", () => {
               inParty: true,
               diedAt: null,
               deathLevel: null,
+              deathCause: null,
               removedAt: null,
+              evolutions: [],
             },
           ],
         }),

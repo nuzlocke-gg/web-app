@@ -12,7 +12,7 @@ import {
   type PokemonState,
   type RunState,
 } from "../state"
-import { formRefArgs } from "./form-ref"
+import { formRefArgs, sameForm } from "./form-ref"
 
 /**
  * The arguments of Correct an Encounter: the Species, Form, and origin met
@@ -85,9 +85,10 @@ export function check(
 }
 
 /**
- * Whether the Pokémon takes the corrected Species and Form met: after a new
- * Species when it still has the old one, after a new Form only when it still
- * has the old Species and Form, so a Form changed in play stays.
+ * Whether the Pokémon takes the corrected Species and Form met: never once it
+ * has an evolution line; after a new Species when it still has the old one;
+ * after a new Form only when it still has the old Species and Form, so a Form
+ * changed in play stays.
  */
 function follows(
   pokemon: PokemonState,
@@ -96,19 +97,13 @@ function follows(
 ): boolean {
   const met = encounter.met
 
-  // A Pokémon with an evolution line never follows; NUZ-55 adds the lines to
-  // the state and must check them here.
-  if (!met) return false
+  if (!met || pokemon.evolutions.length > 0) return false
 
   if (corrected.species !== met.species) {
     return pokemon.species.species === met.species
   }
 
   return corrected.form !== met.form && sameForm(pokemon.species, met)
-}
-
-function sameForm(a: FormRef | null, b: FormRef | null): boolean {
-  return a?.species === b?.species && a?.form === b?.form
 }
 
 /** Sets the Encounter's Species, Form, and origin met, and its Pokémon's when it follows. */

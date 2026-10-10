@@ -16,6 +16,8 @@ import { signInNamed, startSession } from "./players"
 import {
   deleteReceipt,
   insertRunFor,
+  nicknamesOf,
+  recordFailedEncountersElsewhere,
   setRunStateElsewhere,
   startersOf,
 } from "./runs"
@@ -577,5 +579,83 @@ test.describe("an app that is out of date", () => {
     await expect
       .poll(() => startersOf(runId))
       .toEqual([{ playerId: ash.id, slot: 2 }])
+  })
+})
+
+test.describe("renames of a Pokémon", () => {
+  /** Opens the Starter Mudkip's Pokémon screen from its row. */
+  async function openMudkip(page: Page) {
+    await page
+      .getByRole("region", { name: "Starter" })
+      .getByRole("link", { name: /Mudkip/ })
+      .click()
+    await expect(page).toHaveURL(/\/pokemon\//)
+  }
+
+  async function renameTo(page: Page, from: string, nickname: string) {
+    await page.getByRole("button", { name: `Rename ${from}` }).click()
+
+    const drawer = page.getByRole("dialog", { name: `Rename ${from}` })
+
+    await drawer.getByLabel("Nickname").fill(nickname)
+    await drawer.getByRole("button", { name: "Save nickname" }).click()
+    await expect(drawer).toBeHidden()
+  }
+
+  test("end on the later name after the earlier one's delivery failed and the player left and came back", async ({
+    page,
+    context,
+  }) => {
+    const ash = await signInNamed(context, "Ash")
+    const runId = await insertRunFor(ash.id)
+    await openRun(page, runId)
+    await recordMudkip(page)
+    await expect.poll(() => nicknamesOf(runId)).toEqual([null])
+    await openMudkip(page)
+    const stop = await intercept(page, isServerAction, failBeforeServer)
+
+    await renameTo(page, "Mudkip", "Alpha")
+    await expect(toasts(page).getByText(notSavedYet)).toBeVisible()
+    await renameTo(page, "Alpha", "Bravo")
+    await stop()
+    await page.getByRole("link", { name: "Back to encounters" }).click()
+    await page.getByRole("link", { name: "Back to your runs" }).click()
+    await expect(page).toHaveURL("/")
+    await page.goBack()
+
+    await expect.poll(() => nicknamesOf(runId)).toEqual(["Bravo"])
+    await expect(toasts(page).getByText(notSavedYet)).toBeHidden()
+  })
+
+  test("settles as replay-refused when the Encounter it depends on does not save", async ({
+    page,
+    context,
+  }) => {
+    const ash = await signInNamed(context, "Ash")
+    const runId = await insertRunFor(ash.id)
+    await openRun(page, runId)
+    const sent = new Set<string>()
+    page.on("request", (request) => {
+      if (isServerAction(request)) sent.add(mutationIdOf(request))
+    })
+    const stop = await intercept(page, isServerAction, failBeforeServer)
+
+    await recordMudkip(page)
+    await expect(toasts(page).getByText(notSavedYet)).toBeVisible()
+    await openMudkip(page)
+    await renameTo(page, "Mudkip", "Muddy")
+    // Another device takes the Starter's Slot 1 before the Encounter arrives.
+    await recordFailedEncountersElsewhere(runId, ash.id, ["starter"])
+    await stop()
+    await page.getByRole("button", { name: "Retry" }).click()
+
+    await expect(toasts(page).getByText("Encounter not saved")).toBeVisible()
+    await expect(toasts(page).getByText("Rename not saved")).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "This Pokémon is gone" })
+    ).toBeVisible()
+    // Only the Encounter was ever sent: the rename was withdrawn unsent.
+    expect(sent.size).toBe(1)
+    expect(await nicknamesOf(runId)).toEqual([])
   })
 })

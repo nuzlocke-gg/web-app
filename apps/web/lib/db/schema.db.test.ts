@@ -1,9 +1,17 @@
+import { eq } from "drizzle-orm"
 import { randomUUID } from "node:crypto"
 import { describe, expect, test } from "vitest"
 
 import { db } from "@/lib/db"
 import { postgresErrorCode } from "@/lib/db/errors"
-import { encounters, journeys, pokemon, runs, users } from "@/lib/db/schema"
+import {
+  encounters,
+  evolutions,
+  journeys,
+  pokemon,
+  runs,
+  users,
+} from "@/lib/db/schema"
 import { createPlayer } from "@/test/players"
 import { insertJourney, insertRun, soloRunValues } from "@/test/runs"
 
@@ -291,5 +299,53 @@ describe("pokemon", () => {
           .values({ ...pokemonValues, journeyId: otherJourneyId })
       )
     ).resolves.toBe(FOREIGN_KEY_VIOLATION)
+  })
+})
+
+describe("evolutions", () => {
+  async function insertedPokemon() {
+    const { journeyId, encounter } = await journeyWithEncounter()
+    const pokemonId = randomUUID()
+
+    await db.insert(encounters).values(encounter)
+    await db.insert(pokemon).values({
+      id: pokemonId,
+      journeyId,
+      encounterId: encounter.id!,
+      speciesId: "mudkip",
+      formId: "base",
+      inParty: true,
+    })
+
+    return { encounterId: encounter.id!, pokemonId }
+  }
+
+  function line(pokemonId: string): typeof evolutions.$inferInsert {
+    return {
+      id: randomUUID(),
+      pokemonId,
+      speciesFrom: "mudkip",
+      formFrom: "base",
+      speciesTo: "marshtomp",
+      formTo: "base",
+      enteredAt: new Date(),
+    }
+  }
+
+  test("a line belongs to a Pokémon that exists", async () => {
+    await expect(
+      insertOutcome(db.insert(evolutions).values(line(randomUUID())))
+    ).resolves.toBe(FOREIGN_KEY_VIOLATION)
+  })
+
+  test("removing the Encounter takes the Pokémon's lines with it", async () => {
+    const { encounterId, pokemonId } = await insertedPokemon()
+
+    await db.insert(evolutions).values(line(pokemonId))
+    await db.delete(encounters).where(eq(encounters.id, encounterId))
+
+    await expect(
+      db.select().from(evolutions).where(eq(evolutions.pokemonId, pokemonId))
+    ).resolves.toEqual([])
   })
 })

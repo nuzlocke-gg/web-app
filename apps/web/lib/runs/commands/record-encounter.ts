@@ -1,6 +1,5 @@
 import "server-only"
 
-import { sql } from "drizzle-orm"
 import { matchesPostgresError } from "headcanon/drizzle"
 import { acceptMutation, refuseMutation } from "headcanon/server"
 
@@ -13,6 +12,7 @@ import { passesGameDataGate } from "../game-data-gate"
 import { bumpRevision } from "../lock"
 import { recordEncounter } from "../mutations"
 import { refusal } from "../refusals"
+import { clientTime } from "./client-time"
 import { admitPlayer, screenPlayer } from "./player-access"
 
 /**
@@ -74,12 +74,7 @@ async function writeEffect(
     outcome: encounter.outcome,
     speciesId: encounter.met?.species ?? null,
     formId: encounter.met?.form ?? null,
-    // The client's clock, but never later than the server's; whole
-    // milliseconds, as the state keeps it.
-    enteredAt: sql`least(
-      timestamptz 'epoch' + ${encounter.enteredAt}::float8 * interval '1 millisecond',
-      date_trunc('milliseconds', now())
-    )`,
+    enteredAt: clientTime(encounter.enteredAt),
   })
 
   if (!effect.pokemon) return

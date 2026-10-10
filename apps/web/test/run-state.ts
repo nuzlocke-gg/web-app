@@ -1,7 +1,10 @@
 import { v7 as uuidv7 } from "uuid"
 
+import type { FormRef } from "@workspace/game-data"
+
 import type {
   EncounterState,
+  EvolutionState,
   JourneyState,
   PokemonState,
   RunState,
@@ -73,7 +76,24 @@ export function pokemonState(
     inParty: true,
     diedAt: null,
     deathLevel: null,
+    deathCause: null,
     removedAt: null,
+    evolutions: [],
+    ...overrides,
+  }
+}
+
+/** An evolution line, entered a day after the fixture Encounters. */
+export function evolutionState(
+  from: FormRef,
+  to: FormRef,
+  overrides: Partial<EvolutionState> = {}
+): EvolutionState {
+  return {
+    id: uuidv7(),
+    from,
+    to,
+    enteredAt: Date.UTC(2026, 9, 2),
     ...overrides,
   }
 }

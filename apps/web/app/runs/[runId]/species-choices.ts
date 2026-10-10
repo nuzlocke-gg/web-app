@@ -2,8 +2,11 @@ import type {
   FormRef,
   Origin,
   Species,
+  SpeciesId,
   SuggestionGroup,
 } from "@workspace/game-data"
+
+import { UNKNOWN_SPECIES } from "@/components/species-name"
 
 /** One Species the player can pick in step 1 of the record Drawer. */
 export type SpeciesChoice = {
@@ -44,7 +47,7 @@ export function speciesGroups(
     name: group.name,
     choices: group.entries.map((met) => ({
       met,
-      name: nameOf.get(met.species) ?? "Unknown Pokémon",
+      name: nameOf.get(met.species) ?? UNKNOWN_SPECIES,
       group: { name: group.name, origin: group.origin },
     })),
   }))
@@ -92,5 +95,49 @@ function choiceOf(
     met: { species: species.id, form: species.forms[0]!.id },
     name: species.name,
     group,
+  }
+}
+
+/** The two groups of the Evolve Drawer. */
+export type EvolveGroups = {
+  /** "Next in its line": what the Species evolves into. */
+  next: SpeciesChoice[]
+  /** "Other species", to correct a wrong Species. */
+  others: SpeciesChoice[]
+}
+
+/**
+ * The groups of the Evolve Drawer for a Pokémon of the `current` Species:
+ * its next Species first, then every other Species but its own. A search
+ * keeps only its matches, in their order.
+ * @param next What the Species evolves into, from `nextInLine()`.
+ * @param allSpecies Every Species of the Map, such as `map.data.species`.
+ * @param matches The Species that match a search, such as
+ * `searchSpecies(map, query)`; null while the player does not search.
+ */
+export function evolveGroups(
+  current: SpeciesId,
+  next: readonly FormRef[],
+  allSpecies: readonly Species[],
+  matches: readonly Species[] | null
+): EvolveGroups {
+  const nameOf = new Map(
+    allSpecies.map((species) => [species.id, species.name])
+  )
+  const matched = matches && new Set(matches.map((species) => species.id))
+  const isNext = (species: SpeciesId) =>
+    next.some((target) => target.species === species)
+
+  return {
+    next: next
+      .filter((target) => !matched || matched.has(target.species))
+      .map((target) => ({
+        met: target,
+        name: nameOf.get(target.species) ?? UNKNOWN_SPECIES,
+        group: null,
+      })),
+    others: (matches ?? allSpecies)
+      .filter((species) => species.id !== current && !isNext(species.id))
+      .map((species) => choiceOf(species, null)),
   }
 }
