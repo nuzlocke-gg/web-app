@@ -10,7 +10,6 @@ import {
   type Origin,
   type PlaceId,
 } from "@workspace/game-data"
-import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
 import {
   Drawer,
@@ -38,6 +37,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@workspace/ui/components/item"
+import { toast } from "@workspace/ui/components/toast"
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -120,20 +120,15 @@ export function RecordDrawer({
   const partyCount = partyOf(journey).length
   const partyFull = partyCount >= PARTY_SIZE
   const [draft, setDraft] = useState<Draft | null>(null)
-  const [refusal, setRefusal] = useState<RecordRefusal | null>(null)
   const where = slot > 1 ? `${placeName} · slot ${slot}` : placeName
 
   function changeOpen(next: boolean) {
-    if (next) {
-      setDraft(null)
-      setRefusal(null)
-    }
+    if (next) setDraft(null)
 
     onOpenChange(next)
   }
 
   function pick(choice: SpeciesChoice | null) {
-    setRefusal(null)
     setDraft({
       met: choice?.met ?? null,
       group: choice?.group ?? null,
@@ -145,25 +140,28 @@ export function RecordDrawer({
   }
 
   function save(details: Draft) {
-    const result = mutate(
-      recordEncounter({
-        runId: run.id,
-        encounterId: uuidv7(),
-        placeId,
-        slot,
-        origin: details.origin,
-        enteredAt: Date.now(),
-        outcome: outcomeArgs(details, uuidv7(), partyFull),
-      })
-    )
+    const invocation = recordEncounter({
+      runId: run.id,
+      encounterId: uuidv7(),
+      placeId,
+      slot,
+      origin: details.origin,
+      enteredAt: Date.now(),
+      outcome: outcomeArgs(details, uuidv7(), partyFull),
+    })
+    const result = mutate(invocation, {
+      onAcceptance: (accepted) => {
+        if (!accepted.ok && accepted.error.kind === "domain") {
+          toastNotSaved(accepted.error.error)
+        }
+      },
+    })
 
-    if (!result.ok) {
-      setRefusal(result.error)
-
-      return
-    }
-
+    // The Drawer closes either way: it would cover the toast, and nothing in
+    // it can fix a refusal.
     onOpenChange(false)
+
+    if (!result.ok) toastNotSaved(result.error)
   }
 
   return (
@@ -179,7 +177,6 @@ export function RecordDrawer({
             placeName={placeName}
             draft={draft}
             partyCount={partyCount}
-            refusal={refusal}
             onChange={setDraft}
             onChangeSpecies={() => setDraft(null)}
             onSave={save}
@@ -195,6 +192,15 @@ export function RecordDrawer({
       </DrawerContent>
     </Drawer>
   )
+}
+
+/** Tells the player that the encounter was not saved, and why. */
+function toastNotSaved(refusal: RecordRefusal) {
+  toast.add({
+    type: "error",
+    title: "Encounter not saved",
+    description: refusalMessages[refusal.kind],
+  })
 }
 
 /** The outcome arguments of a draft, with no key for an absent value. */
@@ -388,7 +394,6 @@ type DetailsStepProps = {
   placeName: string
   draft: Draft
   partyCount: number
-  refusal: RecordRefusal | null
   onChange: (draft: Draft) => void
   onChangeSpecies: () => void
   onSave: (draft: Draft) => void
@@ -399,7 +404,6 @@ function DetailsStep({
   placeName,
   draft,
   partyCount,
-  refusal,
   onChange,
   onChangeSpecies,
   onSave,
@@ -527,12 +531,6 @@ function DetailsStep({
               onChange={(next) => onChange({ ...draft, goesTo: next })}
             />
           </>
-        ) : null}
-
-        {refusal ? (
-          <Alert variant="destructive">
-            <AlertDescription>{refusalMessages[refusal.kind]}</AlertDescription>
-          </Alert>
         ) : null}
       </div>
       <DrawerFooter className="pt-3">

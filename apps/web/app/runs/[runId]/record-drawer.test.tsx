@@ -1,5 +1,6 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { loadMap } from "@workspace/game-data"
+import { toast } from "@workspace/ui/components/toast"
 import { Suspense } from "react"
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest"
 
@@ -13,7 +14,13 @@ import { useRun } from "./run-root"
 // `mutate`.
 vi.mock("./run-root", () => ({ useRun: vi.fn() }))
 
-const mutate = vi.fn(() => ({ ok: true, value: {} }))
+type Listeners = { onAcceptance: (result: unknown) => void }
+
+const mutate = vi.fn<(invocation: unknown, listeners: Listeners) => unknown>(
+  () => ({ ok: true, value: {} })
+)
+const onOpenChange = vi.fn()
+const addToast = vi.spyOn(toast, "add")
 
 // The first load of the Map takes longer than a query waits.
 beforeAll(() => loadMap("emerald"))
@@ -21,6 +28,8 @@ beforeAll(() => loadMap("emerald"))
 afterEach(() => {
   cleanup()
   mutate.mockClear()
+  onOpenChange.mockClear()
+  addToast.mockClear()
 })
 
 async function renderDrawer(run: RunState) {
@@ -34,7 +43,7 @@ async function renderDrawer(run: RunState) {
           placeName="Starter"
           slot={1}
           open
-          onOpenChange={() => {}}
+          onOpenChange={onOpenChange}
         />
       </Suspense>
     )
@@ -117,6 +126,45 @@ describe("RecordDrawer", () => {
             goesTo: "party",
           }),
         }),
+      }),
+      expect.anything()
+    )
+  })
+
+  test("a refused prediction closes the Drawer and says why in a toast", async () => {
+    mutate.mockReturnValueOnce({ ok: false, error: { kind: "slot-taken" } })
+    await renderDrawer(runState())
+
+    fireEvent.click(await screen.findByRole("button", { name: /Mudkip/ }))
+    fireEvent.click(screen.getByRole("button", { name: "Save encounter" }))
+
+    expect(onOpenChange).toHaveBeenCalledWith(false)
+    expect(addToast).toHaveBeenCalledWith({
+      type: "error",
+      title: "Encounter not saved",
+      description: "You already have an encounter in this slot.",
+    })
+  })
+
+  test("a refusal from the server says why in a toast", async () => {
+    await renderDrawer(runState())
+
+    fireEvent.click(await screen.findByRole("button", { name: /Mudkip/ }))
+    fireEvent.click(screen.getByRole("button", { name: "Save encounter" }))
+
+    expect(addToast).not.toHaveBeenCalled()
+
+    const [, listeners] = mutate.mock.calls[0]!
+
+    listeners.onAcceptance({
+      ok: false,
+      error: { kind: "domain", error: { kind: "unknown-entry" } },
+    })
+
+    expect(addToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Encounter not saved",
+        description: "Your game does not have this species or location.",
       })
     )
   })
