@@ -152,9 +152,15 @@ export function RecordDrawer({
       outcome: outcomeArgs(details, uuidv7(), partyFull),
     })
     const result = mutate(invocation, {
+      // A refusal that comes after the Drawer closed: the server's, or a
+      // replay over newer canon (another tab took the Slot first).
       onAcceptance: (accepted) => {
-        if (!accepted.ok && accepted.error.kind === "domain") {
-          toastNotSaved(accepted.error.error)
+        if (accepted.ok) return
+
+        const failure = accepted.error
+
+        if (failure.kind === "domain" || failure.kind === "replay-refused") {
+          toastNotSaved(failure.error)
         }
       },
     })

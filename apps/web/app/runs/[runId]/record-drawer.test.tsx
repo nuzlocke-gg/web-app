@@ -168,4 +168,25 @@ describe("RecordDrawer", () => {
       })
     )
   })
+
+  test("a prediction withdrawn over newer canon says why in a toast", async () => {
+    await renderDrawer(runState())
+
+    fireEvent.click(await screen.findByRole("button", { name: /Mudkip/ }))
+    fireEvent.click(screen.getByRole("button", { name: "Save encounter" }))
+
+    const [, listeners] = mutate.mock.calls[0]!
+
+    listeners.onAcceptance({
+      ok: false,
+      error: { kind: "replay-refused", error: { kind: "slot-taken" } },
+    })
+
+    expect(addToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Encounter not saved",
+        description: "You already have an encounter in this slot.",
+      })
+    )
+  })
 })
