@@ -155,8 +155,8 @@ function StarterSection({ map, starter }: StarterSectionProps) {
       {encounters.length === 0 ? (
         <Button
           type="button"
-          variant="outline"
-          className="h-13 w-full border-dashed border-primary/55 text-primary hover:text-primary"
+          size="lg"
+          className="h-11 w-full"
           onClick={() => setRecording(true)}
         >
           <PlusIcon aria-hidden />
