@@ -12,10 +12,16 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@workspace/ui/components/collapsible"
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemTitle,
+} from "@workspace/ui/components/item"
 import { Separator } from "@workspace/ui/components/separator"
 import { useState } from "react"
-
-import { WarningAlert } from "@/components/warning-alert"
 
 import type { WarningText } from "./warning-text"
 
@@ -54,7 +60,7 @@ export function Dock({ remaining, onAdd, warnings, onGoTo }: DockProps) {
       <Collapsible
         open={open}
         onOpenChange={setListOpen}
-        className="pointer-events-auto overflow-hidden rounded-3xl border bg-popover shadow-lg"
+        className="pointer-events-auto overflow-hidden rounded-4xl border bg-popover shadow-lg"
       >
         {/* Above the buttons, so opening the list moves none of them. It
             grows by its grid row and fades: 200 ms in, 150 ms out, none with
@@ -65,28 +71,35 @@ export function Dock({ remaining, onAdd, warnings, onGoTo }: DockProps) {
               <h2 className="px-2 pt-3 pb-1.5 text-xs font-medium text-muted-foreground">
                 Rules
               </h2>
-              <div className="flex flex-col gap-1.5">
+              {/* A status region, so a screen reader reads the Warnings
+                  when the list opens and as they change. */}
+              <ItemGroup role="status" className="gap-0">
                 {warnings.map((warning) => (
-                  <WarningAlert
+                  <Item
                     key={warning.key}
-                    rule={warning.rule}
-                    text={warning.text}
+                    size="sm"
+                    className="items-start text-left hover:bg-muted"
+                    render={
+                      <button
+                        type="button"
+                        aria-label={`${warning.rule}. ${warning.text} Show ${warning.where}.`}
+                        onClick={() => {
+                          setListOpen(false)
+                          onGoTo(warning.encounterId)
+                        }}
+                      />
+                    }
                   >
-                    {/* Its tap area covers the whole Alert. */}
-                    <button
-                      type="button"
-                      className="col-start-2 mt-1 justify-self-start text-xs text-muted-foreground outline-none after:absolute after:inset-0 after:rounded-2xl focus-visible:after:ring-3 focus-visible:after:ring-ring/30"
-                      aria-label={`Show ${warning.where}`}
-                      onClick={() => {
-                        setListOpen(false)
-                        onGoTo(warning.encounterId)
-                      }}
-                    >
+                    <ItemContent>
+                      <ItemTitle>{warning.rule}</ItemTitle>
+                      <ItemDescription>{warning.text}</ItemDescription>
+                    </ItemContent>
+                    <ItemActions className="text-xs text-muted-foreground">
                       {warning.where}
-                    </button>
-                  </WarningAlert>
+                    </ItemActions>
+                  </Item>
                 ))}
-              </div>
+              </ItemGroup>
             </div>
           </div>
         </CollapsibleContent>

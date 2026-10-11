@@ -94,7 +94,7 @@ test("a player chooses the Rules, sees the Warnings follow them, and writes Hous
   ).toBeVisible()
 
   await warnings.click()
-  await expect(page.getByRole("status")).toHaveText([
+  await expect(page.getByRole("status").getByRole("button")).toHaveText([
     /Route 101 already has an encounter: Grovyle\./,
     /Grovyle is in the same evolution line as Leafy \(Starter\)\./,
   ])
@@ -103,7 +103,9 @@ test("a player chooses the Rules, sees the Warnings follow them, and writes Hous
   await warnings.click()
   await page.getByRole("tab", { name: "Pokémon" }).click()
   await page.getByRole("button", { name: "2 warnings" }).click()
-  await page.getByRole("button", { name: "Show Route 101" }).first().click()
+  await page
+    .getByRole("button", { name: /^First Encounter Rule\..*Show Route 101\.$/ })
+    .click()
   await expect(page.getByRole("tab", { name: "Encounters" })).toHaveAttribute(
     "aria-selected",
     "true"
@@ -123,7 +125,11 @@ test("a player chooses the Rules, sees the Warnings follow them, and writes Hous
     .getByRole("textbox", { name: "House rules" })
     .fill("Level caps:\n  Roxanne 15")
   await Promise.all([
-    page.waitForResponse((response) => isServerAction(response.request())),
+    page.waitForResponse(
+      (response) =>
+        isServerAction(response.request()) &&
+        (response.request().postData() ?? "").includes("run.set-house-rules.v1")
+    ),
     page.getByRole("button", { name: "Save" }).click(),
   ])
 

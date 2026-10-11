@@ -69,19 +69,19 @@ describe("the dock", () => {
     expect(screen.queryByRole("button", { name: /warning/ })).toBeNull()
   })
 
-  test("a tap opens the list of Warnings as status Alerts, and a second tap minimizes it", async () => {
+  test("a tap opens the list of Warnings in a status region, and a second tap minimizes it", async () => {
     await renderDock()
 
     const button = screen.getByRole("button", { name: "2 warnings" })
 
     fireEvent.click(button)
 
-    const alerts = screen.getAllByRole("status")
+    const rows = within(screen.getByRole("status")).getAllByRole("button")
 
     expect(button.getAttribute("aria-expanded")).toBe("true")
-    expect(alerts.map((alert) => alert.textContent)).toEqual([
-      expect.stringContaining("Route 104 already has an encounter: Taillow."),
-      expect.stringContaining("Shedinja has no nickname."),
+    expect(rows.map((row) => row.textContent)).toEqual([
+      "First Encounter RuleRoute 104 already has an encounter: Taillow.Route 104",
+      "Nickname ClauseShedinja has no nickname.Route 116",
     ])
 
     fireEvent.click(button)
@@ -94,8 +94,8 @@ describe("the dock", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "2 warnings" }))
     fireEvent.click(
-      within(screen.getAllByRole("status")[1]!).getByRole("button", {
-        name: "Show Route 116",
+      screen.getByRole("button", {
+        name: "Nickname Clause. Shedinja has no nickname. Show Route 116.",
       })
     )
 
