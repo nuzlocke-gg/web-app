@@ -222,6 +222,12 @@
     "height": 250
   },
   {
+    "name": "Collapsible",
+    "file": "collapsible",
+    "group": "Data display",
+    "height": 220
+  },
+  {
     "name": "Kbd",
     "file": "kbd",
     "group": "Data display",

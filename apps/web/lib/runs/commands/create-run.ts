@@ -15,7 +15,7 @@ import { journeys, runs } from "@/lib/db/schema"
 import { runAxis } from "../axis"
 import { runsBinder } from "../binder"
 import { createRun } from "../operations"
-import { defaultRules } from "../rules"
+import { newRunRules } from "../rules"
 
 const FIRST_REVISION = 1
 
@@ -27,7 +27,7 @@ function isGameOfMap(mapId: string, gameId: string): boolean {
 
 /**
  * Makes a solo Run: Active from the start, private, Attempt 1 at the root of
- * its own Chain, with every Rule at its default and one Journey for the
+ * its own Chain, with the Rules the player chose and one Journey for the
  * actor. A new Run has no row to lock yet; nobody can see it before the
  * transaction commits.
  */
@@ -48,7 +48,7 @@ export const createRunBinding = runsBinder.bindOperation(createRun, {
       name: args.name,
       mapId: args.mapId,
       visibility: "private",
-      rules: defaultRules(),
+      rules: newRunRules(args.rules),
       startedAt: sql`now()`,
       lastChangedAt: sql`now()`,
       revision: FIRST_REVISION,

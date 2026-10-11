@@ -30,10 +30,14 @@ import {
 import { cn } from "@workspace/ui/lib/utils"
 import Link from "next/link"
 import { useEffect, useRef, useState, type ReactNode } from "react"
+import { flushSync } from "react-dom"
 
 import { speciesName } from "@/components/species-name"
 import { Sprite, UnknownSprite } from "@/components/sprite"
+import { WarningMark } from "@/components/warning-alert"
 import { admitsChanges } from "@/lib/runs/can-change"
+import type { Warning } from "@/lib/runs/rule-checks"
+import { ruleName } from "@/lib/runs/rules"
 import {
   boxOf,
   graveyardOf,
@@ -55,10 +59,13 @@ import {
   type Progress,
   type ProgressCell,
 } from "./encounter-list"
-import { Dock } from "./dock"
+import { Dock, type DockWarning } from "./dock"
+import { RunMenu } from "./run-menu"
 import { useRun } from "./run-root"
 import { useRunTab, type RunTab } from "./run-tab"
 import { useLoadedMap } from "./use-map"
+import { useWarnings } from "./use-warnings"
+import { warningText } from "./warning-text"
 
 const kindNames: Record<RunKind, string> = {
   solo: "Solo",
@@ -86,6 +93,18 @@ export function TrackingScreen() {
   const [correcting, setCorrecting] = useState<string | null>(null)
   const [correctOpen, setCorrectOpen] = useState(false)
   const savedAt = useRef<PlaceId | null>(null)
+  // The viewer's own rows are the ones a Warning can go to.
+  const warnings = useWarnings().filter(
+    (warning) => warning.journeyId === journey.id
+  )
+  const marks = marksOf(warnings)
+  const dockWarnings: DockWarning[] = map
+    ? warnings.map((warning) => ({
+        ...warningText(map, run, warning),
+        key: `${warning.rule}:${warning.encounterId}`,
+        encounterId: warning.encounterId,
+      }))
+    : []
 
   const opensOnEncounters = useRef(tab === "encounters")
 
@@ -95,6 +114,16 @@ export function TrackingScreen() {
       window.scrollTo({ top: document.documentElement.scrollHeight })
     }
   }, [])
+
+  // The Encounters tab renders its rows before the scroll looks for one.
+  function goTo(encounterId: string) {
+    flushSync(() => setTab("encounters"))
+
+    const row = document.getElementById(encounterRowId(encounterId))
+
+    row?.scrollIntoView({ block: "center" })
+    row?.focus({ preventScroll: true })
+  }
 
   function openDrawer(next: Sheet) {
     setSheet(next)
@@ -148,6 +177,7 @@ export function TrackingScreen() {
             {gameName} · {run.kind ? kindNames[run.kind] : "Unknown kind"}
           </p>
         </div>
+        <RunMenu progress={progress} />
       </header>
 
       <Tabs
@@ -173,6 +203,7 @@ export function TrackingScreen() {
                 key={place.id}
                 map={map}
                 place={place}
+                marks={marks}
                 justAdded={place.id === justAdded}
                 onRecordStarter={() =>
                   openDrawer(recordSheet(run, place, false))
@@ -194,6 +225,7 @@ export function TrackingScreen() {
         <TabsContent value="pokemon" className="flex flex-col gap-1 pb-28">
           <PokemonGroup
             map={map}
+            marks={marks}
             title="Party"
             count={`${partyOf(journey).length} of ${PARTY_SIZE}`}
             pokemon={partyOf(journey)}
@@ -206,12 +238,14 @@ export function TrackingScreen() {
           />
           <PokemonGroup
             map={map}
+            marks={marks}
             title="Box"
             count={String(boxOf(journey).length)}
             pokemon={boxOf(journey)}
           />
           <PokemonGroup
             map={map}
+            marks={marks}
             title="Graveyard"
             count={String(graveyardOf(journey).length)}
             pokemon={graveyardOf(journey)}
@@ -219,12 +253,12 @@ export function TrackingScreen() {
         </TabsContent>
       </Tabs>
 
-      {canAdd ? (
-        <Dock
-          remaining={progress.remaining}
-          onAdd={() => openDrawer({ step: "places" })}
-        />
-      ) : null}
+      <Dock
+        remaining={progress.remaining}
+        onAdd={canAdd ? () => openDrawer({ step: "places" }) : undefined}
+        warnings={dockWarnings}
+        onGoTo={goTo}
+      />
       <EncounterDrawer
         open={drawerOpen}
         sheet={sheet}
@@ -246,9 +280,29 @@ function placeSectionId(placeId: PlaceId): string {
   return `place-${placeId}`
 }
 
+function encounterRowId(encounterId: string): string {
+  return `encounter-${encounterId}`
+}
+
+/** The names of the Rules whose Warnings mark each Encounter's row. */
+type Marks = ReadonlyMap<string, string[]>
+
+function marksOf(warnings: Warning[]): Marks {
+  const marks = new Map<string, string[]>()
+
+  for (const warning of warnings) {
+    const names = marks.get(warning.encounterId) ?? []
+
+    marks.set(warning.encounterId, [...names, ruleName(warning.rule)])
+  }
+
+  return marks
+}
+
 type PlaceSectionProps = {
   map: LoadedMap
   place: PlaceRow
+  marks: Marks
   /** Whether the last save made this location join the list. */
   justAdded: boolean
   onRecordStarter: () => void
@@ -259,6 +313,7 @@ type PlaceSectionProps = {
 function PlaceSection({
   map,
   place,
+  marks,
   justAdded,
   onRecordStarter,
   onCorrect,
@@ -303,6 +358,7 @@ function PlaceSection({
                 runId={run.id}
                 map={map}
                 encounter={encounter}
+                marks={marks.get(encounter.id) ?? []}
                 pokemon={journey.pokemon.find(
                   (mon) => mon.encounterId === encounter.id
                 )}
@@ -417,6 +473,8 @@ type EncounterRowProps = {
   runId: string
   map: LoadedMap
   encounter: EncounterState
+  /** The Rules whose Warnings mark this row. */
+  marks: string[]
   /** The Encounter's Pokémon; none for a Failed Encounter. */
   pokemon: PokemonState | undefined
   /** Makes a Failed row open the Correct Drawer. */
@@ -427,6 +485,7 @@ function EncounterRow({
   runId,
   map,
   encounter,
+  marks,
   pokemon,
   onCorrect,
 }: EncounterRowProps) {
@@ -439,8 +498,13 @@ function EncounterRow({
 
   return (
     <Item
+      id={encounterRowId(encounter.id)}
+      // A row with no action still takes focus when a Warning goes to it.
+      tabIndex={correctable || pokemon ? undefined : -1}
       variant="muted"
       size="sm"
+      // Shown in the middle when a Warning goes to it, clear of the dock.
+      className="scroll-my-28"
       render={
         correctable ? (
           <button
@@ -466,7 +530,10 @@ function EncounterRow({
         )}
       </ItemMedia>
       <ItemContent className="min-w-0">
-        <ItemTitle>{metName}</ItemTitle>
+        <ItemTitle>
+          {metName}
+          <RowMarks marks={marks} />
+        </ItemTitle>
         <ItemDescription>{fateLine(map, encounter, pokemon)}</ItemDescription>
       </ItemContent>
       {failed ? (
@@ -485,6 +552,7 @@ function EncounterRow({
 
 type PokemonGroupProps = {
   map: LoadedMap | undefined
+  marks: Marks
   title: string
   /** Shown at the end of the header, such as "2 of 6". */
   count: string
@@ -495,6 +563,7 @@ type PokemonGroupProps = {
 
 function PokemonGroup({
   map,
+  marks,
   title,
   count,
   pokemon,
@@ -510,7 +579,12 @@ function PokemonGroup({
       {map && pokemon.length > 0 ? (
         <ItemGroup className="gap-1.5">
           {pokemon.map((mon) => (
-            <PokemonRow key={mon.id} map={map} pokemon={mon} />
+            <PokemonRow
+              key={mon.id}
+              map={map}
+              pokemon={mon}
+              marks={marks.get(mon.encounterId) ?? []}
+            />
           ))}
         </ItemGroup>
       ) : null}
@@ -521,9 +595,12 @@ function PokemonGroup({
 function PokemonRow({
   map,
   pokemon,
+  marks,
 }: {
   map: LoadedMap
   pokemon: PokemonState
+  /** The Rules whose Warnings mark the row of its Encounter. */
+  marks: string[]
 }) {
   const { value: run } = useRun()
   const journey = viewerJourney(run)
@@ -551,7 +628,10 @@ function PokemonRow({
           />
         </ItemMedia>
         <ItemContent className="min-w-0">
-          <ItemTitle>{pokemon.nickname ?? name}</ItemTitle>
+          <ItemTitle>
+            {pokemon.nickname ?? name}
+            <RowMarks marks={marks} />
+          </ItemTitle>
           <ItemDescription>
             {pokemon.nickname ? name : "No nickname"} · from {metAt}
           </ItemDescription>
@@ -562,4 +642,9 @@ function PokemonRow({
       </Item>
     </div>
   )
+}
+
+/** The amber mark beside a row's Species, when a Warning marks the row. */
+function RowMarks({ marks }: { marks: string[] }) {
+  return marks.length > 0 ? <WarningMark rule={marks.join(", ")} /> : null
 }

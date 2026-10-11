@@ -1,8 +1,12 @@
 "use client"
 
-import { SlidersHorizontalIcon } from "@phosphor-icons/react"
+import {
+  CaretLeftIcon,
+  CaretRightIcon,
+  SlidersHorizontalIcon,
+} from "@phosphor-icons/react"
 import type { MapSummary } from "@workspace/game-data"
-import { Button } from "@workspace/ui/components/button"
+import { Button, buttonVariants } from "@workspace/ui/components/button"
 import {
   Field,
   FieldDescription,
@@ -12,17 +16,27 @@ import {
 import { Input } from "@workspace/ui/components/input"
 import {
   Item,
+  ItemActions,
   ItemContent,
   ItemDescription,
   ItemMedia,
   ItemTitle,
 } from "@workspace/ui/components/item"
+import { cn } from "@workspace/ui/lib/utils"
 import type { OperationFailure } from "headcanon/react"
 import { sessionStoragePersistence } from "headcanon/react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 
-import { rulesOn, rulesShown, defaultRules } from "@/lib/runs/rules"
+import { RulesSwitches } from "@/components/rules-switches"
+import {
+  defaultRules,
+  newRunRules,
+  ruleChanges,
+  rulesOn,
+  rulesShown,
+} from "@/lib/runs/rules"
 import {
   runNameRefusal,
   runNameRefusalMessages,
@@ -60,8 +74,9 @@ function failureMessage(failure: CreateRunFailure): string | null {
 }
 
 /**
- * The New run screen of a solo Run: the Map, the Name, and the Rules row, and
- * "Make the run", which opens the new Run's tracking screen.
+ * The New run screen of a solo Run: the Map, the Name, and the Rules row,
+ * which opens the Rules, and "Make the run", which opens the new Run's
+ * tracking screen.
  */
 export function NewRunForm({ playerId, maps }: NewRunFormProps) {
   const router = useRouter()
@@ -85,7 +100,9 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
   const [draftName, setDraftName] = useState(() =>
     suggestedRunName(maps[0]!.games[0]!.name)
   )
+  const [draftRules, setDraftRules] = useState(defaultRules)
   const [nameRefusal, setNameRefusal] = useState<RunNameRefusal | null>(null)
+  const [settingRules, setSettingRules] = useState(false)
 
   // While a submission is held (sending, or restored after a reload and not
   // yet confirmed), the form shows what was submitted and is locked until the
@@ -97,8 +114,9 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
   // The Game toggle comes with the first Map that has two Games.
   const game = map.games[0]!
 
+  const chosenRules = held ? newRunRules(held.rules) : draftRules
   const shownRules = rulesShown("solo")
-  const rulesOnByDefault = rulesOn("solo", defaultRules())
+  const chosenOn = rulesOn("solo", chosenRules)
   const sending = createRun.status === "sending"
   const unconfirmed = createRun.status === "unconfirmed"
   const failureText = failure ? failureMessage(failure) : null
@@ -116,6 +134,7 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
       mapId: map.id,
       gameId: game.id,
       name: trimmed,
+      rules: draftRules,
     })
 
     if (!outcome.ok) setFailure(outcome.error)
@@ -129,98 +148,188 @@ export function NewRunForm({ playerId, maps }: NewRunFormProps) {
     if (!outcome.ok) setFailure(outcome.error)
   }
 
-  return (
-    <form action={makeRun} className="flex flex-1 flex-col">
-      <main className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-6">
-        <MapPicker
-          maps={maps}
-          value={map}
-          disabled={held !== undefined}
-          onChange={(nextMap) => setDraftMapId(nextMap.id)}
-        />
-
-        <Field data-invalid={nameRefusal !== null}>
-          <FieldLabel htmlFor="run-name">Name</FieldLabel>
-          <Input
-            id="run-name"
-            name="name"
-            value={name}
-            onChange={(event) => setDraftName(event.target.value)}
-            disabled={held !== undefined}
-            placeholder="Such as Emerald Hardcore"
-            autoComplete="off"
-            aria-invalid={nameRefusal !== null}
-            // The shared Input drops to text-sm from md; an iPad is wider than
-            // md and would still zoom into a smaller font.
-            className="h-11 md:text-base"
-          />
-          <FieldError>
-            {nameRefusal ? runNameRefusalMessages[nameRefusal] : null}
-          </FieldError>
-        </Field>
-
-        <Field>
-          <FieldLabel id="rules-label">Rules</FieldLabel>
-          {/* The Rules screen opens from this row with the Rules ticket. */}
-          <Item variant="muted" size="sm" aria-labelledby="rules-label">
-            <ItemMedia variant="icon">
-              <SlidersHorizontalIcon
-                aria-hidden
-                className="text-muted-foreground"
-              />
-            </ItemMedia>
-            <ItemContent>
-              <ItemTitle>
-                {rulesOnByDefault.length} of {shownRules.length} rules on
-              </ItemTitle>
-              <ItemDescription>
-                {rulesOnByDefault.map((rule) => rule.name).join(", ")}
-              </ItemDescription>
-            </ItemContent>
-          </Item>
-          <FieldDescription>
-            The usual rules are on. You can change them at any time while the
-            run is active.
-          </FieldDescription>
-        </Field>
-      </main>
-
-      <footer className="flex flex-col gap-2 px-4 pt-3 pb-6">
-        {unconfirmed && (
-          <div
-            role="status"
-            className="flex flex-col gap-2 rounded-[18px] bg-muted/60 p-3"
-          >
-            <p>Not saved yet. Your run is kept here.</p>
-            {/* No "Start over": the held submission may have committed, and a
-                new one would make a second Run. Try again resends the same
-                envelope, so it returns that Run or makes it now. */}
+  if (settingRules) {
+    return (
+      <>
+        <ScreenHeader
+          title="Rules"
+          subtitle="New run"
+          back={
             <Button
               type="button"
-              variant="secondary"
-              className="h-11"
-              onClick={retry}
+              variant="ghost"
+              size="icon"
+              className="size-11"
+              aria-label="Back to new run"
+              onClick={() => setSettingRules(false)}
             >
-              Try again
+              <CaretLeftIcon />
             </Button>
-          </div>
-        )}
-        <p role="alert" className="text-sm text-destructive empty:hidden">
-          {failureText}
-        </p>
-        <Button
-          type="submit"
-          size="lg"
-          className="h-11 w-full"
-          disabled={sending || unconfirmed}
-          aria-busy={sending}
-        >
-          Make the run
-        </Button>
-        <p className="text-center text-xs text-muted-foreground">
-          Next, you record your starter.
-        </p>
-      </footer>
-    </form>
+          }
+        />
+        <main className="flex flex-col gap-8 px-4 pt-2 pb-8">
+          <p className="px-1 text-sm text-muted-foreground">
+            The usual rules are on. Warnings follow the rules. A warning never
+            blocks an entry.
+          </p>
+          <RulesSwitches
+            kind="solo"
+            rules={draftRules}
+            onChange={(patch) =>
+              setDraftRules((rules) => ({
+                ...rules,
+                ...ruleChanges(rules, patch),
+              }))
+            }
+          />
+        </main>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <ScreenHeader
+        title="New run"
+        back={
+          <Link
+            href="/"
+            aria-label="Back to your runs"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "icon" }),
+              "size-11"
+            )}
+          >
+            <CaretLeftIcon />
+          </Link>
+        }
+      />
+      <form action={makeRun} className="flex flex-1 flex-col">
+        <main className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-6">
+          <MapPicker
+            maps={maps}
+            value={map}
+            disabled={held !== undefined}
+            onChange={(nextMap) => setDraftMapId(nextMap.id)}
+          />
+
+          <Field data-invalid={nameRefusal !== null}>
+            <FieldLabel htmlFor="run-name">Name</FieldLabel>
+            <Input
+              id="run-name"
+              name="name"
+              value={name}
+              onChange={(event) => setDraftName(event.target.value)}
+              disabled={held !== undefined}
+              placeholder="Such as Emerald Hardcore"
+              autoComplete="off"
+              aria-invalid={nameRefusal !== null}
+              // The shared Input drops to text-sm from md; an iPad is wider than
+              // md and would still zoom into a smaller font.
+              className="h-11 md:text-base"
+            />
+            <FieldError>
+              {nameRefusal ? runNameRefusalMessages[nameRefusal] : null}
+            </FieldError>
+          </Field>
+
+          <Field>
+            <FieldLabel id="rules-label">Rules</FieldLabel>
+            <Item
+              variant="muted"
+              size="sm"
+              render={
+                <button
+                  type="button"
+                  aria-labelledby="rules-label rules-count"
+                  disabled={held !== undefined}
+                  className="text-left hover:bg-muted disabled:opacity-60"
+                  onClick={() => setSettingRules(true)}
+                />
+              }
+            >
+              <ItemMedia variant="icon">
+                <SlidersHorizontalIcon
+                  aria-hidden
+                  className="text-muted-foreground"
+                />
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle id="rules-count">
+                  {chosenOn.length} of {shownRules.length} rules on
+                </ItemTitle>
+                <ItemDescription>
+                  {chosenOn.map((rule) => rule.name).join(", ") || "No rules"}
+                </ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <CaretRightIcon aria-hidden />
+              </ItemActions>
+            </Item>
+            <FieldDescription>
+              You can change them at any time while the run is active.
+            </FieldDescription>
+          </Field>
+        </main>
+
+        <footer className="flex flex-col gap-2 px-4 pt-3 pb-6">
+          {unconfirmed && (
+            <div
+              role="status"
+              className="flex flex-col gap-2 rounded-[18px] bg-muted/60 p-3"
+            >
+              <p>Not saved yet. Your run is kept here.</p>
+              {/* No "Start over": the held submission may have committed, and a
+                new one would make a second Run. Try again resends the same
+                envelope, so it returns that Run or makes it now. */}
+              <Button
+                type="button"
+                variant="secondary"
+                className="h-11"
+                onClick={retry}
+              >
+                Try again
+              </Button>
+            </div>
+          )}
+          <p role="alert" className="text-sm text-destructive empty:hidden">
+            {failureText}
+          </p>
+          <Button
+            type="submit"
+            size="lg"
+            className="h-11 w-full"
+            disabled={sending || unconfirmed}
+            aria-busy={sending}
+          >
+            Make the run
+          </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            Next, you record your starter.
+          </p>
+        </footer>
+      </form>
+    </>
+  )
+}
+
+type ScreenHeaderProps = {
+  title: string
+  subtitle?: string
+  /** The back control, named by where it goes. */
+  back: ReactNode
+}
+
+function ScreenHeader({ title, subtitle, back }: ScreenHeaderProps) {
+  return (
+    <header className="flex items-center gap-1 px-2 pt-3 pb-2">
+      {back}
+      <div className="flex min-w-0 flex-1 flex-col pl-1">
+        <h1 className="text-base font-medium">{title}</h1>
+        {subtitle ? (
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
+        ) : null}
+      </div>
+    </header>
   )
 }

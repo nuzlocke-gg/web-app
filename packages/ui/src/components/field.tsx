@@ -38,14 +38,32 @@ function FieldLegend({
   )
 }
 
-function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
+const fieldGroupVariants = cva(
+  "group/field-group @container/field-group flex w-full flex-col",
+  {
+    variants: {
+      variant: {
+        default:
+          "gap-7 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",
+        joined: "gap-0 overflow-hidden rounded-2xl bg-muted/50",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+function FieldGroup({
+  className,
+  variant = "default",
+  ...props
+}: React.ComponentProps<"div"> & VariantProps<typeof fieldGroupVariants>) {
   return (
     <div
       data-slot="field-group"
-      className={cn(
-        "group/field-group @container/field-group flex w-full flex-col gap-7 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",
-        className
-      )}
+      data-variant={variant}
+      className={cn(fieldGroupVariants({ variant }), className)}
       {...props}
     />
   )
@@ -108,6 +126,9 @@ function FieldLabel({
       className={cn(
         "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:bg-input/30 has-[>[data-slot=field]]:rounded-2xl has-[>[data-slot=field]]:border has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:hover:bg-input/40 has-[>[data-slot=field]]:has-[:focus-visible]:border-ring has-[>[data-slot=field]]:has-[:focus-visible]:ring-3 has-[>[data-slot=field]]:has-[:focus-visible]:ring-ring/50 *:data-[slot=field]:p-4",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
+        // In a joined FieldGroup the group is the card; each card is a row of it.
+        // Important, because the card's own has-[] styles are as specific.
+        "group-data-[variant=joined]/field-group:rounded-none! group-data-[variant=joined]/field-group:border-0! group-data-[variant=joined]/field-group:not-first:border-t! group-data-[variant=joined]/field-group:has-[:focus-visible]:ring-inset",
         className
       )}
       {...props}

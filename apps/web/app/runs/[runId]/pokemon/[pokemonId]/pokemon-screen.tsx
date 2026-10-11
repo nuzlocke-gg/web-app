@@ -35,6 +35,7 @@ import { useState, useSyncExternalStore, type ReactNode } from "react"
 
 import { speciesName } from "@/components/species-name"
 import { Sprite } from "@/components/sprite"
+import { WarningAlert, WarningMark } from "@/components/warning-alert"
 import { admitsChanges } from "@/lib/runs/can-change"
 import { historyOf } from "@/lib/runs/history"
 import {
@@ -58,6 +59,8 @@ import { originNames } from "../../record-steps"
 import { useRun, useRunChange } from "../../run-root"
 import { useRunTab } from "../../run-tab"
 import { useLoadedMap } from "../../use-map"
+import { useWarnings } from "../../use-warnings"
+import { warningText } from "../../warning-text"
 import { historyDate, historyText, type HistoryNames } from "./history-text"
 import { PokemonDrawer, pokemonName, type PokemonSheet } from "./pokemon-drawer"
 
@@ -157,6 +160,9 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
     : null
   const status = statusOf(pokemon)
   const name = pokemonName(map, shown)
+  const warnings = useWarnings()
+    .filter((warning) => warning.encounterId === pokemon.encounterId)
+    .map((warning) => warningText(map, run, warning))
   const where =
     placeName(map, encounter.placeId, journey.gameId) ?? "Unknown location"
   const names: HistoryNames = {
@@ -180,13 +186,32 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
           className={cn(dead && "opacity-60")}
         />
         <div className="flex min-w-0 flex-1 flex-col">
-          <h1 className="truncate text-xl font-medium">{name}</h1>
+          <div className="flex min-w-0 items-center gap-1.5">
+            <h1 className="truncate text-xl font-medium">{name}</h1>
+            {warnings.length > 0 ? (
+              <WarningMark
+                rule={warnings.map((warning) => warning.rule).join(", ")}
+              />
+            ) : null}
+          </div>
           <p className="text-muted-foreground">
             {formName ? `${current} · ${formName}` : current}
           </p>
         </div>
         <Badge variant={status.variant}>{status.label}</Badge>
       </div>
+
+      {warnings.length > 0 ? (
+        <div className="-mt-2 flex flex-col gap-2">
+          {warnings.map((warning) => (
+            <WarningAlert
+              key={warning.rule}
+              rule={warning.rule}
+              text={warning.text}
+            />
+          ))}
+        </div>
+      ) : null}
 
       <Section title="Pokémon">
         <FactRow

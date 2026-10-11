@@ -8,6 +8,7 @@ import { journeys } from "@/lib/db/schema"
 import { runAxis } from "@/lib/runs/axis"
 import { loadRunCanon } from "@/lib/runs/canon"
 import { createRun } from "@/lib/runs/operations"
+import { defaultRules } from "@/lib/runs/rules"
 import { redirectOf } from "@/test/redirect"
 import { makeRun } from "@/test/runs"
 import { signedInScope, signIn } from "@/test/session"
@@ -66,6 +67,7 @@ describe("createRunAction", () => {
         "type-restriction": false,
         "shared-duplicate-clause": false,
       },
+      houseRules: null,
       journeys: [
         {
           id: expect.any(String),
@@ -77,6 +79,32 @@ describe("createRunAction", () => {
       ],
     })
     expect(canon?.revisions).toEqual({ [runAxis.of(runId)]: 1 })
+  })
+
+  test("a made Run has the Rules the player chose, normalized", async () => {
+    await signIn()
+
+    const outcome = await createRunAction(
+      createOperationEnvelope(
+        createRun,
+        { ...emerald, rules: { "duplicate-clause": true, whiteout: true } },
+        { scope: signedInScope() }
+      )
+    )
+
+    if (!outcome.ok || outcome.value.kind !== "accepted") {
+      throw new Error(
+        `Expected an accepted Run, got ${JSON.stringify(outcome)}`
+      )
+    }
+
+    const canon = await loadRunCanon(outcome.value.result.runId)
+
+    expect(canon?.value.rules).toEqual({
+      ...defaultRules(),
+      "duplicate-clause": true,
+      whiteout: true,
+    })
   })
 
   test("the commit expires the new Run's axis", async () => {

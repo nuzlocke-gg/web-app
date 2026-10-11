@@ -33,24 +33,28 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@workspace/ui/components/toggle-group"
-import { useId, useState } from "react"
+import { useId, useState, type ReactNode } from "react"
 import { v7 as uuidv7 } from "uuid"
 
 import { Sprite, UnknownSprite } from "@/components/sprite"
 import { useLeavePrompt } from "@/components/use-leave-prompt"
+import { WarningAlert } from "@/components/warning-alert"
 import type { RecordEncounterArgs } from "@/lib/runs/changes/record-encounter"
 import { recordEncounter } from "@/lib/runs/mutations"
 import { nicknameRefusal, nicknameRefusalMessages } from "@/lib/runs/nickname"
+import { ruleName } from "@/lib/runs/rules"
+import { firstCatchInLine } from "@/lib/runs/rule-checks"
 import {
   partyOf,
   PARTY_SIZE,
   viewerJourney,
   type EncounterOutcome,
 } from "@/lib/runs/state"
+import { checksRule, gameFactsOf, warningsOfRecord } from "@/lib/runs/warnings"
 
 import { DrawerHeaderRow, type Back } from "./drawer-header-row"
 import { useRun, useRunChange } from "./run-root"
-import { ChoiceGrid, SpeciesSection } from "./species-grid"
+import { ChoiceGrid, SpeciesSection, type SpeciesNote } from "./species-grid"
 import {
   searchChoices,
   speciesGroups,
@@ -58,6 +62,7 @@ import {
   type SuggestedGroup,
 } from "./species-choices"
 import { useLoadedMap } from "./use-map"
+import { encounterLabel, warningText, type WarningText } from "./warning-text"
 
 type RecordStepsProps = {
   placeId: PlaceId
@@ -120,8 +125,71 @@ export function RecordSteps({
   const partyFull = partyCount >= PARTY_SIZE
   const where = slot > 1 ? `${placeName} · slot ${slot}` : placeName
 
+  // The preview of the Warnings reuses one set of ids, so its Alerts keep
+  // their identity while the player types; a save takes new ones. The save
+  // keeps the preview's time of entry, so it sorts where the preview did.
+  const [preview] = useState(() => ({
+    ids: newRecordIds(),
+    enteredAt: Date.now(),
+    mutationId: uuidv7(),
+  }))
+
   // Choices made in the details step are lost if the page unloads.
   useLeavePrompt(open && draft !== null)
+
+  function argsOf(
+    details: RecordDraft,
+    ids: RecordIds,
+    enteredAt: number
+  ): RecordEncounterArgs {
+    return {
+      runId: run.id,
+      encounterId: ids.encounterId,
+      placeId,
+      slot,
+      origin: details.origin,
+      enteredAt,
+      outcome: outcomeArgs(details, ids.pokemonId, partyFull),
+    }
+  }
+
+  function warningsOfSave(details: RecordDraft): WarningText[] {
+    if (!map) return []
+
+    const outcome = warningsOfRecord(
+      run,
+      gameFactsOf(map),
+      argsOf(details, preview.ids, preview.enteredAt),
+      preview.mutationId
+    )
+
+    return (
+      outcome?.warnings.map((warning) =>
+        warningText(map, outcome.run, warning, "record")
+      ) ?? []
+    )
+  }
+
+  function sameLineNote(choice: SpeciesChoice): SpeciesNote | undefined {
+    if (!map) return undefined
+
+    const earlier = firstCatchInLine(
+      journey,
+      choice.met.species,
+      gameFactsOf(map)
+    )
+
+    return (
+      earlier && {
+        rule: ruleName("duplicate-clause"),
+        text: `Same line as ${encounterLabel(map, journey, earlier)}`,
+      }
+    )
+  }
+
+  const placeTaken =
+    checksRule(run, "first-encounter") &&
+    journey.encounters.some((encounter) => encounter.placeId === placeId)
 
   function pick(choice: SpeciesChoice | null) {
     setDraft({
@@ -136,15 +204,7 @@ export function RecordSteps({
 
   function save(details: RecordDraft) {
     change(
-      recordEncounter({
-        runId: run.id,
-        encounterId: uuidv7(),
-        placeId,
-        slot,
-        origin: details.origin,
-        enteredAt: Date.now(),
-        outcome: outcomeArgs(details, uuidv7(), partyFull),
-      }),
+      recordEncounter(argsOf(details, newRecordIds(), preview.enteredAt)),
       "Encounter"
     )
 
@@ -169,6 +229,7 @@ export function RecordSteps({
           map={map}
           placeName={placeName}
           draft={draft}
+          warnings={warningsOfSave(draft)}
           partyCount={partyCount}
           onChange={setDraft}
           onChangeSpecies={() => setDraft(null)}
@@ -179,11 +240,29 @@ export function RecordSteps({
           map={map}
           placeId={placeId}
           gameId={journey.gameId}
+          alert={
+            placeTaken ? (
+              <WarningAlert
+                rule={ruleName("first-encounter")}
+                text={`You already have an encounter at ${placeName}. You can still record this one.`}
+              />
+            ) : undefined
+          }
+          noteOf={
+            checksRule(run, "duplicate-clause") ? sameLineNote : undefined
+          }
           onPick={pick}
         />
       )}
     </>
   )
+}
+
+/** The ids a save of Record an Encounter gives its Encounter and Pokémon. */
+type RecordIds = { encounterId: string; pokemonId: string }
+
+function newRecordIds(): RecordIds {
+  return { encounterId: uuidv7(), pokemonId: uuidv7() }
 }
 
 /** The outcome arguments of a draft, with no key for an absent value. */
@@ -213,6 +292,10 @@ type SpeciesStepProps = {
   gameId: string
   /** Whether the list ends with "Species unknown", which picks null. */
   allowUnknown?: boolean
+  /** Shown under the search, such as a Warning about the location. */
+  alert?: ReactNode
+  /** A Warning under a Species, such as "Same line as Fang". */
+  noteOf?: (choice: SpeciesChoice) => SpeciesNote | undefined
   onPick: (choice: SpeciesChoice | null) => void
 }
 
@@ -225,6 +308,8 @@ export function SpeciesStep({
   placeId,
   gameId,
   allowUnknown = true,
+  alert,
+  noteOf,
   onPick,
 }: SpeciesStepProps) {
   const [query, setQuery] = useState("")
@@ -243,6 +328,7 @@ export function SpeciesStep({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
+        {alert ? <div className="pt-2">{alert}</div> : null}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
         {searching ? (
@@ -250,13 +336,19 @@ export function SpeciesStep({
             <ChoiceGrid
               map={map}
               choices={searchChoices(suggested, searchSpecies(map, query))}
+              noteOf={noteOf}
               onPick={onPick}
             />
           </SpeciesSection>
         ) : (
           speciesGroups(suggested, map.data.species).map((group) => (
             <SpeciesSection key={group.name} title={group.name}>
-              <ChoiceGrid map={map} choices={group.choices} onPick={onPick} />
+              <ChoiceGrid
+                map={map}
+                choices={group.choices}
+                noteOf={noteOf}
+                onPick={onPick}
+              />
             </SpeciesSection>
           ))
         )}
@@ -290,6 +382,8 @@ type DetailsStepProps = {
   map: LoadedMap
   placeName: string
   draft: RecordDraft
+  /** The Warnings the save will cause; they never block it. */
+  warnings: WarningText[]
   partyCount: number
   onChange: (draft: RecordDraft) => void
   onChangeSpecies: () => void
@@ -300,6 +394,7 @@ function DetailsStep({
   map,
   placeName,
   draft,
+  warnings,
   partyCount,
   onChange,
   onChangeSpecies,
@@ -387,6 +482,18 @@ function DetailsStep({
               onChange={(next) => onChange({ ...draft, goesTo: next })}
             />
           </>
+        ) : null}
+
+        {warnings.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {warnings.map((warning) => (
+              <WarningAlert
+                key={warning.rule}
+                rule={warning.rule}
+                text={warning.text}
+              />
+            ))}
+          </div>
         ) : null}
       </div>
       <DrawerFooter className="pt-3">

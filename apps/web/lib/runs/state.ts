@@ -116,6 +116,8 @@ export type RunState = {
   attemptNumber: number
   /** `{ ruleId: on }`; an absent key is Off. */
   rules: Record<string, boolean>
+  /** Plain text, line breaks kept; null when the players wrote none. */
+  houseRules: string | null
   journeys: JourneyState[]
 }
 
