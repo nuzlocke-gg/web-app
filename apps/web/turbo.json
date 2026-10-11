@@ -16,6 +16,11 @@
     },
     "test": {
       "dependsOn": ["$TURBO_EXTENDS$", "^build"]
+    },
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "passThroughEnv": ["CI"]
     }
   }
 }
