@@ -37,7 +37,7 @@ export type DockProps = {
  * The floating dock at the bottom of both tabs of the tracking screen. On a
  * Run that admits changes: "Add a location", the count of locations with no
  * Encounter yet, and the Warnings button; otherwise the Warnings bar alone.
- * The Warnings open in a list under them. The screen keeps its content clear
+ * The Warnings open in a list above them. The screen keeps its content clear
  * of the dock with bottom padding.
  */
 export function Dock({ remaining, onAdd, warnings, onGoTo }: DockProps) {
@@ -56,6 +56,40 @@ export function Dock({ remaining, onAdd, warnings, onGoTo }: DockProps) {
         onOpenChange={setListOpen}
         className="pointer-events-auto overflow-hidden rounded-3xl border bg-popover shadow-lg"
       >
+        {/* Above the buttons, so opening the list moves none of them. It
+            grows by its grid row and fades: 200 ms in, 150 ms out, none with
+            reduced motion. */}
+        <CollapsibleContent className="grid grid-rows-[1fr] border-b transition-[grid-template-rows,opacity] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:grid-rows-[0fr] data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:grid-rows-[0fr] data-starting-style:opacity-0 motion-reduce:transition-none">
+          <div className="min-h-0 overflow-hidden">
+            <div className="max-h-[50svh] overflow-y-auto px-2 pb-2">
+              <h2 className="px-2 pt-3 pb-1.5 text-xs font-medium text-muted-foreground">
+                Rules
+              </h2>
+              <div className="flex flex-col gap-1.5">
+                {warnings.map((warning) => (
+                  <WarningAlert
+                    key={warning.key}
+                    rule={warning.rule}
+                    text={warning.text}
+                  >
+                    {/* Its tap area covers the whole Alert. */}
+                    <button
+                      type="button"
+                      className="col-start-2 mt-1 justify-self-start text-xs text-muted-foreground outline-none after:absolute after:inset-0 after:rounded-2xl focus-visible:after:ring-3 focus-visible:after:ring-ring/30"
+                      aria-label={`Show ${warning.where}`}
+                      onClick={() => {
+                        setListOpen(false)
+                        onGoTo(warning.encounterId)
+                      }}
+                    >
+                      {warning.where}
+                    </button>
+                  </WarningAlert>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CollapsibleContent>
         {onAdd ? (
           <div className="flex items-center gap-2.5 p-1.5">
             <Button type="button" size="lg" className="h-11" onClick={onAdd}>
@@ -67,7 +101,7 @@ export function Dock({ remaining, onAdd, warnings, onGoTo }: DockProps) {
             </span>
             {count > 0 ? (
               <>
-                <Separator orientation="vertical" className="h-6 self-center" />
+                <Separator orientation="vertical" />
                 <CollapsibleTrigger
                   render={
                     <Button
@@ -106,33 +140,6 @@ export function Dock({ remaining, onAdd, warnings, onGoTo }: DockProps) {
             <Caret aria-hidden />
           </CollapsibleTrigger>
         )}
-        <CollapsibleContent className="max-h-[50svh] overflow-y-auto border-t px-2 pb-2">
-          <h2 className="px-2 pt-3 pb-1.5 text-xs font-medium text-muted-foreground">
-            Rules
-          </h2>
-          <div className="flex flex-col gap-1.5">
-            {warnings.map((warning) => (
-              <WarningAlert
-                key={warning.key}
-                rule={warning.rule}
-                text={warning.text}
-              >
-                {/* Its tap area covers the whole Alert. */}
-                <button
-                  type="button"
-                  className="col-start-2 mt-1 justify-self-start text-xs text-muted-foreground outline-none after:absolute after:inset-0 after:rounded-2xl focus-visible:after:ring-3 focus-visible:after:ring-ring/30"
-                  aria-label={`Show ${warning.where}`}
-                  onClick={() => {
-                    setListOpen(false)
-                    onGoTo(warning.encounterId)
-                  }}
-                >
-                  {warning.where}
-                </button>
-              </WarningAlert>
-            ))}
-          </div>
-        </CollapsibleContent>
       </Collapsible>
     </div>
   )
