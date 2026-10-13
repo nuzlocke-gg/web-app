@@ -49,6 +49,7 @@ import {
   listedPlaces,
   locationsOf,
   progressOf,
+  recordPromptOf,
   slotCount,
   type LocationRow,
   type Progress,
@@ -213,7 +214,11 @@ export function TrackingScreen() {
                 location={location}
                 marks={marks}
                 justAdded={placeKey(location.place) === justAdded}
-                onRecord={() => openDrawer(recordSheet(run, location, false))}
+                onRecord={
+                  canAdd
+                    ? () => openDrawer(recordSheet(run, location, false))
+                    : undefined
+                }
                 onCorrect={canAdd ? openCorrect : undefined}
               />
             ))
@@ -312,8 +317,11 @@ type PlaceSectionProps = {
   marks: Marks
   /** Whether the last save or add made this location join the list. */
   justAdded: boolean
-  /** Opens the record steps for a location the viewer has no Encounter at. */
-  onRecord: () => void
+  /**
+   * Opens the record steps for a location with no Encounter yet; absent when
+   * nothing can change.
+   */
+  onRecord?: () => void
   /** Opens the Correct Drawer from a Failed row; absent when nothing can change. */
   onCorrect?: (encounterId: string) => void
 }
@@ -331,8 +339,8 @@ function PlaceSection({
   const encounters = journey.encounters.filter((encounter) =>
     samePlace(encounter.place, location.place)
   )
-  const empty = encounters.length === 0
   const slots = slotCount(run, location.place)
+  const prompt = onRecord ? recordPromptOf(run, location) : null
 
   return (
     <section
@@ -348,7 +356,7 @@ function PlaceSection({
         ) : null}
         {justAdded ? <Badge variant="secondary">Just added</Badge> : null}
       </div>
-      {empty && location.kind === "starter" ? (
+      {prompt === "starter" ? (
         <Button
           type="button"
           size="lg"
@@ -358,7 +366,7 @@ function PlaceSection({
           <PlusIcon aria-hidden />
           Record your starter
         </Button>
-      ) : empty && location.kind === "custom" ? (
+      ) : prompt === "custom" ? (
         <Button
           type="button"
           variant="outline"

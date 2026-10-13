@@ -7,7 +7,7 @@ import {
 } from "@workspace/game-data"
 
 import { speciesName } from "@/components/species-name"
-import { sameName } from "@/lib/runs/custom-place-name"
+import { customPlaceNameTaken, sameName } from "@/lib/runs/custom-place-name"
 import { placeKey, samePlace, type PlaceRef } from "@/lib/runs/place"
 import {
   byTimeOfEntry,
@@ -116,6 +116,30 @@ export function slotCount(run: RunState, place: PlaceRef): number {
   )
 
   return new Set(slots).size
+}
+
+/**
+ * The button a location of the Encounters list shows in place of its rows:
+ * "Record your starter" while the viewer has no starter, and "Record an
+ * encounter" while no Journey has a Slot at a Custom location. A partner's
+ * Slot there is one to fill, not a new one, so it shows no button. Null
+ * otherwise.
+ */
+export function recordPromptOf(
+  run: RunState,
+  location: LocationRow
+): "starter" | "custom" | null {
+  const viewerHasOne = viewerJourney(run).encounters.some((encounter) =>
+    samePlace(encounter.place, location.place)
+  )
+
+  if (location.kind === "starter" && !viewerHasOne) return "starter"
+
+  if (location.kind === "custom" && slotCount(run, location.place) === 0) {
+    return "custom"
+  }
+
+  return null
 }
 
 /**
@@ -314,18 +338,27 @@ export function placeChoices(
 
 /**
  * Whether a location of the Run already has this name, trimmed, in any letter
- * case: a Place of the viewer's Game or a Custom location.
- * @param except The Custom location being renamed, which may keep its name.
+ * case: a Place in the Game of any Journey (a Place can have another name in
+ * a partner's Game), or a Custom location.
+ * @param map The Run's Map; while it loads, only Custom locations are compared.
+ * @param exceptId The Custom location being renamed, which may keep its name.
  */
 export function locationNameTaken(
-  locations: LocationRow[],
+  map: LoadedMap | undefined,
+  run: RunState,
   name: string,
-  except?: PlaceRef
+  exceptId?: string
 ): boolean {
-  return locations.some(
-    (location) =>
-      !(except && samePlace(location.place, except)) &&
-      sameName(location.name, name)
+  const gameIds = new Set(run.journeys.map((journey) => journey.gameId))
+  const gamePlaceNames = map
+    ? [...gameIds].flatMap((gameId) =>
+        placesOf(map, gameId).map((row) => row.name)
+      )
+    : []
+
+  return (
+    gamePlaceNames.some((placeName) => sameName(placeName, name)) ||
+    customPlaceNameTaken(run, name, exceptId)
   )
 }
 

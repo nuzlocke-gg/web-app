@@ -17,6 +17,7 @@ import {
   locationNameTaken,
   placeChoices,
   progressOf,
+  recordPromptOf,
   slotCount,
   type LocationRow,
 } from "./encounter-list"
@@ -343,23 +344,98 @@ describe("placeChoices", () => {
 })
 
 describe("locationNameTaken", () => {
-  const locations = [...places, linkRow]
+  let emerald: LoadedMap
+
+  beforeAll(async () => {
+    emerald = (await loadMap("emerald"))!
+  })
+
+  const run = runState({ customPlaces: [linkTrade] })
 
   test.each([
-    ["a location of the Game, in any letter case", "route 9"],
+    ["a location of the Game, in any letter case", "route 101"],
     ["a Custom location, trimmed", "  LINK TRADE "],
   ])("is true for %s", (_, name) => {
-    expect(locationNameTaken(locations, name)).toBe(true)
+    expect(locationNameTaken(emerald, run, name)).toBe(true)
   })
 
   test("is false for a new name", () => {
-    expect(locationNameTaken(locations, "Bonus disc")).toBe(false)
+    expect(locationNameTaken(emerald, run, "Bonus disc")).toBe(false)
   })
 
   test("lets a Custom location keep its own name in another letter case", () => {
-    expect(locationNameTaken(locations, "LINK TRADE", linkRow.place)).toBe(
+    expect(locationNameTaken(emerald, run, "LINK TRADE", linkTrade.id)).toBe(
       false
     )
+  })
+
+  test("is true for a name a partner's Game gives a Place", () => {
+    // A paired Map: the partner's Game calls Route 101 "Partner Road".
+    const paired: LoadedMap = {
+      ...emerald,
+      games: new Map([
+        ...emerald.games,
+        ["partner", { ...emerald.games.get("emerald")!, id: "partner" }],
+      ]),
+      data: {
+        ...emerald.data,
+        places: emerald.data.places.map((place) => ({
+          ...place,
+          names: {
+            ...place.names,
+            partner:
+              place.id === "route-101" ? "Partner Road" : place.names.emerald!,
+          },
+        })),
+      },
+    }
+    const soulLink = runState({
+      kind: "soul_link",
+      journeys: [
+        journeyState(),
+        journeyState({ id: partnerId, playerId: partnerId, gameId: "partner" }),
+      ],
+    })
+
+    expect(locationNameTaken(paired, soulLink, "partner road")).toBe(true)
+    expect(locationNameTaken(paired, runState(), "partner road")).toBe(false)
+  })
+})
+
+describe("recordPromptOf", () => {
+  const atLink = (overrides = {}) =>
+    encounterState({ place: linkRow.place, ...overrides })
+
+  test("a Custom location with no Slot asks to record an encounter", () => {
+    expect(
+      recordPromptOf(runState({ customPlaces: [linkTrade] }), linkRow)
+    ).toBe("custom")
+  })
+
+  test("a Custom location with the viewer's Encounter shows its rows", () => {
+    expect(recordPromptOf(runWith(atLink()), linkRow)).toBeNull()
+  })
+
+  test("a partner's Slot at a Custom location is not a new one to open", () => {
+    const run = runState({
+      kind: "soul_link",
+      customPlaces: [linkTrade],
+      journeys: [
+        journeyState(),
+        journeyState({
+          id: partnerId,
+          playerId: partnerId,
+          encounters: [atLink()],
+        }),
+      ],
+    })
+
+    expect(recordPromptOf(run, linkRow)).toBeNull()
+  })
+
+  test("the Starter asks for the starter until the viewer has one", () => {
+    expect(recordPromptOf(runWith(), starter)).toBe("starter")
+    expect(recordPromptOf(runWith(at("starter", 1)), starter)).toBeNull()
   })
 })
 

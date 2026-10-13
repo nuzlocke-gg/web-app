@@ -1,6 +1,7 @@
 "use client"
 
 import { CaretRightIcon, DotsThreeIcon, PlusIcon } from "@phosphor-icons/react"
+import type { LoadedMap } from "@workspace/game-data"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,48 +35,49 @@ import {
   customPlaceNameFits,
 } from "@/lib/runs/custom-place-name"
 import { removeCustomPlace, renameCustomPlace } from "@/lib/runs/mutations"
-import type { PlaceRef } from "@/lib/runs/place"
+import type { RunState } from "@/lib/runs/state"
 
 import { DrawerHeaderRow } from "./drawer-header-row"
 import { locationNameTaken, type LocationRow } from "./encounter-list"
 import { useRun, useRunChange } from "./run-root"
+import { useLoadedMap } from "./use-map"
 
 /**
  * Why a trimmed name cannot name a Custom location, as the screen says it,
  * or null when it can. An empty name has no message; the screen only
  * disables its button.
- * @param except The Custom location being renamed, which may keep its name.
+ * @param exceptId The Custom location being renamed, which may keep its name.
  */
 export function customNameProblem(
-  locations: LocationRow[],
+  map: LoadedMap | undefined,
+  run: RunState,
   name: string,
-  except?: PlaceRef
+  exceptId?: string
 ): string | null {
   if (!customPlaceNameFits(name)) {
     return `Use ${CUSTOM_PLACE_NAME_MAX} characters or fewer.`
   }
 
-  if (locationNameTaken(locations, name, except)) {
+  if (locationNameTaken(map, run, name, exceptId)) {
     return `There is already a location named “${name}”.`
   }
 
   return null
 }
 
-type AddCustomPlaceFieldProps = {
-  locations: LocationRow[]
-  onAdd: (name: string) => void
-}
-
 /** "Not listed? Add a custom location": a name and "Add location". */
 export function AddCustomPlaceField({
-  locations,
   onAdd,
-}: AddCustomPlaceFieldProps) {
+}: {
+  /** Adds a Custom location with this trimmed name. */
+  onAdd: (name: string) => void
+}) {
+  const { value: run } = useRun()
+  const map = useLoadedMap()
   const id = useId()
   const [draft, setDraft] = useState("")
   const name = draft.trim()
-  const problem = customNameProblem(locations, name)
+  const problem = customNameProblem(map, run, name)
   const blocked = name === "" || problem !== null
 
   return (
@@ -232,7 +234,6 @@ export function CustomPlaceMenu({
 
 type RenameCustomPlaceStepProps = {
   location: LocationRow
-  locations: LocationRow[]
   open: boolean
   onBack: () => void
 }
@@ -240,16 +241,16 @@ type RenameCustomPlaceStepProps = {
 /** The Drawer step that renames a Custom location, also one with Encounters. */
 export function RenameCustomPlaceStep({
   location,
-  locations,
   open,
   onBack,
 }: RenameCustomPlaceStepProps) {
   const { value: run } = useRun()
+  const map = useLoadedMap()
   const change = useRunChange()
   const id = useId()
   const [draft, setDraft] = useState(location.name)
   const name = draft.trim()
-  const problem = customNameProblem(locations, name, location.place)
+  const problem = customNameProblem(map, run, name, location.place.id)
   const blocked = name === "" || problem !== null
 
   useLeavePrompt(open && name !== location.name)

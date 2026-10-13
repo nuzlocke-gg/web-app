@@ -161,7 +161,6 @@ export function EncounterDrawer({
         ) : sheet.step === "rename" ? (
           <RenameCustomPlaceStep
             location={sheet.location}
-            locations={locations}
             open={open}
             onBack={() => onSheetChange({ step: "places" })}
           />
@@ -223,7 +222,7 @@ function AddPlaceStep({
   const offer =
     searched !== "" &&
     customPlaceNameFits(searched) &&
-    !locationNameTaken(locations, searched)
+    !locationNameTaken(map, run, searched)
 
   return (
     <>
@@ -284,9 +283,7 @@ function AddPlaceStep({
           </p>
         )}
         {offer ? <AddFromSearch name={searched} onAdd={onAdd} /> : null}
-        {searched === "" ? (
-          <AddCustomPlaceField locations={locations} onAdd={onAdd} />
-        ) : null}
+        {searched === "" ? <AddCustomPlaceField onAdd={onAdd} /> : null}
       </div>
     </>
   )
