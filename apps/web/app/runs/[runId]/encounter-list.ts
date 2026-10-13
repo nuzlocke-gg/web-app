@@ -7,6 +7,7 @@ import {
 } from "@workspace/game-data"
 
 import { speciesName } from "@/components/species-name"
+import { admitsChanges } from "@/lib/runs/can-change"
 import { customPlaceNameTaken, sameName } from "@/lib/runs/custom-place-name"
 import { placeKey, samePlace, type PlaceRef } from "@/lib/runs/place"
 import {
@@ -121,9 +122,9 @@ export function slotCount(run: RunState, place: PlaceRef): number {
 /**
  * The button a location of the Encounters list shows in place of its rows:
  * "Record your starter" while the viewer has no starter, and "Record an
- * encounter" while no Journey has a Slot at a Custom location. A partner's
- * Slot there is one to fill, not a new one, so it shows no button. Null
- * otherwise.
+ * encounter" while no Journey has a Slot at a Custom location of an Active
+ * Run. A partner's Slot there is one to fill, not a new one, so it shows no
+ * button. Null otherwise.
  */
 export function recordPromptOf(
   run: RunState,
@@ -135,7 +136,13 @@ export function recordPromptOf(
 
   if (location.kind === "starter" && !viewerHasOne) return "starter"
 
-  if (location.kind === "custom" && slotCount(run, location.place) === 0) {
+  // The Starter's button stays on a Run that is not Active: a save there is
+  // refused, and the refusal refreshes a canon that is out of date.
+  if (
+    location.kind === "custom" &&
+    admitsChanges(run) &&
+    slotCount(run, location.place) === 0
+  ) {
     return "custom"
   }
 

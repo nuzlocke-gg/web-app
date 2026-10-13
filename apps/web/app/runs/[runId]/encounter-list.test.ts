@@ -412,6 +412,15 @@ describe("recordPromptOf", () => {
     ).toBe("custom")
   })
 
+  test.each(["failed", "complete"] as const)(
+    "a %s Run shows no button at a Custom location",
+    (state) => {
+      const run = runState({ state, customPlaces: [linkTrade] })
+
+      expect(recordPromptOf(run, linkRow)).toBeNull()
+    }
+  )
+
   test("a Custom location with the viewer's Encounter shows its rows", () => {
     expect(recordPromptOf(runWith(atLink()), linkRow)).toBeNull()
   })

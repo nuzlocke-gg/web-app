@@ -214,11 +214,7 @@ export function TrackingScreen() {
                 location={location}
                 marks={marks}
                 justAdded={placeKey(location.place) === justAdded}
-                onRecord={
-                  canAdd
-                    ? () => openDrawer(recordSheet(run, location, false))
-                    : undefined
-                }
+                onRecord={() => openDrawer(recordSheet(run, location, false))}
                 onCorrect={canAdd ? openCorrect : undefined}
               />
             ))
@@ -317,11 +313,8 @@ type PlaceSectionProps = {
   marks: Marks
   /** Whether the last save or add made this location join the list. */
   justAdded: boolean
-  /**
-   * Opens the record steps for a location with no Encounter yet; absent when
-   * nothing can change.
-   */
-  onRecord?: () => void
+  /** Opens the record steps for a location with no Encounter yet. */
+  onRecord: () => void
   /** Opens the Correct Drawer from a Failed row; absent when nothing can change. */
   onCorrect?: (encounterId: string) => void
 }
@@ -340,7 +333,7 @@ function PlaceSection({
     samePlace(encounter.place, location.place)
   )
   const slots = slotCount(run, location.place)
-  const prompt = onRecord ? recordPromptOf(run, location) : null
+  const prompt = recordPromptOf(run, location)
 
   return (
     <section
