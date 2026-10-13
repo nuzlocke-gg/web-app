@@ -224,7 +224,19 @@ export const customPlaces = pgTable(
       .references(() => runs.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
   },
-  (table) => [unique("custom_places_run_id_key").on(table.runId, table.id)]
+  (table) => [
+    unique("custom_places_run_id_key").on(table.runId, table.id),
+    // The `custom-place-name-taken` Refusal when a race passes the check.
+    uniqueIndex("custom_places_run_name_key").on(
+      table.runId,
+      sql`lower(${table.name})`
+    ),
+    // char_length counts code points, as customPlaceNameFits does.
+    check(
+      "custom_places_name_length",
+      sql`char_length(${table.name}) BETWEEN 1 AND 40`
+    ),
+  ]
 )
 
 /** How the player got an Encounter's Pokémon. */

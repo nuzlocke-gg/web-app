@@ -6,12 +6,13 @@ import {
   screen,
   within,
 } from "@testing-library/react"
-import { loadMap, type PlaceRow } from "@workspace/game-data"
+import { loadMap } from "@workspace/game-data"
 import { Suspense, useState } from "react"
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest"
 
 import type { RunState } from "@/lib/runs/state"
 import {
+  customPlaceState,
   encounterState,
   journeyState,
   journeyWithPokemon,
@@ -20,6 +21,7 @@ import {
 } from "@/test/run-state"
 
 import { EncounterDrawer, recordSheet, type Sheet } from "./encounter-drawer"
+import type { LocationRow } from "./encounter-list"
 import { useRun, useRunChange } from "./run-root"
 
 // The real root needs the Server Action; the Drawer needs only the Run and
@@ -27,11 +29,16 @@ import { useRun, useRunChange } from "./run-root"
 vi.mock("./run-root", () => ({ useRun: vi.fn(), useRunChange: vi.fn() }))
 
 const change = vi.fn<(invocation: unknown, label: string) => void>()
-const onSaved = vi.fn<(place: PlaceRow) => void>()
+const onSaved = vi.fn<(place: LocationRow) => void>()
+const onAdded = vi.fn<(location: LocationRow) => void>()
 
-const starter: PlaceRow = { id: "starter", kind: "starter", name: "Starter" }
-const route101: PlaceRow = {
-  id: "route-101",
+const starter: LocationRow = {
+  place: { kind: "game", id: "starter" },
+  kind: "starter",
+  name: "Starter",
+}
+const route101: LocationRow = {
+  place: { kind: "game", id: "route-101" },
   kind: "standard",
   name: "Route 101",
 }
@@ -43,6 +50,7 @@ afterEach(() => {
   cleanup()
   change.mockClear()
   onSaved.mockClear()
+  onAdded.mockClear()
 })
 
 /** The tracking screen's part: it owns whether the Drawer is open and its step. */
@@ -66,6 +74,7 @@ function Harness({ initial }: { initial: Sheet }) {
         sheet={sheet}
         onSheetChange={setSheet}
         onOpenChange={setOpen}
+        onAdded={onAdded}
         onSaved={onSaved}
         onClosed={() => {}}
       />
@@ -165,7 +174,7 @@ describe("the record steps", () => {
       expect.objectContaining({
         name: "run.record-encounter.v1",
         args: expect.objectContaining({
-          placeId: "starter",
+          place: { kind: "game", id: "starter" },
           slot: 1,
           origin: "gift",
           outcome: expect.objectContaining({
@@ -209,7 +218,10 @@ describe("the record steps", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Save encounter" }))
 
-    expect(sentArgs()).toMatchObject({ placeId: "route-101", slot: 1 })
+    expect(sentArgs()).toMatchObject({
+      place: { kind: "game", id: "route-101" },
+      slot: 1,
+    })
   })
 
   test("the Starter has no way back to the locations", async () => {
@@ -313,7 +325,10 @@ describe("Add a location", () => {
     fireEvent.click(screen.getByRole("button", { name: /Species unknown/ }))
     fireEvent.click(screen.getByRole("button", { name: "Save encounter" }))
 
-    expect(sentArgs()).toMatchObject({ placeId: "route-101", slot: 2 })
+    expect(sentArgs()).toMatchObject({
+      place: { kind: "game", id: "route-101" },
+      slot: 2,
+    })
   })
 
   test("closing sends nothing and keeps the draft for the same location and Slot", async () => {
@@ -352,9 +367,138 @@ function unloadEvent() {
   return new Event("beforeunload", { cancelable: true })
 }
 
+describe("Custom locations", () => {
+  const places: Sheet = { step: "places" }
+  const linkTrade = customPlaceState({ name: "Link trade" })
+
+  function nameField() {
+    return screen.getByLabelText("Not listed? Add a custom location")
+  }
+
+  function addButton() {
+    return screen.getByRole("button", { name: "Add location" })
+  }
+
+  /** The invocation of the one change sent. */
+  function sent() {
+    expect(change).toHaveBeenCalledOnce()
+
+    return change.mock.calls[0]![0] as {
+      name: string
+      args: Record<string, unknown>
+    }
+  }
+
+  test("Add location is disabled while the name is empty", async () => {
+    await renderDrawer(runState(), places)
+
+    expect(addButton()).toHaveProperty("disabled", true)
+  })
+
+  test("adding saves the Custom location and opens All species for it", async () => {
+    await renderDrawer(runState(), places)
+
+    fireEvent.change(nameField(), { target: { value: "  Link trade " } })
+    fireEvent.click(addButton())
+
+    const { name, args } = sent()
+
+    expect(name).toBe("run.add-custom-place.v1")
+    expect(args).toMatchObject({ name: "Link trade" })
+    expect(onAdded).toHaveBeenCalledWith({
+      place: { kind: "custom", id: args.customPlaceId },
+      kind: "custom",
+      name: "Link trade",
+    })
+    expect(
+      await screen.findByRole("region", { name: "All species" })
+    ).toBeTruthy()
+    expect(screen.queryByRole("region", { name: "Other species" })).toBeNull()
+  })
+
+  test.each([
+    ["a location of the Game", "route 101", "route 101"],
+    ["a Custom location of the Run", " LINK TRADE ", "LINK TRADE"],
+  ])(
+    "a name that is %s disables Add location and says so",
+    async (_, typed, shown) => {
+      await renderDrawer(runState({ customPlaces: [linkTrade] }), places)
+
+      fireEvent.change(nameField(), { target: { value: typed } })
+
+      expect(addButton()).toHaveProperty("disabled", true)
+      expect(
+        screen.getByText(`There is already a location named “${shown}”.`)
+      ).toBeTruthy()
+    }
+  )
+
+  test("a search that matches no location by its exact name offers to add it", async () => {
+    await renderDrawer(runState(), places)
+
+    fireEvent.change(screen.getByLabelText("Search locations"), {
+      target: { value: "Link trade" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: /Add “Link trade”/ }))
+
+    expect(sent().args).toMatchObject({ name: "Link trade" })
+  })
+
+  test("a search for a location's exact name, in any letter case, offers nothing", async () => {
+    await renderDrawer(runState(), places)
+
+    fireEvent.change(screen.getByLabelText("Search locations"), {
+      target: { value: "ROUTE 101" },
+    })
+
+    expect(screen.queryByRole("button", { name: /^Add “/ })).toBeNull()
+  })
+
+  test("the Custom locations are a group of their own at the end", async () => {
+    await renderDrawer(runState({ customPlaces: [linkTrade] }), places)
+
+    const groups = screen
+      .getAllByRole("region")
+      .map((region) => region.getAttribute("aria-label"))
+
+    expect(groups.at(-1)).toBe("Custom locations")
+  })
+
+  test("Rename opens a step that saves the new name", async () => {
+    await renderDrawer(runState({ customPlaces: [linkTrade] }), places)
+
+    fireEvent.click(screen.getByRole("button", { name: "More for Link trade" }))
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Rename" }))
+    fireEvent.change(await screen.findByLabelText("Name"), {
+      target: { value: "Trade from Ruby" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Save name" }))
+
+    expect(sent()).toMatchObject({
+      name: "run.rename-custom-place.v1",
+      args: { customPlaceId: linkTrade.id, name: "Trade from Ruby" },
+    })
+  })
+
+  test("Remove asks first, then sends the removal", async () => {
+    await renderDrawer(runState({ customPlaces: [linkTrade] }), places)
+
+    fireEvent.click(screen.getByRole("button", { name: "More for Link trade" }))
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Remove" }))
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Remove location" })
+    )
+
+    expect(sent()).toMatchObject({
+      name: "run.remove-custom-place.v1",
+      args: { customPlaceId: linkTrade.id },
+    })
+  })
+})
+
 describe("the Warnings of a save", () => {
-  const route104: PlaceRow = {
-    id: "route-104",
+  const route104: LocationRow = {
+    place: { kind: "game", id: "route-104" },
     kind: "standard",
     name: "Route 104",
   }
@@ -362,12 +506,12 @@ describe("the Warnings of a save", () => {
   /** Fang the Poochyena on Route 101, then Marill on Route 104. */
   function runWithFangAndMarill(): RunState {
     const fangMet = encounterState({
-      placeId: "route-101",
+      place: { kind: "game", id: "route-101" },
       met: { species: "poochyena", form: "base" },
       enteredAt: Date.UTC(2026, 9, 1),
     })
     const marillMet = encounterState({
-      placeId: "route-104",
+      place: { kind: "game", id: "route-104" },
       met: { species: "marill", form: "base" },
       enteredAt: Date.UTC(2026, 9, 2),
     })

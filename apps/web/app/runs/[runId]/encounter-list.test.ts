@@ -1,8 +1,10 @@
-import { loadMap, type LoadedMap, type PlaceRow } from "@workspace/game-data"
+import { loadMap, type LoadedMap } from "@workspace/game-data"
 import { beforeAll, describe, expect, test } from "vitest"
 
+import type { PlaceRef } from "@/lib/runs/place"
 import type { EncounterState } from "@/lib/runs/state"
 import {
+  customPlaceState,
   encounterState,
   journeyState,
   pokemonState,
@@ -12,17 +14,42 @@ import {
 import {
   fateLine,
   listedPlaces,
+  locationNameTaken,
   placeChoices,
   progressOf,
+  recordPromptOf,
   slotCount,
+  type LocationRow,
 } from "./encounter-list"
 
-const starter: PlaceRow = { id: "starter", kind: "starter", name: "Starter" }
-const route9: PlaceRow = { id: "route-9", kind: "standard", name: "Route 9" }
-const route10: PlaceRow = { id: "route-10", kind: "standard", name: "Route 10" }
-const cave: PlaceRow = { id: "cave", kind: "standard", name: "Cerulean Cave" }
-const navel: PlaceRow = { id: "navel-rock", kind: "event", name: "Navel Rock" }
+function game(id: string): PlaceRef {
+  return { kind: "game", id }
+}
+
+function row(id: string, kind: LocationRow["kind"], name: string): LocationRow {
+  return { place: game(id), kind, name }
+}
+
+const starter = row("starter", "starter", "Starter")
+const route9 = row("route-9", "standard", "Route 9")
+const route10 = row("route-10", "standard", "Route 10")
+const cave = row("cave", "standard", "Cerulean Cave")
+const navel = row("navel-rock", "event", "Navel Rock")
 const places = [starter, route10, route9, cave, navel]
+
+/** A UUID v7 whose time is midnight UTC on that day of October 2026. */
+function idOnDay(day: number): string {
+  const hex = Date.UTC(2026, 9, day).toString(16).padStart(12, "0")
+
+  return `${hex.slice(0, 8)}-${hex.slice(8)}-7000-8000-000000000000`
+}
+
+const linkTrade = customPlaceState({ id: idOnDay(2), name: "Link trade" })
+const linkRow: LocationRow = {
+  place: { kind: "custom", id: linkTrade.id },
+  kind: "custom",
+  name: linkTrade.name,
+}
 
 /** Three counted locations and the Starter; Navel Rock is an Event Place. */
 const total = 4
@@ -31,7 +58,7 @@ const partnerId = "0199c4a0-0000-7000-8000-000000000009"
 
 function at(placeId: string, day: number, overrides = {}): EncounterState {
   return encounterState({
-    placeId,
+    place: { kind: "game", id: placeId },
     enteredAt: Date.UTC(2026, 9, day),
     ...overrides,
   })
@@ -42,7 +69,7 @@ function runWith(...encounters: EncounterState[]) {
   return runState({ journeys: [journeyState({ encounters })] })
 }
 
-function names(list: PlaceRow[]): string[] {
+function names(list: LocationRow[]): string[] {
   return list.map((place) => place.name)
 }
 
@@ -107,6 +134,52 @@ describe("listedPlaces", () => {
   })
 })
 
+describe("listedPlaces with a Custom location", () => {
+  const withCustom = (...encounters: EncounterState[]) =>
+    runState({
+      customPlaces: [linkTrade],
+      journeys: [journeyState({ encounters })],
+    })
+
+  test("a Custom location joins the list when it is added, with no Encounter", () => {
+    const run = withCustom(at("starter", 1))
+
+    expect(names(listedPlaces([...places, linkRow], run))).toEqual([
+      "Starter",
+      "Link trade",
+    ])
+  })
+
+  test("a Custom location with no Encounter sorts by the time it was added", () => {
+    const run = withCustom(at("route-9", 1), at("route-10", 3))
+
+    expect(names(listedPlaces([...places, linkRow], run))).toEqual([
+      "Starter",
+      "Route 9",
+      "Link trade",
+      "Route 10",
+    ])
+  })
+
+  test("a Custom location with an Encounter sorts by its first Encounter", () => {
+    const run = withCustom(
+      at("route-9", 1),
+      at("route-10", 3),
+      encounterState({
+        place: linkRow.place,
+        enteredAt: Date.UTC(2026, 9, 4),
+      })
+    )
+
+    expect(names(listedPlaces([...places, linkRow], run))).toEqual([
+      "Starter",
+      "Route 9",
+      "Route 10",
+      "Link trade",
+    ])
+  })
+})
+
 describe("progressOf", () => {
   function progress(...encounters: EncounterState[]) {
     const run = runWith(...encounters)
@@ -166,6 +239,29 @@ describe("progressOf", () => {
   })
 })
 
+describe("progressOf with a Custom location", () => {
+  test("a Custom location makes no cell and is not in the remaining count", () => {
+    const run = runState({
+      customPlaces: [linkTrade],
+      journeys: [
+        journeyState({
+          encounters: [
+            at("route-9", 1),
+            encounterState({ place: linkRow.place }),
+          ],
+        }),
+      ],
+    })
+    const listed = listedPlaces([...places, linkRow], run)
+
+    expect(progressOf(listed, run, total)).toMatchObject({
+      cells: ["caught"],
+      done: 1,
+      remaining: 3,
+    })
+  })
+})
+
 describe("placeChoices", () => {
   function groups(
     run = runWith(),
@@ -218,8 +314,137 @@ describe("placeChoices", () => {
     ])
   })
 
+  test("the Custom locations come last, in a group of their own, in both views", () => {
+    const run = runState({ customPlaces: [linkTrade] })
+    const custom = { title: "Custom locations", places: ["Link trade"] }
+    const titles = (view: "remaining" | "all") =>
+      placeChoices([...places, linkRow], run, view, "").map((group) => ({
+        title: group.title,
+        places: names(group.places),
+      }))
+
+    expect(titles("remaining").at(-1)).toEqual(custom)
+    expect(titles("all").at(-1)).toEqual(custom)
+    expect(titles("all")[0]!.places).not.toContain("Link trade")
+  })
+
+  test("a search finds a Custom location", () => {
+    const run = runState({ customPlaces: [linkTrade] })
+
+    expect(
+      placeChoices([...places, linkRow], run, "all", "link").map((group) =>
+        names(group.places)
+      )
+    ).toEqual([["Link trade"]])
+  })
+
   test("a search with no match gives no groups", () => {
     expect(groups(runWith(), "all", "viridian")).toEqual([])
+  })
+})
+
+describe("locationNameTaken", () => {
+  let emerald: LoadedMap
+
+  beforeAll(async () => {
+    emerald = (await loadMap("emerald"))!
+  })
+
+  const run = runState({ customPlaces: [linkTrade] })
+
+  test.each([
+    ["a location of the Game, in any letter case", "route 101"],
+    ["a Custom location, trimmed", "  LINK TRADE "],
+  ])("is true for %s", (_, name) => {
+    expect(locationNameTaken(emerald, run, name)).toBe(true)
+  })
+
+  test("is false for a new name", () => {
+    expect(locationNameTaken(emerald, run, "Bonus disc")).toBe(false)
+  })
+
+  test("lets a Custom location keep its own name in another letter case", () => {
+    expect(locationNameTaken(emerald, run, "LINK TRADE", linkTrade.id)).toBe(
+      false
+    )
+  })
+
+  test("is true for a name a partner's Game gives a Place", () => {
+    // A paired Map: the partner's Game calls Route 101 "Partner Road".
+    const paired: LoadedMap = {
+      ...emerald,
+      games: new Map([
+        ...emerald.games,
+        ["partner", { ...emerald.games.get("emerald")!, id: "partner" }],
+      ]),
+      data: {
+        ...emerald.data,
+        places: emerald.data.places.map((place) => ({
+          ...place,
+          names: {
+            ...place.names,
+            partner:
+              place.id === "route-101" ? "Partner Road" : place.names.emerald!,
+          },
+        })),
+      },
+    }
+    const soulLink = runState({
+      kind: "soul_link",
+      journeys: [
+        journeyState(),
+        journeyState({ id: partnerId, playerId: partnerId, gameId: "partner" }),
+      ],
+    })
+
+    expect(locationNameTaken(paired, soulLink, "partner road")).toBe(true)
+    expect(locationNameTaken(paired, runState(), "partner road")).toBe(false)
+  })
+})
+
+describe("recordPromptOf", () => {
+  const atLink = (overrides = {}) =>
+    encounterState({ place: linkRow.place, ...overrides })
+
+  test("a Custom location with no Slot asks to record an encounter", () => {
+    expect(
+      recordPromptOf(runState({ customPlaces: [linkTrade] }), linkRow)
+    ).toBe("custom")
+  })
+
+  test.each(["failed", "complete"] as const)(
+    "a %s Run shows no button at a Custom location",
+    (state) => {
+      const run = runState({ state, customPlaces: [linkTrade] })
+
+      expect(recordPromptOf(run, linkRow)).toBeNull()
+    }
+  )
+
+  test("a Custom location with the viewer's Encounter shows its rows", () => {
+    expect(recordPromptOf(runWith(atLink()), linkRow)).toBeNull()
+  })
+
+  test("a partner's Slot at a Custom location is not a new one to open", () => {
+    const run = runState({
+      kind: "soul_link",
+      customPlaces: [linkTrade],
+      journeys: [
+        journeyState(),
+        journeyState({
+          id: partnerId,
+          playerId: partnerId,
+          encounters: [atLink()],
+        }),
+      ],
+    })
+
+    expect(recordPromptOf(run, linkRow)).toBeNull()
+  })
+
+  test("the Starter asks for the starter until the viewer has one", () => {
+    expect(recordPromptOf(runWith(), starter)).toBe("starter")
+    expect(recordPromptOf(runWith(at("starter", 1)), starter)).toBeNull()
   })
 })
 
@@ -231,9 +456,9 @@ describe("slotCount", () => {
       at("route-10", 3)
     )
 
-    expect(slotCount(run, "route-9")).toBe(2)
-    expect(slotCount(run, "route-10")).toBe(1)
-    expect(slotCount(run, "cave")).toBe(0)
+    expect(slotCount(run, game("route-9"))).toBe(2)
+    expect(slotCount(run, game("route-10"))).toBe(1)
+    expect(slotCount(run, game("cave"))).toBe(0)
   })
 
   test("counts a Slot that partners share once", () => {
@@ -249,13 +474,13 @@ describe("slotCount", () => {
       ],
     })
 
-    expect(slotCount(run, "route-9")).toBe(2)
+    expect(slotCount(run, game("route-9"))).toBe(2)
   })
 
   test("counts the Slots left after a removal leaves a gap", () => {
     const run = runWith(at("route-9", 2, { slot: 2 }))
 
-    expect(slotCount(run, "route-9")).toBe(1)
+    expect(slotCount(run, game("route-9"))).toBe(1)
   })
 })
 

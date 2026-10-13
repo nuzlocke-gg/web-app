@@ -11,19 +11,22 @@ import type { RecordEncounterEffect } from "../changes/record-encounter"
 import { passesGameDataGate } from "../game-data-gate"
 import { bumpRevision } from "../lock"
 import { recordEncounter } from "../mutations"
+import { placeColumns } from "../place"
 import { refusal } from "../refusals"
 import { clientTime } from "./client-time"
 import { admitPlayer, screenPlayer } from "./player-access"
 
 /**
  * Whether a database error is the unique violation of one Encounter per
- * Journey per Slot at a Place of the Map.
+ * Journey per Slot, at a Place of the Game or at a Custom Place.
  */
 export function isSlotTaken(error: unknown): boolean {
-  return matchesPostgresError(error, {
-    code: "23505",
-    constraint: "encounters_journey_place_slot_key",
-  })
+  return [
+    "encounters_journey_place_slot_key",
+    "encounters_journey_custom_place_slot_key",
+  ].some((constraint) =>
+    matchesPostgresError(error, { code: "23505", constraint })
+  )
 }
 
 /** Records an Encounter, and its Pokémon when Caught, in the actor's Journey. */
@@ -35,7 +38,7 @@ export const recordEncounterBinding = runsBinder.bind(recordEncounter, {
       (journey) => journey.id === effect.journeyId
     )!
     const known = await passesGameDataGate(run.mapId, gameId, {
-      placeId: effect.encounter.placeId,
+      place: effect.encounter.place,
       form: effect.encounter.met ?? undefined,
     })
 
@@ -68,7 +71,7 @@ async function writeEffect(
     id: encounter.id,
     runId,
     journeyId: effect.journeyId,
-    placeId: encounter.placeId,
+    ...placeColumns(encounter.place),
     slotOrdinal: encounter.slot,
     origin: encounter.origin,
     outcome: encounter.outcome,

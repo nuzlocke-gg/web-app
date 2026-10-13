@@ -5,11 +5,9 @@ import {
   hasFormChoice,
   ORIGINS,
   searchSpecies,
-  suggestions,
   type FormRef,
   type LoadedMap,
   type Origin,
-  type PlaceId,
 } from "@workspace/game-data"
 import { Button } from "@workspace/ui/components/button"
 import { DrawerFooter } from "@workspace/ui/components/drawer"
@@ -42,6 +40,7 @@ import { WarningAlert } from "@/components/warning-alert"
 import type { RecordEncounterArgs } from "@/lib/runs/changes/record-encounter"
 import { recordEncounter } from "@/lib/runs/mutations"
 import { nicknameRefusal, nicknameRefusalMessages } from "@/lib/runs/nickname"
+import { encounterTableOf, samePlace, type PlaceRef } from "@/lib/runs/place"
 import { ruleName } from "@/lib/runs/rules"
 import { firstCatchInLine } from "@/lib/runs/rule-checks"
 import {
@@ -65,7 +64,7 @@ import { useLoadedMap } from "./use-map"
 import { encounterLabel, warningText, type WarningText } from "./warning-text"
 
 type RecordStepsProps = {
-  placeId: PlaceId
+  place: PlaceRef
   placeName: string
   /** The Slot the Encounter goes in. */
   slot: number
@@ -108,7 +107,7 @@ export const originNames: Record<Origin, string> = {
  * draft, so it outlives the Drawer's content.
  */
 export function RecordSteps({
-  placeId,
+  place,
   placeName,
   slot,
   open,
@@ -145,7 +144,7 @@ export function RecordSteps({
     return {
       runId: run.id,
       encounterId: ids.encounterId,
-      placeId,
+      place,
       slot,
       origin: details.origin,
       enteredAt,
@@ -189,7 +188,7 @@ export function RecordSteps({
 
   const placeTaken =
     checksRule(run, "first-encounter") &&
-    journey.encounters.some((encounter) => encounter.placeId === placeId)
+    journey.encounters.some((encounter) => samePlace(encounter.place, place))
 
   function pick(choice: SpeciesChoice | null) {
     setDraft({
@@ -238,7 +237,7 @@ export function RecordSteps({
       ) : (
         <SpeciesStep
           map={map}
-          placeId={placeId}
+          place={place}
           gameId={journey.gameId}
           alert={
             placeTaken ? (
@@ -288,7 +287,7 @@ function outcomeArgs(
 
 type SpeciesStepProps = {
   map: LoadedMap
-  placeId: PlaceId
+  place: PlaceRef
   gameId: string
   /** Whether the list ends with "Species unknown", which picks null. */
   allowUnknown?: boolean
@@ -305,7 +304,7 @@ type SpeciesStepProps = {
  */
 export function SpeciesStep({
   map,
-  placeId,
+  place,
   gameId,
   allowUnknown = true,
   alert,
@@ -314,7 +313,7 @@ export function SpeciesStep({
 }: SpeciesStepProps) {
   const [query, setQuery] = useState("")
   const searching = query.trim() !== ""
-  const suggested = suggestions(map, placeId, gameId)
+  const suggested = encounterTableOf(map, place, gameId)
 
   return (
     <>

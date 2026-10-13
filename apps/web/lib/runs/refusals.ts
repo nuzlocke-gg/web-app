@@ -6,6 +6,8 @@ import { z } from "zod"
  * - `party-full`: a seventh Pokémon in the Party.
  * - `slot-taken`: a second Encounter of one Journey in one Slot.
  * - `custom-place-in-use`: a Custom Place removed while it has Encounters.
+ * - `custom-place-name-taken`: a Custom Place added or renamed with the name
+ *   of another Custom Place of the Run, in any letter case.
  * - `unknown-entry`: a Place, Species, or Form that the Journey's Game does
  *   not have. The server alone decides it.
  * - `gone`: the target of the change no longer exists, or is in the wrong
@@ -22,6 +24,7 @@ export const runRefusalKinds = [
   "gone",
   "run-not-active",
   "level-out-of-range",
+  "custom-place-name-taken",
 ] as const
 
 /** One kind of Refusal of `run.v1`. */

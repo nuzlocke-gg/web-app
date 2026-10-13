@@ -8,6 +8,7 @@ import { cache } from "react"
 import { readAccount } from "@/lib/actor"
 import { db } from "@/lib/db"
 import {
+  customPlaces,
   encounters,
   evolutions,
   journeys,
@@ -17,6 +18,7 @@ import {
 
 import { isRunId, runAxis } from "./axis"
 import type { RunTransaction } from "./binder"
+import { placeRefOf } from "./place"
 import {
   encounterOutcomes,
   parseKnown,
@@ -99,6 +101,12 @@ export async function readRunState(
     return null
   }
 
+  const customPlaceRows = await tx
+    .select({ id: customPlaces.id, name: customPlaces.name })
+    .from(customPlaces)
+    .where(eq(customPlaces.runId, run.id))
+    .orderBy(asc(customPlaces.id))
+
   const encounterRows = await tx
     .select()
     .from(encounters)
@@ -133,6 +141,7 @@ export async function readRunState(
     attemptNumber: run.attemptNumber,
     rules: run.rules,
     houseRules: run.houseRules,
+    customPlaces: customPlaceRows,
     journeys: runJourneys.map((journey) => ({
       ...journey,
       encounters: encounterRows
@@ -153,15 +162,9 @@ export async function readRunState(
 }
 
 function toEncounterState(row: typeof encounters.$inferSelect): EncounterState {
-  // NUZ-54 reads Encounters at a Custom Place; until then every row has a
-  // Place of the Map.
-  if (row.placeId === null) {
-    throw new Error(`Encounter ${row.id} has no Place of the Map`)
-  }
-
   return {
     id: row.id,
-    placeId: row.placeId,
+    place: placeRefOf(row),
     slot: row.slotOrdinal,
     origin: parseKnown(ORIGINS, row.origin),
     outcome: parseKnown(encounterOutcomes, row.outcome),

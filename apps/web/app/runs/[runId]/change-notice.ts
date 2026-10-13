@@ -21,6 +21,7 @@ const refusalReasons: Record<RunRefusalKind, string> = {
   "party-full": "Your party already has 6 Pokémon.",
   "slot-taken": "You already have an encounter in this slot.",
   "custom-place-in-use": "This location still has encounters.",
+  "custom-place-name-taken": "There is already a location with this name.",
   "unknown-entry": "Your game does not have this species or location.",
   gone: "It was removed or changed.",
   "run-not-active": "This run is not active.",

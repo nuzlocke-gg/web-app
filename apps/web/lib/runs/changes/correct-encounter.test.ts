@@ -28,7 +28,7 @@ const caught = encounterState({
   origin: "gift",
 })
 const failed = encounterState({
-  placeId: "route-102",
+  place: { kind: "game", id: "route-102" },
   outcome: "failed",
   met: null,
 })

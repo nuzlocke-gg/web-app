@@ -18,6 +18,7 @@ import { encounters, journeys, pokemon, runs } from "@/lib/db/schema"
 import { runAxis } from "@/lib/runs/axis"
 import type { RunTransaction } from "@/lib/runs/binder"
 import { loadRunCanon } from "@/lib/runs/canon"
+import type { AddCustomPlaceArgs } from "@/lib/runs/changes/add-custom-place"
 import type { ChangeFormArgs } from "@/lib/runs/changes/change-form"
 import type { CorrectEncounterArgs } from "@/lib/runs/changes/correct-encounter"
 import type { EditDeathArgs } from "@/lib/runs/changes/edit-death"
@@ -25,13 +26,16 @@ import type { EvolvePokemonArgs } from "@/lib/runs/changes/evolve-pokemon"
 import type { MovePokemonArgs } from "@/lib/runs/changes/move-pokemon"
 import type { RecordDeathArgs } from "@/lib/runs/changes/record-death"
 import type { RecordEncounterArgs } from "@/lib/runs/changes/record-encounter"
+import type { RemoveCustomPlaceArgs } from "@/lib/runs/changes/remove-custom-place"
 import type { RemoveEncounterArgs } from "@/lib/runs/changes/remove-encounter"
 import type { RemovePokemonArgs } from "@/lib/runs/changes/remove-pokemon"
+import type { RenameCustomPlaceArgs } from "@/lib/runs/changes/rename-custom-place"
 import type { RenamePokemonArgs } from "@/lib/runs/changes/rename-pokemon"
 import type { RestorePokemonArgs } from "@/lib/runs/changes/restore-pokemon"
 import type { SetRulesArgs } from "@/lib/runs/changes/set-rules"
 import type { UndoDeathArgs } from "@/lib/runs/changes/undo-death"
 import {
+  addCustomPlace,
   changeForm,
   correctEncounter,
   editDeath,
@@ -39,8 +43,10 @@ import {
   movePokemon,
   recordDeath,
   recordEncounter,
+  removeCustomPlace,
   removeEncounter,
   removePokemon,
+  renameCustomPlace,
   renamePokemon,
   restorePokemon,
   setRules,
@@ -143,7 +149,7 @@ export function caughtMudkipArgs(
   return {
     runId,
     encounterId: uuidv7(),
-    placeId: "starter",
+    place: { kind: "game", id: "starter" },
     slot: 1,
     origin: "gift",
     enteredAt: Date.UTC(2026, 9, 2),
@@ -249,6 +255,21 @@ export function restorePokemonOf(args: RestorePokemonArgs) {
   return runAction(runEnvelope(restorePokemon(args)))
 }
 
+/** Sends Add a Custom Place as the signed-in Player and returns the outcome. */
+export function addCustomPlaceOf(args: AddCustomPlaceArgs) {
+  return runAction(runEnvelope(addCustomPlace(args)))
+}
+
+/** Sends Rename a Custom Place as the signed-in Player and returns the outcome. */
+export function renameCustomPlaceOf(args: RenameCustomPlaceArgs) {
+  return runAction(runEnvelope(renameCustomPlace(args)))
+}
+
+/** Sends Remove a Custom Place as the signed-in Player and returns the outcome. */
+export function removeCustomPlaceOf(args: RemoveCustomPlaceArgs) {
+  return runAction(runEnvelope(removeCustomPlace(args)))
+}
+
 /** Sends Set the Rules as the signed-in Player and returns the outcome. */
 export function setRulesOf(args: SetRulesArgs) {
   return runAction(runEnvelope(setRules(args)))
@@ -278,7 +299,7 @@ export async function catchAt(
 
   for (const [index, placeId] of placeIds.entries()) {
     const args = caughtMudkipArgs(runId, {
-      placeId,
+      place: { kind: "game", id: placeId },
       origin: "wild",
       enteredAt: Date.UTC(2026, 9, 3, 0, index),
     })

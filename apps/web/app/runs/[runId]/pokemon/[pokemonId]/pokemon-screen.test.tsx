@@ -78,12 +78,12 @@ async function renderPokemon(
   rules: RunState["rules"] = {}
 ) {
   const encounter = encounterState({
-    placeId: "route-116",
+    place: { kind: "game", id: "route-116" },
     met: placement.species ?? { species: "nincada", form: "base" },
   })
   const pokemon = pokemonState(encounter, placement)
   const otherEncounters = others.map((_, index) =>
-    encounterState({ placeId: `route-${101 + index}` })
+    encounterState({ place: { kind: "game", id: `route-${101 + index}` } })
   )
   const run: RunState = runState({
     rules,

@@ -1,10 +1,11 @@
-import { ORIGINS, type Origin, type PlaceId } from "@workspace/game-data"
+import { ORIGINS, type Origin } from "@workspace/game-data"
 import { produce, type Draft } from "immer"
 import { err, ok, type Result } from "serializable-result"
 import { z } from "zod"
 
 import { admitsChanges } from "../can-change"
 import { nickname } from "../nickname"
+import { customPlaceGone, placeRef, samePlace, type PlaceRef } from "../place"
 import { refusal, type RunRefusal } from "../refusals"
 import {
   byTimeOfEntry,
@@ -29,7 +30,7 @@ import { formRefArgs } from "./form-ref"
 export const recordEncounterArgs = z.object({
   runId: z.uuid(),
   encounterId: z.uuidv7(),
-  placeId: z.string().min(1),
+  place: placeRef,
   /** {@link nextSlot} for a new Slot; an existing Slot's ordinal to fill it. */
   slot: z.int().min(1),
   origin: z.enum(ORIGINS),
@@ -51,7 +52,9 @@ export const recordEncounterArgs = z.object({
 export type RecordEncounterArgs = z.infer<typeof recordEncounterArgs>
 
 /** The Refusals that {@link check} gives. */
-export type RecordEncounterRefusal = RunRefusal<"run-not-active" | "slot-taken">
+export type RecordEncounterRefusal = RunRefusal<
+  "run-not-active" | "gone" | "slot-taken"
+>
 
 /** What Record an Encounter adds: the Encounter and, when Caught, its Pokémon. */
 export type RecordEncounterEffect = {
@@ -63,7 +66,8 @@ export type RecordEncounterEffect = {
 
 /**
  * Decides Record an Encounter for the viewer's Journey: refused on a Run that
- * is not Active and on a Slot the Journey already has. A catch meant for a
+ * is not Active, at a Custom Place that is gone, and on a Slot the Journey
+ * already has. A catch meant for a
  * full Party goes to the Box.
  */
 export function check(
@@ -72,10 +76,12 @@ export function check(
 ): Result<RecordEncounterEffect, RecordEncounterRefusal> {
   if (!admitsChanges(run)) return err(refusal("run-not-active"))
 
+  if (customPlaceGone(run, args.place)) return err(refusal("gone"))
+
   const journey = viewerJourney(run)
   const slotTaken = journey.encounters.some(
     (encounter) =>
-      encounter.placeId === args.placeId && encounter.slot === args.slot
+      samePlace(encounter.place, args.place) && encounter.slot === args.slot
   )
 
   if (slotTaken) return err(refusal("slot-taken"))
@@ -83,7 +89,7 @@ export function check(
   const { outcome } = args
   const encounter: RecordEncounterEffect["encounter"] = {
     id: args.encounterId,
-    placeId: args.placeId,
+    place: args.place,
     slot: args.slot,
     origin: args.origin,
     outcome: outcome.kind,
@@ -148,10 +154,10 @@ function sortInEncounterOrder(journey: Draft<JourneyState>): void {
  * The ordinal of a new Slot at a Place: one past the highest Slot any Journey
  * of the Run has there, so partners who open a new Slot at once share it.
  */
-export function nextSlot(run: RunState, placeId: PlaceId): number {
+export function nextSlot(run: RunState, place: PlaceRef): number {
   const slots = run.journeys.flatMap((journey) =>
     journey.encounters
-      .filter((encounter) => encounter.placeId === placeId)
+      .filter((encounter) => samePlace(encounter.place, place))
       .map((encounter) => encounter.slot)
   )
 

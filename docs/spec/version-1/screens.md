@@ -111,6 +111,8 @@ One floating dock at the bottom of both tabs with one shadow:
 - All: every location A to Z; a location with Encounters shows the Species met under its name and their sprites on the right.
 - The Run's Custom locations in a group of their own at the end of both views, with rename and remove (remove refused while the location has Encounters).
 - At the end: "Not listed? Add a custom location" with an Input and "Add location". Adding saves the Custom location, which joins the list at once, and opens the Species step for it.
+- A search that matches no location by its exact name (any letter case) offers Add "Link trade", "New custom location. All journeys share it." A tap adds a Custom location with the search term as its name, as "Add location" does.
+- A name that is already a location of the Game or a Custom location of the Run (trimmed, any letter case) disables "Add location" and shows "There is already a location named “Link trade”." under the Input. Rename shows the same message.
 - A tap on a location goes straight to step 1 of the record Drawer, which then has a back control to this Drawer. Closing adds nothing. The record Drawer keeps its choices for the location and Slot, so opening them again after a close or a refused save shows the same draft.
 - A location that already has an Encounter opens in a new Slot, and step 1 shows the First Encounter Rule Alert.
 

@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX "custom_places_run_name_key" ON "custom_places" USING btree ("run_id",lower("name"));--> statement-breakpoint
+ALTER TABLE "custom_places" ADD CONSTRAINT "custom_places_name_length" CHECK (char_length("custom_places"."name") BETWEEN 1 AND 40);

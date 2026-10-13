@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest"
 import { db } from "@/lib/db"
 import { postgresErrorCode } from "@/lib/db/errors"
 import {
+  customPlaces,
   encounters,
   evolutions,
   journeys,
@@ -181,6 +182,42 @@ async function journeyWithEncounter() {
 
   return { runId, journeyId, encounter }
 }
+
+describe("custom_places", () => {
+  function insertNamed(runId: string, name: string) {
+    return insertOutcome(
+      db.insert(customPlaces).values({ id: randomUUID(), runId, name })
+    )
+  }
+
+  test.each([
+    ["an empty name", ""],
+    ["a name of 41 characters", "x".repeat(41)],
+  ])("the CHECK refuses %s", async (_, name) => {
+    await expect(insertNamed(await insertRun(), name)).resolves.toBe(
+      CHECK_VIOLATION
+    )
+  })
+
+  test("a name of 40 characters, counted as code points, is inserted", async () => {
+    await expect(insertNamed(await insertRun(), "é".repeat(40))).resolves.toBe(
+      "inserted"
+    )
+  })
+
+  test("a Run has one Custom Place per name in any letter case; another Run may reuse it", async () => {
+    const runId = await insertRun()
+
+    await insertNamed(runId, "Link trade")
+
+    await expect(insertNamed(runId, "LINK TRADE")).resolves.toBe(
+      UNIQUE_VIOLATION
+    )
+    await expect(insertNamed(await insertRun(), "Link trade")).resolves.toBe(
+      "inserted"
+    )
+  })
+})
 
 describe("encounters", () => {
   test("a valid Caught Encounter is inserted", async () => {

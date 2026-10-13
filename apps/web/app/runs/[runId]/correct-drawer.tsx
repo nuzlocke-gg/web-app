@@ -2,7 +2,6 @@
 
 import {
   getSpecies,
-  placeName,
   type FormRef,
   type LoadedMap,
   type Origin,
@@ -33,6 +32,7 @@ import { useId, useState } from "react"
 
 import { useLeavePrompt } from "@/components/use-leave-prompt"
 import { correctEncounter, removeEncounter } from "@/lib/runs/mutations"
+import { locationName } from "@/lib/runs/place"
 import {
   findViewerEncounter,
   type EncounterOutcome,
@@ -124,7 +124,7 @@ function CorrectSteps({ shown, open, onClose }: CorrectStepsProps) {
 
   useLeavePrompt(open && changed(encounter, draft))
 
-  const where = map ? placeName(map, encounter.placeId, journey.gameId) : null
+  const where = locationName(map, run, encounter.place, journey.gameId)
   const pokemon = journey.pokemon.find(
     (candidate) => candidate.encounterId === encounter.id
   )
@@ -168,7 +168,7 @@ function CorrectSteps({ shown, open, onClose }: CorrectStepsProps) {
       {!map ? null : choosingSpecies ? (
         <SpeciesStep
           map={map}
-          placeId={encounter.placeId}
+          place={encounter.place}
           gameId={journey.gameId}
           allowUnknown={failed}
           onPick={(choice) => {

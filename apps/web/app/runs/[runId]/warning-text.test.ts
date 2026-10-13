@@ -5,6 +5,7 @@ import { defaultRules } from "@/lib/runs/rules"
 import type { EncounterState, RunState } from "@/lib/runs/state"
 import { computeWarnings, gameFactsOf } from "@/lib/runs/warnings"
 import {
+  customPlaceState,
   encounterState,
   journeyState,
   pokemonState,
@@ -21,7 +22,7 @@ beforeAll(async () => {
 
 function met(placeId: string, species: string | null, minute: number) {
   return encounterState({
-    placeId,
+    place: { kind: "game", id: placeId },
     met: species ? { species, form: "base" } : null,
     outcome: species ? "caught" : "failed",
     enteredAt: Date.UTC(2026, 9, 1, 0, minute),
@@ -67,6 +68,26 @@ describe("warningText", () => {
         where: "Route 104",
       },
     ])
+  })
+
+  test("names a Custom location by its name", () => {
+    const linkTrade = customPlaceState({ name: "Link trade" })
+    const atLinkTrade = (species: string, minute: number) => ({
+      ...met("starter", species, minute),
+      place: { kind: "custom" as const, id: linkTrade.id },
+    })
+    const run = {
+      ...runOf(
+        [atLinkTrade("abra", 1), { ...atLinkTrade("ralts", 2), slot: 2 }],
+        ["Spoon", null]
+      ),
+      customPlaces: [linkTrade],
+    }
+
+    expect(textsOf(run)[0]).toMatchObject({
+      text: "Link trade already has an encounter: Abra.",
+      where: "Link trade",
+    })
   })
 
   test("a first Encounter with no Species is named by its location alone", () => {

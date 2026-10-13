@@ -65,10 +65,10 @@ describe("speciesGroups", () => {
     ])
   })
 
-  test("a location with no table lists every Species as Other species", () => {
+  test("a location with no table, such as a Custom location, lists every Species as All species", () => {
     expect(speciesGroups([], allSpecies)).toEqual([
       {
-        name: "Other species",
+        name: "All species",
         choices: allSpecies.map((each) => ({
           met: { species: each.id, form: each.forms[0]!.id },
           name: each.name,

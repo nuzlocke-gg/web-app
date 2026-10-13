@@ -7,12 +7,7 @@ import {
   PencilSimpleIcon,
   SkullIcon,
 } from "@phosphor-icons/react"
-import {
-  getForm,
-  hasFormChoice,
-  placeName,
-  type LoadedMap,
-} from "@workspace/game-data"
+import { getForm, hasFormChoice, type LoadedMap } from "@workspace/game-data"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +33,7 @@ import { Sprite } from "@/components/sprite"
 import { WarningAlert, WarningMark } from "@/components/warning-alert"
 import { admitsChanges } from "@/lib/runs/can-change"
 import { historyOf } from "@/lib/runs/history"
+import { locationName } from "@/lib/runs/place"
 import {
   movePokemon,
   removePokemon,
@@ -164,10 +160,11 @@ function PokemonDetails({ map, shown, encounter }: PokemonDetailsProps) {
     .filter((warning) => warning.encounterId === pokemon.encounterId)
     .map((warning) => warningText(map, run, warning))
   const where =
-    placeName(map, encounter.placeId, journey.gameId) ?? "Unknown location"
+    locationName(map, run, encounter.place, journey.gameId) ??
+    "Unknown location"
   const names: HistoryNames = {
     speciesName: (species) => speciesName(map, species),
-    placeName: (place) => placeName(map, place, journey.gameId),
+    placeName: (place) => locationName(map, run, place, journey.gameId),
   }
 
   function open(next: PokemonSheet) {

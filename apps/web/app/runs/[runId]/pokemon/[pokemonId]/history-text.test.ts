@@ -22,7 +22,7 @@ const placeNames: Record<string, string> = {
 /** The names of a small synthetic Game. */
 const names: HistoryNames = {
   speciesName: (species) => speciesNames[species]!,
-  placeName: (place) => placeNames[place],
+  placeName: (place) => placeNames[place.id],
 }
 
 /** The text of each History line of the Pokémon. */
@@ -37,7 +37,10 @@ function texts(
 }
 
 describe("History text", () => {
-  const route116 = encounterState({ placeId: "route-116", met: nincada })
+  const route116 = encounterState({
+    place: { kind: "game", id: "route-116" },
+    met: nincada,
+  })
 
   test("a wild Encounter names the Species met only once it evolved", () => {
     const line = evolutionState(nincada, ninjask)
@@ -55,7 +58,7 @@ describe("History text", () => {
 
   test("a gift is received, and a trade always names the Species", () => {
     const gift = encounterState({
-      placeId: "starter",
+      place: { kind: "game", id: "starter" },
       origin: "gift",
       met: { species: "treecko", form: "base" },
     })
@@ -68,7 +71,11 @@ describe("History text", () => {
   })
 
   test("an unknown location and a Species never seen read as unknown", () => {
-    const unseen = { ...route116, placeId: "nowhere", met: null }
+    const unseen = {
+      ...route116,
+      place: { kind: "game" as const, id: "nowhere" },
+      met: null,
+    }
 
     expect(texts(unseen, pokemonState(unseen, { species: nincada }))).toEqual([
       "Met as Unknown Pokémon at an unknown location",

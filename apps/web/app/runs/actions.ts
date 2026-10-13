@@ -6,6 +6,7 @@ import {
 } from "headcanon/next/server"
 
 import { runsBinder } from "@/lib/runs/binder"
+import { addCustomPlaceBinding } from "@/lib/runs/commands/add-custom-place"
 import { changeFormBinding } from "@/lib/runs/commands/change-form"
 import { correctEncounterBinding } from "@/lib/runs/commands/correct-encounter"
 import { createRunBinding } from "@/lib/runs/commands/create-run"
@@ -14,8 +15,10 @@ import { evolvePokemonBinding } from "@/lib/runs/commands/evolve-pokemon"
 import { movePokemonBinding } from "@/lib/runs/commands/move-pokemon"
 import { recordDeathBinding } from "@/lib/runs/commands/record-death"
 import { recordEncounterBinding } from "@/lib/runs/commands/record-encounter"
+import { removeCustomPlaceBinding } from "@/lib/runs/commands/remove-custom-place"
 import { removeEncounterBinding } from "@/lib/runs/commands/remove-encounter"
 import { removePokemonBinding } from "@/lib/runs/commands/remove-pokemon"
+import { renameCustomPlaceBinding } from "@/lib/runs/commands/rename-custom-place"
 import { renamePokemonBinding } from "@/lib/runs/commands/rename-pokemon"
 import { restorePokemonBinding } from "@/lib/runs/commands/restore-pokemon"
 import { setHouseRulesBinding } from "@/lib/runs/commands/set-house-rules"
@@ -39,6 +42,9 @@ export const runAction = createNextMutationAction({
     undoDeathBinding,
     removePokemonBinding,
     changeFormBinding,
+    addCustomPlaceBinding,
+    renameCustomPlaceBinding,
+    removeCustomPlaceBinding,
     setRulesBinding,
     restorePokemonBinding,
   ],

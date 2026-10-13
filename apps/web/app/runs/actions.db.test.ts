@@ -68,6 +68,7 @@ describe("createRunAction", () => {
         "shared-duplicate-clause": false,
       },
       houseRules: null,
+      customPlaces: [],
       journeys: [
         {
           id: expect.any(String),

@@ -1,7 +1,8 @@
-import { placeName, type LoadedMap } from "@workspace/game-data"
+import type { LoadedMap } from "@workspace/game-data"
 
 import { speciesName } from "@/components/species-name"
 import type { Warning } from "@/lib/runs/rule-checks"
+import { locationName } from "@/lib/runs/place"
 import { ruleName } from "@/lib/runs/rules"
 import type { EncounterState, JourneyState, RunState } from "@/lib/runs/state"
 
@@ -37,7 +38,7 @@ export function warningText(
 ): WarningText {
   const journey = journeyOf(run, warning.journeyId)
   const encounter = encounterOf(journey, warning.encounterId)
-  const where = locationOf(map, journey, encounter)
+  const where = locationOf(map, run, journey, encounter)
   const rule = ruleName(warning.rule)
 
   switch (warning.rule) {
@@ -58,7 +59,7 @@ export function warningText(
       return {
         rule,
         where,
-        text: `${metName(map, encounter)} is in the same evolution line as ${encounterLabel(map, journey, earlier)} (${locationOf(map, journey, earlier)}).`,
+        text: `${metName(map, encounter)} is in the same evolution line as ${encounterLabel(map, journey, earlier)} (${locationOf(map, run, journey, earlier)}).`,
       }
     }
     case "nickname-clause": {
@@ -107,10 +108,14 @@ function metName(map: LoadedMap, encounter: EncounterState): string {
 
 function locationOf(
   map: LoadedMap,
+  run: RunState,
   journey: JourneyState,
   encounter: EncounterState
 ): string {
-  return placeName(map, encounter.placeId, journey.gameId) ?? "Unknown location"
+  return (
+    locationName(map, run, encounter.place, journey.gameId) ??
+    "Unknown location"
+  )
 }
 
 // A Warning names only the Journey, Encounters, and Pokémon of the Run it was

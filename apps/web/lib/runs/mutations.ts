@@ -1,5 +1,6 @@
 import { defineMutation } from "headcanon"
 
+import * as addCustomPlaceChange from "./changes/add-custom-place"
 import * as changeFormChange from "./changes/change-form"
 import * as correctEncounterChange from "./changes/correct-encounter"
 import * as editDeathChange from "./changes/edit-death"
@@ -7,8 +8,10 @@ import * as evolvePokemonChange from "./changes/evolve-pokemon"
 import * as movePokemonChange from "./changes/move-pokemon"
 import * as recordDeathChange from "./changes/record-death"
 import * as recordEncounterChange from "./changes/record-encounter"
+import * as removeCustomPlaceChange from "./changes/remove-custom-place"
 import * as removeEncounterChange from "./changes/remove-encounter"
 import * as removePokemonChange from "./changes/remove-pokemon"
+import * as renameCustomPlaceChange from "./changes/rename-custom-place"
 import * as renamePokemonChange from "./changes/rename-pokemon"
 import * as restorePokemonChange from "./changes/restore-pokemon"
 import * as setRulesChange from "./changes/set-rules"
@@ -17,12 +20,18 @@ import { refusalSchema } from "./refusals"
 
 /**
  * Change 1, Record an Encounter: one Encounter in a Slot at a Place of the
- * Map, and its Pokémon when Caught. The server alone refuses `unknown-entry`.
+ * Game or a Custom Place, and its Pokémon when Caught. The server alone
+ * refuses `unknown-entry`.
  */
 export const recordEncounter = defineMutation({
   name: "run.record-encounter.v1",
   args: recordEncounterChange.recordEncounterArgs,
-  refusal: refusalSchema("run-not-active", "slot-taken", "unknown-entry"),
+  refusal: refusalSchema(
+    "run-not-active",
+    "gone",
+    "slot-taken",
+    "unknown-entry"
+  ),
   check: recordEncounterChange.check,
   apply: recordEncounterChange.apply,
 })
@@ -138,6 +147,42 @@ export const changeForm = defineMutation({
   refusal: refusalSchema("run-not-active", "gone", "unknown-entry"),
   check: changeFormChange.check,
   apply: changeFormChange.apply,
+})
+
+/**
+ * Change 12, Add a Custom Place: a location of the Run for an Encounter the
+ * game data does not have, by any player of the Run.
+ */
+export const addCustomPlace = defineMutation({
+  name: "run.add-custom-place.v1",
+  args: addCustomPlaceChange.addCustomPlaceArgs,
+  refusal: refusalSchema("run-not-active", "custom-place-name-taken"),
+  check: addCustomPlaceChange.check,
+  apply: addCustomPlaceChange.apply,
+})
+
+/**
+ * Change 13, Rename a Custom Place, also while it has Encounters, by any
+ * player of the Run.
+ */
+export const renameCustomPlace = defineMutation({
+  name: "run.rename-custom-place.v1",
+  args: renameCustomPlaceChange.renameCustomPlaceArgs,
+  refusal: refusalSchema("run-not-active", "gone", "custom-place-name-taken"),
+  check: renameCustomPlaceChange.check,
+  apply: renameCustomPlaceChange.apply,
+})
+
+/**
+ * Change 14, Remove a Custom Place that no Journey has an Encounter at, by
+ * any player of the Run.
+ */
+export const removeCustomPlace = defineMutation({
+  name: "run.remove-custom-place.v1",
+  args: removeCustomPlaceChange.removeCustomPlaceArgs,
+  refusal: refusalSchema("run-not-active", "gone", "custom-place-in-use"),
+  check: removeCustomPlaceChange.check,
+  apply: removeCustomPlaceChange.apply,
 })
 
 /**

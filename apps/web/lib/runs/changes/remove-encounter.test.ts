@@ -15,11 +15,11 @@ import { type RemoveEncounterArgs } from "./remove-encounter"
 
 const first = encounterState({ enteredAt: Date.UTC(2026, 9, 1) })
 const second = encounterState({
-  placeId: "route-102",
+  place: { kind: "game", id: "route-102" },
   enteredAt: Date.UTC(2026, 9, 2),
 })
 const third = encounterState({
-  placeId: "route-103",
+  place: { kind: "game", id: "route-103" },
   enteredAt: Date.UTC(2026, 9, 3),
 })
 
