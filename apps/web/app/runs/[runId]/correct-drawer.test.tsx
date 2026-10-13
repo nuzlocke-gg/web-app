@@ -28,13 +28,13 @@ vi.mock("./run-root", () => ({ useRun: vi.fn(), useRunChange: vi.fn() }))
 const change = vi.fn<(invocation: unknown, label: string) => void>()
 
 const failed = encounterState({
-  placeId: "route-102",
+  place: { kind: "game", id: "route-102" },
   outcome: "failed",
   met: null,
   origin: "wild",
 })
 const caught = encounterState({
-  placeId: "route-102",
+  place: { kind: "game", id: "route-102" },
   slot: 2,
   met: { species: "ralts", form: "base" },
 })

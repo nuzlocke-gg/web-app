@@ -3,6 +3,7 @@ import { v7 as uuidv7 } from "uuid"
 import type { FormRef } from "@workspace/game-data"
 
 import type {
+  CustomPlaceState,
   EncounterState,
   EvolutionState,
   JourneyState,
@@ -29,9 +30,17 @@ export function runState(overrides: Partial<RunState> = {}): RunState {
     attemptNumber: 1,
     rules: {},
     houseRules: null,
+    customPlaces: [],
     journeys: [journeyState()],
     ...overrides,
   }
+}
+
+/** A Custom Place named "Link trade". */
+export function customPlaceState(
+  overrides: Partial<CustomPlaceState> = {}
+): CustomPlaceState {
+  return { id: uuidv7(), name: "Link trade", ...overrides }
 }
 
 /** The viewer's empty Emerald Journey. */
@@ -54,7 +63,7 @@ export function encounterState(
 ): EncounterState {
   return {
     id: uuidv7(),
-    placeId: "route-101",
+    place: { kind: "game", id: "route-101" },
     slot: 1,
     origin: "wild",
     outcome: "caught",
@@ -108,7 +117,7 @@ export function journeyWithPokemon(
 ): JourneyState {
   const encounters = placements.map((_, index) =>
     encounterState({
-      placeId: `route-${101 + index}`,
+      place: { kind: "game", id: `route-${101 + index}` },
       enteredAt: Date.UTC(2026, 9, 1, 0, index),
     })
   )

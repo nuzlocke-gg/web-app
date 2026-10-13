@@ -1,4 +1,6 @@
-import type { FormRef, Origin, PlaceId } from "@workspace/game-data"
+import type { FormRef, Origin } from "@workspace/game-data"
+
+import type { PlaceRef } from "./place"
 
 // The alternatives are the database enums too (lib/db/schema.ts), so each list
 // has one home. Values are only ever added, so a row can hold a value that a
@@ -45,7 +47,7 @@ export const PARTY_SIZE = 6
 /** One Encounter of a Journey, in a Slot at a Place. */
 export type EncounterState = {
   id: string
-  placeId: PlaceId
+  place: PlaceRef
   /** The Slot's ordinal at its Place, from 1. */
   slot: number
   /** Null when a newer build stored it. */
@@ -88,6 +90,13 @@ export type PokemonState = {
   evolutions: EvolutionState[]
 }
 
+/** A location the players of a Run added for what the game data does not have. */
+export type CustomPlaceState = {
+  /** UUID v7, so it also holds the time the Custom Place was added. */
+  id: string
+  name: string
+}
+
 /** One Player's part of a Run, with its Encounters in order of entry. */
 export type JourneyState = {
   id: string
@@ -118,6 +127,8 @@ export type RunState = {
   rules: Record<string, boolean>
   /** Plain text, line breaks kept; null when the players wrote none. */
   houseRules: string | null
+  /** In the order they were added (by id). */
+  customPlaces: CustomPlaceState[]
   journeys: JourneyState[]
 }
 
@@ -186,8 +197,16 @@ export function byTimeOfEntry(
 ): number {
   if (a.enteredAt !== b.enteredAt) return a.enteredAt - b.enteredAt
 
+  return byId(a, b)
+}
+
+/**
+ * Compares by id as the loader's `ORDER BY id` does: the order of a Run's
+ * Custom Places, and of two Encounters entered at one time.
+ */
+export function byId(a: { id: string }, b: { id: string }): number {
   // Postgres orders UUIDs by their bytes, which is the order of their
-  // lowercase text, so this matches the loader's `ORDER BY entered_at, id`.
+  // lowercase text.
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0
 }
 

@@ -1,7 +1,8 @@
-import type { PlaceId, SpeciesId } from "@workspace/game-data"
+import type { SpeciesId } from "@workspace/game-data"
 
 import { UNKNOWN_SPECIES } from "@/components/species-name"
 import type { HistoryLine } from "@/lib/runs/history"
+import type { PlaceRef } from "@/lib/runs/place"
 import type { PokemonState } from "@/lib/runs/state"
 
 /**
@@ -10,12 +11,12 @@ import type { PokemonState } from "@/lib/runs/state"
  * @example
  * const names: HistoryNames = {
  *   speciesName: (species) => speciesName(map, species),
- *   placeName: (place) => placeName(map, place, journey.gameId),
+ *   placeName: (place) => locationName(map, run, place, journey.gameId),
  * }
  */
 export type HistoryNames = {
   speciesName: (species: SpeciesId) => string
-  placeName: (place: PlaceId) => string | undefined
+  placeName: (place: PlaceRef) => string | undefined
 }
 
 /**
@@ -31,7 +32,7 @@ export function historyText(
   switch (line.kind) {
     case "encounter": {
       const { encounter } = line
-      const where = names.placeName(encounter.placeId) ?? "an unknown location"
+      const where = names.placeName(encounter.place) ?? "an unknown location"
       const met = encounter.met
         ? names.speciesName(encounter.met.species)
         : UNKNOWN_SPECIES

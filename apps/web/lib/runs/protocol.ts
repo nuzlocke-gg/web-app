@@ -1,6 +1,7 @@
 import { defineProtocol } from "headcanon"
 
 import {
+  addCustomPlace,
   changeForm,
   correctEncounter,
   editDeath,
@@ -8,8 +9,10 @@ import {
   movePokemon,
   recordDeath,
   recordEncounter,
+  removeCustomPlace,
   removeEncounter,
   removePokemon,
+  renameCustomPlace,
   renamePokemon,
   restorePokemon,
   setRules,
@@ -36,6 +39,9 @@ export const runProtocol = defineProtocol<RunState>()({
     undoDeath,
     removePokemon,
     changeForm,
+    addCustomPlace,
+    renameCustomPlace,
+    removeCustomPlace,
     setRules,
     restorePokemon,
   ],

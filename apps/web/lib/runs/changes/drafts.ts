@@ -1,6 +1,11 @@
 import type { Draft } from "immer"
 
-import type { JourneyState, PokemonState, RunState } from "../state"
+import type {
+  CustomPlaceState,
+  JourneyState,
+  PokemonState,
+  RunState,
+} from "../state"
 
 // An `apply` runs only on the Run its `check` read (headcanon predicts with
 // `check`, then `apply`), so a target its effect names is always there, and
@@ -40,4 +45,24 @@ export function pokemonOf(
   }
 
   return pokemon
+}
+
+/**
+ * The Custom Place with this id in a draft of the Run, for an `apply` to
+ * change.
+ * @throws When the Run has no such Custom Place.
+ */
+export function customPlaceOf(
+  draft: Draft<RunState>,
+  customPlaceId: string
+): Draft<CustomPlaceState> {
+  const customPlace = draft.customPlaces.find(
+    (candidate) => candidate.id === customPlaceId
+  )
+
+  if (!customPlace) {
+    throw new Error(`Run ${draft.id} has no Custom Place ${customPlaceId}`)
+  }
+
+  return customPlace
 }

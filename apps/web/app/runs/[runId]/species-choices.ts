@@ -32,7 +32,8 @@ export type SpeciesGroup = {
 /**
  * Step 1 of the record Drawer at a location: its Species by method group in
  * the Map's order, then "Other species" with every other Species in the order
- * given.
+ * given. A location with no encounter table, such as a Custom location, has
+ * only "All species".
  * @param suggested The location's method groups, from `suggestions()`.
  * @param allSpecies Every Species of the Map, such as `map.data.species`.
  */
@@ -58,7 +59,9 @@ export function speciesGroups(
     .filter((species) => !suggestedIds.has(species.id))
     .map((species) => choiceOf(species, null))
 
-  return [...groups, { name: "Other species", choices: others }]
+  const rest = groups.length > 0 ? "Other species" : "All species"
+
+  return [...groups, { name: rest, choices: others }]
 }
 
 /**

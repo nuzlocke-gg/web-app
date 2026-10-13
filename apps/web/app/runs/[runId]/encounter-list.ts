@@ -1,11 +1,14 @@
 import {
+  placesOf,
   searchPlaces,
+  type GameId,
   type LoadedMap,
-  type PlaceId,
-  type PlaceRow,
+  type PlaceKind,
 } from "@workspace/game-data"
 
 import { speciesName } from "@/components/species-name"
+import { sameName } from "@/lib/runs/custom-place-name"
+import { placeKey, samePlace, type PlaceRef } from "@/lib/runs/place"
 import {
   byTimeOfEntry,
   viewerJourney,
@@ -15,33 +18,85 @@ import {
 } from "@/lib/runs/state"
 
 /**
+ * One location of a Run as the tracking screen shows it: a Place of the
+ * viewer's Game, or a Custom location of the Run (`kind` "custom"). Only the
+ * Starter and standard locations count in Progress.
+ */
+export type LocationRow = {
+  place: PlaceRef
+  kind: PlaceKind | "custom"
+  /** The name in the viewer's Game, or the Custom location's name. */
+  name: string
+}
+
+/**
+ * Every location of the Run for the viewer: the Places of their Game in play
+ * order, then the Run's Custom locations in the order they were added.
+ */
+export function locationsOf(
+  map: LoadedMap,
+  run: RunState,
+  gameId: GameId
+): LocationRow[] {
+  const gamePlaces = placesOf(map, gameId).map((row): LocationRow => ({
+    place: { kind: "game", id: row.id },
+    kind: row.kind,
+    name: row.name,
+  }))
+  const customPlaces = run.customPlaces.map((custom): LocationRow => ({
+    place: { kind: "custom", id: custom.id },
+    kind: "custom",
+    name: custom.name,
+  }))
+
+  return [...gamePlaces, ...customPlaces]
+}
+
+/**
  * The locations of the Encounters tab: the Starter first, then each location
  * in the order of its first Encounter in any Journey of the Run. A location
  * joins when it gets its first Encounter and moves when that one is removed.
+ * A Custom location joins when it is added, in that order until it has an
+ * Encounter.
  */
-export function listedPlaces(places: PlaceRow[], run: RunState): PlaceRow[] {
+export function listedPlaces(
+  locations: LocationRow[],
+  run: RunState
+): LocationRow[] {
   const firstEncounters = firstEncounterByPlace(run)
-  const starter = places.find((place) => place.kind === "starter")
-  const others = places
+  const orderOf = (location: LocationRow) =>
+    firstEncounters.get(placeKey(location.place)) ?? addedAt(location.place)
+  const starter = locations.find((location) => location.kind === "starter")
+  const others = locations
     .filter(
-      (place) => place.kind !== "starter" && firstEncounters.has(place.id)
+      (location) =>
+        location.kind !== "starter" &&
+        (location.kind === "custom" ||
+          firstEncounters.has(placeKey(location.place)))
     )
-    .sort((a, b) =>
-      byTimeOfEntry(firstEncounters.get(a.id)!, firstEncounters.get(b.id)!)
-    )
+    .sort((a, b) => byTimeOfEntry(orderOf(a), orderOf(b)))
 
   return starter ? [starter, ...others] : others
 }
 
-function firstEncounterByPlace(run: RunState): Map<PlaceId, EncounterState> {
-  const first = new Map<PlaceId, EncounterState>()
+// A Custom location with no Encounter sorts by the time in its UUID v7 id:
+// the first 48 bits are epoch milliseconds.
+function addedAt(place: PlaceRef): { id: string; enteredAt: number } {
+  const hex = place.id.replaceAll("-", "").slice(0, 12)
+
+  return { id: place.id, enteredAt: Number.parseInt(hex, 16) }
+}
+
+function firstEncounterByPlace(run: RunState): Map<string, EncounterState> {
+  const first = new Map<string, EncounterState>()
 
   for (const journey of run.journeys) {
     for (const encounter of journey.encounters) {
-      const earlier = first.get(encounter.placeId)
+      const place = placeKey(encounter.place)
+      const earlier = first.get(place)
 
       if (!earlier || byTimeOfEntry(encounter, earlier) < 0) {
-        first.set(encounter.placeId, encounter)
+        first.set(place, encounter)
       }
     }
   }
@@ -53,10 +108,10 @@ function firstEncounterByPlace(run: RunState): Map<PlaceId, EncounterState> {
  * How many Slots a location has: the distinct Slots of every Journey there,
  * so partners who share a Slot count it once.
  */
-export function slotCount(run: RunState, placeId: PlaceId): number {
+export function slotCount(run: RunState, place: PlaceRef): number {
   const slots = run.journeys.flatMap((journey) =>
     journey.encounters
-      .filter((encounter) => encounter.placeId === placeId)
+      .filter((encounter) => samePlace(encounter.place, place))
       .map((encounter) => encounter.slot)
   )
 
@@ -126,7 +181,7 @@ export type Progress = {
 /**
  * The Progress of a Run over its listed locations. A location counts when any
  * Journey has an Encounter there; its cell comes from the viewer's own
- * Encounters. Event Places count on neither side.
+ * Encounters. Event and Custom locations count on neither side.
  * @param listed The Encounters list from {@link listedPlaces}; the cells keep its order.
  * @param total The Map's Progress denominator, from `progressTotal(map)`.
  * @example
@@ -134,18 +189,21 @@ export type Progress = {
  * const progress = progressOf(listed, run, progressTotal(map))
  */
 export function progressOf(
-  listed: PlaceRow[],
+  listed: LocationRow[],
   run: RunState,
   total: number
 ): Progress {
   const encountered = placesWithEncounters(run)
   const viewerEncounters = viewerJourney(run).encounters
   const counted = listed.filter(
-    (place) => place.kind !== "event" && encountered.has(place.id)
+    (location) =>
+      countsInProgress(location) && encountered.has(placeKey(location.place))
   )
-  const cells = counted.map((place) =>
+  const cells = counted.map((location) =>
     cellOf(
-      viewerEncounters.filter((encounter) => encounter.placeId === place.id)
+      viewerEncounters.filter((encounter) =>
+        samePlace(encounter.place, location.place)
+      )
     )
   )
   const countOf = (cell: ProgressCell) =>
@@ -176,10 +234,14 @@ function cellOf(encounters: EncounterState[]): ProgressCell {
   return allFailed ? "failed" : "unknown"
 }
 
-function placesWithEncounters(run: RunState): Set<PlaceId> {
+function countsInProgress(location: LocationRow): boolean {
+  return location.kind === "starter" || location.kind === "standard"
+}
+
+function placesWithEncounters(run: RunState): Set<string> {
   return new Set(
     run.journeys.flatMap((journey) =>
-      journey.encounters.map((encounter) => encounter.placeId)
+      journey.encounters.map((encounter) => placeKey(encounter.place))
     )
   )
 }
@@ -192,22 +254,23 @@ export type PlaceChoiceGroup = {
   title: string
   /** Shown beside the title, such as "A to Z". */
   note: string
-  places: PlaceRow[]
+  places: LocationRow[]
 }
 
 /**
  * The groups of the Add a location Drawer, each A to Z with numbers in order
  * (Route 9 before Route 10). Remaining lists the locations with no Encounter
- * in any Journey, then the Event locations with none. A query searches every
- * location, whatever the view. Empty groups are left out.
+ * in any Journey, then the Event locations with none; All lists every
+ * location of the Game. Both end with the Run's Custom locations. A query
+ * searches every location, whatever the view. Empty groups are left out.
  */
 export function placeChoices(
-  places: PlaceRow[],
+  locations: LocationRow[],
   run: RunState,
   view: PlaceView,
   query: string
 ): PlaceChoiceGroup[] {
-  const sorted = [...places].sort(byName)
+  const sorted = [...locations].sort(byName)
 
   if (query.trim()) {
     return nonEmpty([
@@ -215,28 +278,58 @@ export function placeChoices(
     ])
   }
 
+  const custom = {
+    title: "Custom locations",
+    note: "",
+    places: sorted.filter((location) => location.kind === "custom"),
+  }
+  const ofGame = sorted.filter((location) => location.kind !== "custom")
+
   if (view === "all") {
-    return [{ title: "All locations", note: "A to Z", places: sorted }]
+    return nonEmpty([
+      { title: "All locations", note: "A to Z", places: ofGame },
+      custom,
+    ])
   }
 
   const encountered = placesWithEncounters(run)
-  const open = sorted.filter((place) => !encountered.has(place.id))
+  const open = ofGame.filter(
+    (location) => !encountered.has(placeKey(location.place))
+  )
 
   return nonEmpty([
     {
       title: "No encounter yet",
       note: "A to Z",
-      places: open.filter((place) => place.kind !== "event"),
+      places: open.filter((location) => location.kind !== "event"),
     },
     {
       title: "Event locations",
       note: "Not counted",
-      places: open.filter((place) => place.kind === "event"),
+      places: open.filter((location) => location.kind === "event"),
     },
+    custom,
   ])
 }
 
-function byName(a: PlaceRow, b: PlaceRow): number {
+/**
+ * Whether a location of the Run already has this name, trimmed, in any letter
+ * case: a Place of the viewer's Game or a Custom location.
+ * @param except The Custom location being renamed, which may keep its name.
+ */
+export function locationNameTaken(
+  locations: LocationRow[],
+  name: string,
+  except?: PlaceRef
+): boolean {
+  return locations.some(
+    (location) =>
+      !(except && samePlace(location.place, except)) &&
+      sameName(location.name, name)
+  )
+}
+
+function byName(a: LocationRow, b: LocationRow): number {
   return a.name.localeCompare(b.name, "en", {
     numeric: true,
     sensitivity: "base",

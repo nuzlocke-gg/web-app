@@ -2,6 +2,7 @@ import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test } from "vitest"
 
 import {
+  customPlaceState,
   deepFrozen,
   encounterState,
   journeyState,
@@ -20,7 +21,7 @@ function caughtMudkip(
   return {
     runId: runState().id,
     encounterId: uuidv7(),
-    placeId: "starter",
+    place: { kind: "game", id: "starter" },
     slot: 1,
     origin: "gift",
     enteredAt: Date.UTC(2026, 9, 2),
@@ -64,7 +65,7 @@ describe("Record an Encounter", () => {
     expect(journey.encounters).toEqual([
       {
         id: args.encounterId,
-        placeId: "starter",
+        place: { kind: "game", id: "starter" },
         slot: 1,
         origin: "gift",
         outcome: "caught",
@@ -133,6 +134,32 @@ describe("Record an Encounter", () => {
     expect(predict(run, caughtMudkip({ slot: 2 })).ok).toBe(true)
   })
 
+  describe("at a Custom Place", () => {
+    const linkTrade = customPlaceState()
+    const atLinkTrade = (slot = 1) =>
+      caughtMudkip({ place: { kind: "custom", id: linkTrade.id }, slot })
+
+    test("records the Encounter there, in its own Slots", () => {
+      const run = predicted(
+        predicted(runState({ customPlaces: [linkTrade] }), atLinkTrade()),
+        caughtMudkip()
+      )
+
+      expect(predict(run, atLinkTrade())).toEqual({
+        ok: false,
+        error: { kind: "slot-taken" },
+      })
+      expect(nextSlot(run, { kind: "custom", id: linkTrade.id })).toBe(2)
+    })
+
+    test("a Custom Place that is gone is refused as gone", () => {
+      expect(predict(runState(), atLinkTrade())).toEqual({
+        ok: false,
+        error: { kind: "gone" },
+      })
+    })
+  })
+
   test.each(["waiting", "failed", "complete"] as const)(
     "a %s Run refuses the change as run-not-active",
     (state) => {
@@ -192,7 +219,7 @@ describe("Record an Encounter", () => {
 
 describe("nextSlot", () => {
   test("is 1 at a location with no Encounter", () => {
-    expect(nextSlot(runState(), "route-101")).toBe(1)
+    expect(nextSlot(runState(), { kind: "game", id: "route-101" })).toBe(1)
   })
 
   test("is one past the highest Slot of any Journey at that location", () => {
@@ -202,7 +229,7 @@ describe("nextSlot", () => {
       encounters: [
         encounterState({ slot: 1 }),
         encounterState({ slot: 2 }),
-        encounterState({ placeId: "route-102", slot: 5 }),
+        encounterState({ place: { kind: "game", id: "route-102" }, slot: 5 }),
       ],
     })
     const run = runState({
@@ -213,6 +240,6 @@ describe("nextSlot", () => {
       ],
     })
 
-    expect(nextSlot(run, "route-101")).toBe(3)
+    expect(nextSlot(run, { kind: "game", id: "route-101" })).toBe(3)
   })
 })

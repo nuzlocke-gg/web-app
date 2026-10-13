@@ -124,7 +124,7 @@ describe("Record an Encounter", () => {
     expect(journey.encounters).toEqual([
       {
         id: args.encounterId,
-        placeId: "starter",
+        place: { kind: "game", id: "starter" },
         slot: 1,
         origin: "gift",
         outcome: "caught",
@@ -179,7 +179,7 @@ describe("Record an Encounter", () => {
   })
 
   test.each([
-    ["a Place", { placeId: "not-a-place" }],
+    ["a Place", { place: { kind: "game" as const, id: "not-a-place" } }],
     [
       "a Species",
       {

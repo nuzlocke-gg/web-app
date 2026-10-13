@@ -1,9 +1,10 @@
 import { eq } from "drizzle-orm"
+import { v7 as uuidv7 } from "uuid"
 import { describe, expect, test, vi } from "vitest"
 
 import { db } from "@/lib/db"
-import { runs } from "@/lib/db/schema"
-import { makeRun } from "@/test/runs"
+import { customPlaces, runs } from "@/lib/db/schema"
+import { canonOf, makeRun } from "@/test/runs"
 import { signIn, signOut } from "@/test/session"
 
 import { loadRunCanon } from "./canon"
@@ -49,6 +50,23 @@ describe("loadRunCanon", () => {
     await signIn()
 
     await expect(loadRunCanon(runId)).resolves.toBeNull()
+  })
+
+  test("reads the Run's Custom Places in the order they were added", async () => {
+    await signIn()
+    const runId = await makeRun()
+    const earlier = uuidv7()
+    const later = uuidv7()
+
+    await db.insert(customPlaces).values([
+      { id: later, runId, name: "Bonus disc" },
+      { id: earlier, runId, name: "Link trade" },
+    ])
+
+    expect((await canonOf(runId)).value.customPlaces).toEqual([
+      { id: earlier, name: "Link trade" },
+      { id: later, name: "Bonus disc" },
+    ])
   })
 
   test("a made Run records when it started and last changed", async () => {

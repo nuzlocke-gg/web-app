@@ -40,7 +40,7 @@ function recordMudkip(runId: string) {
   return recordEncounter({
     runId,
     encounterId: uuidv7(),
-    placeId: "starter",
+    place: { kind: "game", id: "starter" },
     slot: 1,
     origin: "gift",
     enteredAt: Date.now(),

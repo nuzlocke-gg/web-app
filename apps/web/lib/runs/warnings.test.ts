@@ -75,10 +75,13 @@ function runWith(journey: JourneyState, rules: Record<string, boolean>) {
 
 describe("First Encounter Rule", () => {
   test("marks each Encounter after the first at one Place", () => {
-    const first = met("taillow", { placeId: "route-104" })
-    const second = met("zigzagoon", { placeId: "route-104", slot: 2 })
+    const first = met("taillow", { place: { kind: "game", id: "route-104" } })
+    const second = met("zigzagoon", {
+      place: { kind: "game", id: "route-104" },
+      slot: 2,
+    })
     const third = met(null, {
-      placeId: "route-104",
+      place: { kind: "game", id: "route-104" },
       slot: 3,
       outcome: "failed",
     })
@@ -106,8 +109,11 @@ describe("First Encounter Rule", () => {
   test("counts a Failed first Encounter with no Species", () => {
     const run = runWith(
       journeyOf([
-        met(null, { placeId: "route-104", outcome: "failed" }),
-        met("taillow", { placeId: "route-104", slot: 2 }),
+        met(null, {
+          place: { kind: "game", id: "route-104" },
+          outcome: "failed",
+        }),
+        met("taillow", { place: { kind: "game", id: "route-104" }, slot: 2 }),
       ]),
       only("first-encounter")
     )
@@ -118,8 +124,11 @@ describe("First Encounter Rule", () => {
   test("counts a Place the game data does not have, as a Custom location", () => {
     const run = runWith(
       journeyOf([
-        met("taillow", { placeId: "custom:lake-house" }),
-        met("zigzagoon", { placeId: "custom:lake-house", slot: 2 }),
+        met("taillow", { place: { kind: "custom", id: "lake-house" } }),
+        met("zigzagoon", {
+          place: { kind: "custom", id: "lake-house" },
+          slot: 2,
+        }),
       ]),
       only("first-encounter")
     )
@@ -130,8 +139,8 @@ describe("First Encounter Rule", () => {
   test("one Encounter at each Place gives none", () => {
     const run = runWith(
       journeyOf([
-        met("taillow", { placeId: "route-104" }),
-        met("zigzagoon", { placeId: "route-101" }),
+        met("taillow", { place: { kind: "game", id: "route-104" } }),
+        met("zigzagoon", { place: { kind: "game", id: "route-101" } }),
       ]),
       only("first-encounter")
     )
@@ -140,9 +149,12 @@ describe("First Encounter Rule", () => {
   })
 
   test("goes when the later Encounter is removed or the Rule is off", () => {
-    const first = met("taillow", { placeId: "route-104" })
+    const first = met("taillow", { place: { kind: "game", id: "route-104" } })
     const run = runWith(
-      journeyOf([first, met("zigzagoon", { placeId: "route-104", slot: 2 })]),
+      journeyOf([
+        first,
+        met("zigzagoon", { place: { kind: "game", id: "route-104" }, slot: 2 }),
+      ]),
       only("first-encounter")
     )
 
@@ -326,7 +338,7 @@ describe("warningsOfRecord", () => {
     return {
       runId: run.id,
       encounterId: uuidv7(),
-      placeId: "route-104",
+      place: { kind: "game", id: "route-104" },
       slot: 2,
       origin: "wild",
       enteredAt: Date.UTC(2026, 9, 3),
@@ -343,8 +355,8 @@ describe("warningsOfRecord", () => {
   test("gives the Warnings the save adds, with the predicted Run", () => {
     const run = runWith(
       journeyOf([
-        met("poochyena", { placeId: "route-101" }),
-        met("taillow", { placeId: "route-104" }),
+        met("poochyena", { place: { kind: "game", id: "route-101" } }),
+        met("taillow", { place: { kind: "game", id: "route-104" } }),
       ]),
       only("first-encounter", "nickname-clause", "duplicate-clause")
     )
@@ -369,11 +381,13 @@ describe("warningsOfRecord", () => {
   })
 
   test("gives a Warning the save puts on an existing row", () => {
-    const existing = met("mightyena", { placeId: "route-104" })
+    const existing = met("mightyena", {
+      place: { kind: "game", id: "route-104" },
+    })
     const run = runWith(journeyOf([existing]), only("duplicate-clause"))
     // The device clock is behind, so the new Encounter sorts first.
     const args = recordArgs(run, {
-      placeId: "route-101",
+      place: { kind: "game", id: "route-101" },
       slot: 1,
       enteredAt: Date.UTC(2026, 8, 1),
       outcome: {
@@ -414,7 +428,9 @@ describe("warningsOfRecord", () => {
 
   test("is null when the save would be refused", () => {
     const run = runWith(
-      journeyOf([met("taillow", { placeId: "route-104", slot: 2 })]),
+      journeyOf([
+        met("taillow", { place: { kind: "game", id: "route-104" }, slot: 2 }),
+      ]),
       only("first-encounter")
     )
 

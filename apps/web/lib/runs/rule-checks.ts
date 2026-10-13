@@ -1,5 +1,6 @@
 import type { EvolutionLineId, SpeciesId } from "@workspace/game-data"
 
+import { placeKey } from "./place"
 import type { EncounterState, JourneyState, RunState } from "./state"
 
 /**
@@ -46,10 +47,11 @@ export const checkFirstEncounter: RuleCheck = (run) =>
     const firstAt = new Map<string, EncounterState>()
 
     return journey.encounters.flatMap((encounter): Warning[] => {
-      const first = firstAt.get(encounter.placeId)
+      const place = placeKey(encounter.place)
+      const first = firstAt.get(place)
 
       if (!first) {
-        firstAt.set(encounter.placeId, encounter)
+        firstAt.set(place, encounter)
 
         return []
       }

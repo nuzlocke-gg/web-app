@@ -1,15 +1,7 @@
 "use client"
 
 import { CaretLeftIcon, CaretRightIcon, PlusIcon } from "@phosphor-icons/react"
-import {
-  getGame,
-  placeName,
-  placesOf,
-  progressTotal,
-  type LoadedMap,
-  type PlaceId,
-  type PlaceRow,
-} from "@workspace/game-data"
+import { getGame, progressTotal, type LoadedMap } from "@workspace/game-data"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button, buttonVariants } from "@workspace/ui/components/button"
 import {
@@ -36,6 +28,7 @@ import { speciesName } from "@/components/species-name"
 import { Sprite, UnknownSprite } from "@/components/sprite"
 import { WarningMark } from "@/components/warning-alert"
 import { admitsChanges } from "@/lib/runs/can-change"
+import { locationName, placeKey, samePlace } from "@/lib/runs/place"
 import type { Warning } from "@/lib/runs/rule-checks"
 import { ruleName } from "@/lib/runs/rules"
 import {
@@ -54,8 +47,10 @@ import { EncounterDrawer, recordSheet, type Sheet } from "./encounter-drawer"
 import {
   fateLine,
   listedPlaces,
+  locationsOf,
   progressOf,
   slotCount,
+  type LocationRow,
   type Progress,
   type ProgressCell,
 } from "./encounter-list"
@@ -82,17 +77,18 @@ export function TrackingScreen() {
   const map = useLoadedMap()
   const journey = viewerJourney(run)
   const gameName = (map && getGame(map, journey.gameId)?.name) ?? "Unknown game"
-  const places = map ? placesOf(map, journey.gameId) : []
-  const listed = listedPlaces(places, run)
+  const locations = map ? locationsOf(map, run, journey.gameId) : []
+  const listed = listedPlaces(locations, run)
   const progress = progressOf(listed, run, map ? progressTotal(map) : 0)
   const canAdd = map !== undefined && admitsChanges(run)
   const [tab, setTab] = useRunTab()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [sheet, setSheet] = useState<Sheet>({ step: "places" })
-  const [justAdded, setJustAdded] = useState<PlaceId | null>(null)
+  // The placeKey of the location the last save or add made join the list.
+  const [justAdded, setJustAdded] = useState<string | null>(null)
   const [correcting, setCorrecting] = useState<string | null>(null)
   const [correctOpen, setCorrectOpen] = useState(false)
-  const savedAt = useRef<PlaceId | null>(null)
+  const savedAt = useRef<string | null>(null)
   // The viewer's own rows are the ones a Warning can go to.
   const warnings = useWarnings().filter(
     (warning) => warning.journeyId === journey.id
@@ -135,25 +131,37 @@ export function TrackingScreen() {
     setCorrectOpen(true)
   }
 
-  function saved(place: PlaceRow) {
-    const joined = !listed.some((listedPlace) => listedPlace.id === place.id)
+  // A Custom location joins the list when it is added, before its first save.
+  function added(location: LocationRow) {
+    setJustAdded(placeKey(location.place))
+  }
 
-    // The Badge marks only the location the last save added to the list.
-    setJustAdded(joined ? place.id : null)
+  function saved(location: LocationRow) {
+    const key = placeKey(location.place)
+    const joined = !listed.some((listedPlace) =>
+      samePlace(listedPlace.place, location.place)
+    )
+    // A Custom location joins the list when it is added, so its first
+    // Encounter keeps the Badge that the add gave it.
+    const firstAtCustom =
+      location.kind === "custom" && slotCount(run, location.place) === 0
 
-    savedAt.current = place.id
+    // The Badge marks only the location the last save or add put in the list.
+    setJustAdded(joined || firstAtCustom ? key : null)
+
+    savedAt.current = key
     setTab("encounters")
   }
 
   // Scrolls once the Drawer has closed: the modal scroll lock is gone by then.
   function scrollToSaved() {
-    const placeId = savedAt.current
+    const key = savedAt.current
 
     savedAt.current = null
 
-    if (placeId) {
+    if (key) {
       document
-        .getElementById(placeSectionId(placeId))
+        .getElementById(placeSectionId(key))
         ?.scrollIntoView({ block: "nearest" })
     }
   }
@@ -198,16 +206,14 @@ export function TrackingScreen() {
         {/* The bottom padding keeps the end of each tab clear of the dock. */}
         <TabsContent value="encounters" className="pb-28">
           {map && listed.length > 0 ? (
-            listed.map((place) => (
+            listed.map((location) => (
               <PlaceSection
-                key={place.id}
+                key={placeKey(location.place)}
                 map={map}
-                place={place}
+                location={location}
                 marks={marks}
-                justAdded={place.id === justAdded}
-                onRecordStarter={() =>
-                  openDrawer(recordSheet(run, place, false))
-                }
+                justAdded={placeKey(location.place) === justAdded}
+                onRecord={() => openDrawer(recordSheet(run, location, false))}
                 onCorrect={canAdd ? openCorrect : undefined}
               />
             ))
@@ -264,6 +270,7 @@ export function TrackingScreen() {
         sheet={sheet}
         onSheetChange={setSheet}
         onOpenChange={setDrawerOpen}
+        onAdded={added}
         onSaved={saved}
         onClosed={scrollToSaved}
       />
@@ -276,8 +283,8 @@ export function TrackingScreen() {
   )
 }
 
-function placeSectionId(placeId: PlaceId): string {
-  return `place-${placeId}`
+function placeSectionId(key: string): string {
+  return `place-${key}`
 }
 
 function encounterRowId(encounterId: string): string {
@@ -301,54 +308,66 @@ function marksOf(warnings: Warning[]): Marks {
 
 type PlaceSectionProps = {
   map: LoadedMap
-  place: PlaceRow
+  location: LocationRow
   marks: Marks
-  /** Whether the last save made this location join the list. */
+  /** Whether the last save or add made this location join the list. */
   justAdded: boolean
-  onRecordStarter: () => void
+  /** Opens the record steps for a location the viewer has no Encounter at. */
+  onRecord: () => void
   /** Opens the Correct Drawer from a Failed row; absent when nothing can change. */
   onCorrect?: (encounterId: string) => void
 }
 
 function PlaceSection({
   map,
-  place,
+  location,
   marks,
   justAdded,
-  onRecordStarter,
+  onRecord,
   onCorrect,
 }: PlaceSectionProps) {
   const { value: run } = useRun()
   const journey = viewerJourney(run)
-  const encounters = journey.encounters.filter(
-    (encounter) => encounter.placeId === place.id
+  const encounters = journey.encounters.filter((encounter) =>
+    samePlace(encounter.place, location.place)
   )
-  const recordStarter = place.kind === "starter" && encounters.length === 0
-  const slots = slotCount(run, place.id)
+  const empty = encounters.length === 0
+  const slots = slotCount(run, location.place)
 
   return (
     <section
-      id={placeSectionId(place.id)}
-      aria-label={place.name}
+      id={placeSectionId(placeKey(location.place))}
+      aria-label={location.name}
       // Scrolled to after a save; the margin keeps it clear of the dock.
       className="flex scroll-mt-4 scroll-mb-28 flex-col gap-1.5 border-b py-2.5"
     >
       <div className="flex items-center gap-2">
-        <h2 className="min-w-0 flex-1 text-sm font-medium">{place.name}</h2>
+        <h2 className="min-w-0 flex-1 text-sm font-medium">{location.name}</h2>
         {slots > 1 ? (
           <span className="text-xs text-muted-foreground">{slots} slots</span>
         ) : null}
         {justAdded ? <Badge variant="secondary">Just added</Badge> : null}
       </div>
-      {recordStarter ? (
+      {empty && location.kind === "starter" ? (
         <Button
           type="button"
           size="lg"
           className="h-11 w-full"
-          onClick={onRecordStarter}
+          onClick={onRecord}
         >
           <PlusIcon aria-hidden />
           Record your starter
+        </Button>
+      ) : empty && location.kind === "custom" ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="h-11 w-full border-dashed"
+          onClick={onRecord}
+        >
+          <PlusIcon aria-hidden />
+          Record an encounter
         </Button>
       ) : (
         <ItemGroup className="gap-1.5">
@@ -609,7 +628,7 @@ function PokemonRow({
     (candidate) => candidate.id === pokemon.encounterId
   )
   const metAt =
-    (encounter && placeName(map, encounter.placeId, journey.gameId)) ??
+    (encounter && locationName(map, run, encounter.place, journey.gameId)) ??
     "an unknown location"
 
   return (

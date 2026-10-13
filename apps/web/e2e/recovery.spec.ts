@@ -82,7 +82,7 @@ function storedEncounter(options: {
       args: {
         runId,
         encounterId: uuidv7(),
-        placeId: "starter",
+        place: { kind: "game", id: "starter" },
         slot,
         origin: "gift",
         enteredAt: Date.now(),
